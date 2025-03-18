@@ -12,4 +12,5 @@ namespace travelMemories.Core.Interfaces
         Task<User> GetCurrentUserAsync(Guid userId);
         Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword);
     }
+    
 }

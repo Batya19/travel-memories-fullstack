@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace travelMemories.Data.Constants
+namespace travelMemories.Core.Constants
 {
-    internal class Roles
+    public static class Roles
     {
+        public const string User = "USER";
+        public const string SystemAdmin = "SYSTEM_ADMIN";
     }
 }

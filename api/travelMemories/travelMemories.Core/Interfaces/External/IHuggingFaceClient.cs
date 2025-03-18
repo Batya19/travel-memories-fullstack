@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace travelMemories.Core.Interfaces.External
 {
-    internal interface IHuggingFaceClient
+   public interface IHuggingFaceClient
     {
+        Task<string> GenerateImageAsync(string prompt, string style, string size);
     }
 }
