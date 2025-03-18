@@ -1,0 +1,107 @@
+travelMemories (Solution)
+├── travelMemories (API Project)
+│   ├── Controllers
+│   │   ├── AuthController.cs
+│   │   ├── TripController.cs
+│   │   ├── FileController.cs
+│   │   ├── CollageController.cs
+│   │   ├── AIImageController.cs
+│   │   └── AdminController.cs
+│   ├── Middleware
+│   │   └── JwtMiddleware.cs
+│   ├── Program.cs
+│   └── appsettings.json
+│
+├── travelMemories.Core (Core Project)
+│   ├── Models
+│   │   ├── User.cs
+│   │   ├── Trip.cs
+│   │   ├── File.cs
+│   │   ├── Tag.cs
+│   │   ├── Collage.cs
+│   │   ├── AIImage.cs
+│   │   └── TripPoint.cs
+│   ├── DTOs
+│   │   ├── Auth
+│   │   │   ├── LoginRequest.cs
+│   │   │   ├── RegisterRequest.cs
+│   │   │   └── AuthResponse.cs
+│   │   ├── Trip
+│   │   │   ├── TripRequest.cs
+│   │   │   └── TripResponse.cs
+│   │   ├── File
+│   │   │   ├── FileUploadRequest.cs
+│   │   │   ├── FileResponse.cs
+│   │   │   └── FileSearchRequest.cs
+│   │   ├── Collage
+│   │   │   ├── CollageRequest.cs
+│   │   │   ├── CollageResponse.cs
+│   │   │   └── CollageFileRequest.cs
+│   │   ├── AIImage
+│   │   │   ├── AIImageRequest.cs
+│   │   │   └── AIImageResponse.cs
+│   │   ├── TripPoint
+│   │   │   ├── TripPointRequest.cs
+│   │   │   ├── TripPointResponse.cs
+│   │   │   └── PointFileRequest.cs
+│   │   ├── Tag
+│   │   │   ├── TagRequest.cs
+│   │   │   └── TagResponse.cs
+│   │   └── Admin
+│   │       ├── UserManagementRequest.cs
+│   │       ├── UserManagementResponse.cs
+│   │       ├── SystemSettingsRequest.cs
+│   │       └── StatisticsResponse.cs
+│   └── Interfaces
+│       ├── IAuthService.cs
+│       ├── ITripService.cs
+│       ├── IFileService.cs
+│       ├── ICollageService.cs
+│       ├── IAIImageService.cs
+│       ├── ITripPointService.cs
+│       ├── ITagService.cs
+│       ├── IAdminService.cs
+│       ├── Repositories
+│       │   ├── IUserRepository.cs
+│       │   ├── ITripRepository.cs
+│       │   ├── IFileRepository.cs
+│       │   ├── ICollageRepository.cs
+│       │   ├── IAIImageRepository.cs
+│       │   ├── ITripPointRepository.cs
+│       │   └── ITagRepository.cs
+│       └── External
+│           ├── IHuggingFaceClient.cs
+│           └── IS3Client.cs
+│
+├── travelMemories.Data (Data Project)
+│   ├── Context
+│   │   └── ApplicationDbContext.cs
+│   ├── Repositories
+│   │   ├── UserRepository.cs
+│   │   ├── TripRepository.cs
+│   │   ├── FileRepository.cs
+│   │   ├── CollageRepository.cs
+│   │   ├── AIImageRepository.cs
+│   │   ├── TripPointRepository.cs
+│   │   ├── TagRepository.cs
+│   │   └── BaseRepository.cs
+│   ├── Migrations
+│   │   └── [Auto-generated migrations]
+│   └── Constants
+│       └── Roles.cs
+│
+└── travelMemories.Service (Service Project)
+    ├── Services
+    │   ├── AuthService.cs
+    │   ├── TripService.cs
+    │   ├── FileService.cs
+    │   ├── CollageService.cs
+    │   ├── AIImageService.cs
+    │   └── AdminService.cs
+    ├── Helpers
+    │   ├── JwtHelper.cs
+    │   ├── FileHelper.cs
+    │   └── S3Helper.cs
+    └── External
+        ├── HuggingFaceClient.cs
+        └── S3Client.cs
