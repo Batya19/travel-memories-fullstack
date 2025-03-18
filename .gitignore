@@ -1,1 +1,4 @@
-~$יון מערכת SaaS לניהול נדל.docx
+
+# Ignore temporary Microsoft Office files
+~$*
+*.tmp
