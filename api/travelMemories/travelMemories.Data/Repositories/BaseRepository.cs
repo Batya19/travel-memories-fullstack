@@ -9,45 +9,18 @@ namespace travelMemories.Data.Repositories
 {
     public abstract class BaseRepository<T> where T : class
     {
-        protected readonly ApplicationDbContext _dbContext;
+        protected readonly ApplicationDbContext _context;
+        protected readonly DbSet<T> _dbSet;
 
-        protected BaseRepository(ApplicationDbContext dbContext)
+        public BaseRepository(ApplicationDbContext context)
         {
-            _dbContext = dbContext;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _dbSet = context.Set<T>();
         }
 
-        public virtual async Task<T> GetByIdAsync(Guid id)
+        public virtual async Task SaveChangesAsync()
         {
-            return await _dbContext.Set<T>().FindAsync(id);
-        }
-
-        public virtual async Task<IEnumerable<T>> GetAllAsync()
-        {
-            return await _dbContext.Set<T>().ToListAsync();
-        }
-
-        public virtual async Task<T> CreateAsync(T entity)
-        {
-            await _dbContext.Set<T>().AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
-            return entity;
-        }
-
-        public virtual async Task<T> UpdateAsync(T entity)
-        {
-            _dbContext.Set<T>().Update(entity);
-            await _dbContext.SaveChangesAsync();
-            return entity;
-        }
-
-        public virtual async Task<bool> DeleteAsync(Guid id)
-        {
-            var entity = await GetByIdAsync(id);
-            if (entity == null)
-                return false;
-
-            _dbContext.Set<T>().Remove(entity);
-            return await _dbContext.SaveChangesAsync() > 0;
+            await _context.SaveChangesAsync();
         }
     }
 }

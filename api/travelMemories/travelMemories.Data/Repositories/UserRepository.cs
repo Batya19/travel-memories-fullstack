@@ -10,23 +10,36 @@ namespace travelMemories.Data.Repositories
 {
     public class UserRepository : BaseRepository<User>, IUserRepository
     {
-        public UserRepository(ApplicationDbContext dbContext) : base(dbContext)
-        {
-        }
+        public UserRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<User> GetByEmailAsync(string email)
+        public async Task<User> CreateAsync(User user)
         {
-            return await _dbContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
-        }
-
-        public async Task<int> GetUserCountAsync()
-        {
-            return await _dbContext.Users.CountAsync();
+            await _dbSet.AddAsync(user);
+            await SaveChangesAsync();
+            return user;
         }
 
         public async Task<bool> EmailExistsAsync(string email)
         {
-            return await _dbContext.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower());
+            return await _dbSet.AnyAsync(u => u.Email == email);
+        }
+
+        public async Task<User> GetByEmailAsync(string email)
+        {
+            return await _dbSet.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<User> GetByIdAsync(Guid id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+
+        public async Task<User> UpdateAsync(User user)
+        {
+            _context.Entry(user).State = EntityState.Modified;
+            user.UpdatedAt = DateTime.UtcNow;
+            await SaveChangesAsync();
+            return user;
         }
     }
 }

@@ -23,7 +23,6 @@ namespace travelMemories.Core.Models
         // Navigation properties
         public virtual User User { get; set; }
         public virtual ICollection<File> Files { get; set; }
-        public virtual ICollection<Collage> Collages { get; set; }
         public virtual ICollection<TripPoint> TripPoints { get; set; }
     }
 }

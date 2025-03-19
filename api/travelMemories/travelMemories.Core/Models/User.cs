@@ -15,7 +15,7 @@ namespace travelMemories.Core.Models
         public string LastName { get; set; }
         public string Role { get; set; }
         public int StorageQuota { get; set; } = 10240; // Default 10GB in MB
-        public int AiQuota { get; set; } = 50; // Default 50 AI images monthly
+        public int AiQuota { get; set; } = 50; // Default 50 AI images per month
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public Guid? CreatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
@@ -23,6 +23,5 @@ namespace travelMemories.Core.Models
 
         // Navigation properties
         public virtual ICollection<Trip> Trips { get; set; }
-        public virtual ICollection<AIImage> AIImages { get; set; }
     }
 }

@@ -1,82 +1,47 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
+using travelMemories.Core.DTOs.Auth;
+using travelMemories.Core.Interfaces;
 
-namespace travelMemories.Controllers
+namespace travelMemories.API.Controllers
 {
-    public class AuthController : Controller
+    [ApiController]
+    [Route("api/auth")]
+    public class AuthController : ControllerBase
     {
-        // GET: AuthController
-        public ActionResult Index()
+        private readonly IAuthService _authService;
+
+        public AuthController(IAuthService authService)
         {
-            return View();
+            _authService = authService;
         }
 
-        // GET: AuthController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: AuthController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: AuthController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        [HttpPost("register")]
+        public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var response = await _authService.RegisterAsync(request);
+                return Ok(response);
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                return BadRequest(new { message = ex.Message });
             }
         }
 
-        // GET: AuthController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: AuthController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        [HttpPost("login")]
+        public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var response = await _authService.LoginAsync(request);
+                return Ok(response);
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
-            }
-        }
-
-        // GET: AuthController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: AuthController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
+                return BadRequest(new { message = ex.Message });
             }
         }
     }

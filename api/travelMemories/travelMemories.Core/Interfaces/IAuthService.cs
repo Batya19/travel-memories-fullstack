@@ -9,8 +9,6 @@ namespace travelMemories.Core.Interfaces
     {
         Task<AuthResponse> RegisterAsync(RegisterRequest request);
         Task<AuthResponse> LoginAsync(LoginRequest request);
-        Task<User> GetCurrentUserAsync(Guid userId);
-        Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword);
+        Task<bool> ValidateTokenAsync(string token);
     }
-    
 }

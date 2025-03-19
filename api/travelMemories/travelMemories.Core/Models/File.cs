@@ -26,7 +26,6 @@ namespace travelMemories.Core.Models
         // Navigation properties
         public virtual Trip Trip { get; set; }
         public virtual ICollection<FileTag> FileTags { get; set; }
-        public virtual ICollection<CollageFile> CollageFiles { get; set; }
         public virtual ICollection<PointFile> PointFiles { get; set; }
         public virtual AIImage AIImage { get; set; }
     }
