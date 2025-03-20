@@ -3,9 +3,9 @@ travelMemories (Solution)
 │   ├── Controllers
 │   │   ├── AuthController.cs
 │   │   ├── TripController.cs
-│   │   ├── FileController.cs
+│   │   ├── ImageController.cs       // שונה שם מ-FileController
 │   │   ├── AIImageController.cs
-│   │   └── AdminController.cs  // מפושט
+│   │   └── AdminController.cs       // מפושט
 │   ├── Middleware
 │   │   └── JwtMiddleware.cs
 │   ├── Program.cs
@@ -15,7 +15,7 @@ travelMemories (Solution)
 │   ├── Models
 │   │   ├── User.cs
 │   │   ├── Trip.cs
-│   │   ├── File.cs
+│   │   ├── Image.cs                 // שונה שם מ-File.cs
 │   │   ├── Tag.cs
 │   │   └── AIImage.cs
 │   ├── DTOs
@@ -26,10 +26,10 @@ travelMemories (Solution)
 │   │   ├── Trip
 │   │   │   ├── TripRequest.cs
 │   │   │   └── TripResponse.cs
-│   │   ├── File
-│   │   │   ├── FileUploadRequest.cs
-│   │   │   ├── FileResponse.cs
-│   │   │   └── FileSearchRequest.cs
+│   │   ├── Image                    // שונה שם מ-File
+│   │   │   ├── ImageUploadRequest.cs    // שונה שם
+│   │   │   ├── ImageResponse.cs         // שונה שם
+│   │   │   └── ImageSearchRequest.cs    // שונה שם
 │   │   ├── AIImage
 │   │   │   ├── AIImageRequest.cs
 │   │   │   └── AIImageResponse.cs
@@ -39,18 +39,18 @@ travelMemories (Solution)
 │   │   └── Admin
 │   │       ├── UserManagementRequest.cs
 │   │       ├── UserManagementResponse.cs
-│   │       └── StatisticsResponse.cs  // מפושט
+│   │       └── StatisticsResponse.cs     // מפושט
 │   └── Interfaces
 │       ├── IAuthService.cs
 │       ├── ITripService.cs
-│       ├── IFileService.cs
+│       ├── IImageService.cs              // שונה שם מ-IFileService
 │       ├── IAIImageService.cs
 │       ├── ITagService.cs
 │       ├── IAdminService.cs
 │       ├── Repositories
 │       │   ├── IUserRepository.cs
 │       │   ├── ITripRepository.cs
-│       │   ├── IFileRepository.cs
+│       │   ├── IImageRepository.cs       // שונה שם מ-IFileRepository
 │       │   ├── IAIImageRepository.cs
 │       │   └── ITagRepository.cs
 │       └── External
@@ -59,16 +59,16 @@ travelMemories (Solution)
 │
 ├── travelMemories.Data (Data Project)
 │   ├── Context
-│   │   └── ApplicationDbContext.cs  // עודכן - הוסרו טבלאות Collage ו-TripPoint
+│   │   └── ApplicationDbContext.cs       // עודכן - שינוי שם מ-File ל-Image
 │   ├── Repositories
 │   │   ├── UserRepository.cs
 │   │   ├── TripRepository.cs
-│   │   ├── FileRepository.cs
+│   │   ├── ImageRepository.cs        // שונה שם מ-FileRepository
 │   │   ├── AIImageRepository.cs
 │   │   ├── TagRepository.cs
 │   │   └── BaseRepository.cs
 │   ├── Migrations
-│   │   └── [Auto-generated migrations]  // צריך ליצור מיגרציה חדשה
+│   │   └── [Auto-generated migrations]    // צריך ליצור מיגרציה חדשה
 │   └── Constants
 │       └── Roles.cs
 │
@@ -76,12 +76,12 @@ travelMemories (Solution)
     ├── Services
     │   ├── AuthService.cs
     │   ├── TripService.cs
-    │   ├── FileService.cs
+    │   ├── ImageService.cs              // שונה שם מ-FileService
     │   ├── AIImageService.cs
-    │   └── AdminService.cs  // מפושט
+    │   └── AdminService.cs              // מפושט
     ├── Helpers
     │   ├── JwtHelper.cs
-    │   ├── FileHelper.cs
+    │   ├── ImageHelper.cs               // שונה שם מ-FileHelper
     │   └── S3Helper.cs
     └── External
         ├── HuggingFaceClient.cs
