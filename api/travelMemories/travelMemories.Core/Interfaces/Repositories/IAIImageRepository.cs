@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TravelMemories.Core.Models;
 
-namespace travelMemories.Core.Interfaces.Repositories
+namespace TravelMemories.Core.Interfaces.Repositories
 {
-    internal interface IAIImageRepository
+    public interface IAIImageRepository : IRepository<Image>
     {
+        Task<IEnumerable<Image>> GetAIGeneratedImagesAsync(Guid userId);
+        Task<int> GetMonthlyGenerationCountAsync(Guid userId, DateTime monthStart);
+        Task<Image> GetAIImageWithDetailsAsync(Guid imageId);
     }
 }

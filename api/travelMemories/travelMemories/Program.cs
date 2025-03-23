@@ -1,51 +1,97 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using travelMemories.Core.Interfaces;
-using travelMemories.Core.Interfaces.Repositories;
-using travelMemories.Data.Context;
-using travelMemories.Data.Repositories;
-using travelMemories.Service.Helpers;
-using travelMemories.Service.Services;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
+using System;
+using System.IO;
+using System.Reflection;
+using TravelMemories;
+using TravelMemories.Data.Context;
+using TravelMemories.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-// קריאת משתני סביבה
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var jwtKey = builder.Configuration["Jwt:Key"];
-var awsRegion = builder.Configuration["AWS:Region"];
-var awsBucketName = builder.Configuration["AWS:BucketName"];
-var awsAccessKey = builder.Configuration["AWS:AccessKey"];
-var awsSecretKey = builder.Configuration["AWS:SecretKey"];
-
-// שימוש בערכים
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 // Add services to the container
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-// Register JWT helper
-builder.Services.AddSingleton<JwtHelper>();
+// Add database context
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register repositories
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+// Add authentication and authorization
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
-// Register services
-builder.Services.AddScoped<IAuthService, AuthService>();
+// Register services and repositories
+builder.Services.RegisterServices();
+builder.Services.RegisterRepositories();
+builder.Services.RegisterExternalServices(builder.Configuration);
 
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
+// Add Swagger/OpenAPI with more detailed configuration
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        Title = "Travel Memories API",
+        Version = "v1",
+        Description = "API for Travel Memories application",
+        Contact = new OpenApiContact
+        {
+            Name = "Development Team",
+            Email = "dev@travelmemories.com"
+        }
+    });
+
+    // Uncomment if you have XML comments
+    // var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    // c.IncludeXmlComments(xmlPath);
+
+    // Add JWT Authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
 
@@ -54,14 +100,65 @@ var app = builder.Build();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
+
+    // Configure Swagger UI
+    app.UseSwagger(c =>
+    {
+        c.RouteTemplate = "swagger/{documentName}/swagger.json";
+    });
+
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Travel Memories API V1");
+        c.RoutePrefix = "swagger";
+        c.DisplayRequestDuration();
+        c.EnableDeepLinking();
+        c.EnableFilter();
+    });
+
+    // Apply migrations in development environment
+    using (var scope = app.Services.CreateScope())
+    {
+        try
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var migrationLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+            migrationLogger.LogInformation("Attempting to apply migrations...");
+            dbContext.Database.Migrate();
+            migrationLogger.LogInformation("Migrations applied successfully.");
+        }
+        catch (Exception ex)
+        {
+            var errorLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            errorLogger.LogError(ex, "An error occurred while applying migrations.");
+        }
+    }
+}
+else
+{
+    // Use exception handler middleware in production
+    app.UseMiddleware<ExceptionMiddleware>();
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
+app.UseStaticFiles(); // Add this if you have static files
 
+app.UseRouting();
+
+app.UseCors("AllowAllOrigins");
+
+// Add JWT middleware
+app.UseMiddleware<JwtMiddleware>();
+
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
+// Log application started
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("Application started successfully. Swagger should be available at /swagger");
 
 app.Run();

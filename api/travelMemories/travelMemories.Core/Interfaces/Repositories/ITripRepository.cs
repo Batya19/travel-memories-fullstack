@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using travelMemories.Core.Models;
+using TravelMemories.Core.Models;
 
-namespace travelMemories.Core.Interfaces.Repositories
+namespace TravelMemories.Core.Interfaces.Repositories
 {
-    public interface ITripRepository
+    public interface ITripRepository : IRepository<Trip>
     {
-        Task<Trip> GetByIdAsync(Guid id);
-        Task<IEnumerable<Trip>> GetByUserIdAsync(Guid userId);
-        Task<IEnumerable<Trip>> GetAllAsync();
-        Task<Trip> CreateAsync(Trip trip);
-        Task<Trip> UpdateAsync(Trip trip);
-        Task<bool> DeleteAsync(Guid id);
-        Task<bool> ExistsAsync(Guid id);
-        Task<int> GetTripCountAsync();
-        Task<int> GetTripCountByUserAsync(Guid userId);
+        Task<Trip> GetTripWithDetailsAsync(Guid tripId);
+        Task<Trip> GetTripByShareIdAsync(Guid shareId);
+        Task<IEnumerable<Trip>> GetUserTripsAsync(Guid userId);
+        Task<Trip> GetTripWithImagesAsync(Guid tripId);
     }
 }

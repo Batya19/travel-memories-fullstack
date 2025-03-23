@@ -1,48 +1,51 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Threading.Tasks;
-//using Microsoft.EntityFrameworkCore;
-//using travelMemories.Core.Interfaces.Repositories;
-//using travelMemories.Core.Models;
-//using travelMemories.Data.Context;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TravelMemories.Core.Interfaces.Repositories;
+using TravelMemories.Core.Models;
+using TravelMemories.Data.Context;
 
-//namespace travelMemories.Data.Repositories
-//{
-//    public class TripRepository : BaseRepository<Trip>, ITripRepository
-//    {
-//        public TripRepository(ApplicationDbContext dbContext) : base(dbContext)
-//        {
-//        }
+namespace TravelMemories.Data.Repositories
+{
+    public class TripRepository : Repository<Trip>, ITripRepository
+    {
+        public TripRepository(ApplicationDbContext context) : base(context)
+        {
+        }
 
-//        public async Task<IEnumerable<Trip>> GetByUserIdAsync(Guid userId)
-//        {
-//            return await _dbContext.Trips
-//                .Where(t => t.UserId == userId)
-//                .OrderByDescending(t => t.StartDate)
-//                .ToListAsync();
-//        }
+        public async Task<Trip> GetTripWithDetailsAsync(Guid tripId)
+        {
+            return await _context.Trips
+                .Include(t => t.User)
+                .Include(t => t.Images)
+                .SingleOrDefaultAsync(t => t.Id == tripId);
+        }
 
-//        public async Task<bool> ExistsAsync(Guid id)
-//        {
-//            return await _dbContext.Trips.AnyAsync(t => t.Id == id);
-//        }
+        public async Task<Trip> GetTripByShareIdAsync(Guid shareId)
+        {
+            return await _context.Trips
+                .Include(t => t.Images)
+                .SingleOrDefaultAsync(t => t.ShareId == shareId);
+        }
 
-//        public async Task<int> GetTripCountAsync()
-//        {
-//            return await _dbContext.Trips.CountAsync();
-//        }
+        public async Task<IEnumerable<Trip>> GetUserTripsAsync(Guid userId)
+        {
+            return await _context.Trips
+                .Where(t => t.UserId == userId)
+                .OrderByDescending(t => t.StartDate)
+                .ToListAsync();
+        }
 
-//        public async Task<int> GetTripCountByUserAsync(Guid userId)
-//        {
-//            return await _dbContext.Trips.CountAsync(t => t.UserId == userId);
-//        }
-
-//        public override async Task<Trip> GetByIdAsync(Guid id)
-//        {
-//            return await _dbContext.Trips
-//                .Include(t => t.User)
-//                .FirstOrDefaultAsync(t => t.Id == id);
-//        }
-//    }
-//}
+        public async Task<Trip> GetTripWithImagesAsync(Guid tripId)
+        {
+            return await _context.Trips
+                .Include(t => t.Images)
+                .ThenInclude(i => i.ImageTags)
+                .ThenInclude(it => it.Tag)
+                .SingleOrDefaultAsync(t => t.Id == tripId);
+        }
+    }
+}

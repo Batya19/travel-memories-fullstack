@@ -1,45 +1,57 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using travelMemories.Core.Interfaces.Repositories;
-using travelMemories.Core.Models;
-using travelMemories.Data.Context;
+using TravelMemories.Core.Interfaces.Repositories;
+using TravelMemories.Core.Models;
+using TravelMemories.Data.Context;
 
-namespace travelMemories.Data.Repositories
+namespace TravelMemories.Data.Repositories
 {
-    public class UserRepository : BaseRepository<User>, IUserRepository
+    public class UserRepository : Repository<User>, IUserRepository
     {
-        public UserRepository(ApplicationDbContext context) : base(context) { }
-
-        public async Task<User> CreateAsync(User user)
+        public UserRepository(ApplicationDbContext context) : base(context)
         {
-            await _dbSet.AddAsync(user);
-            await SaveChangesAsync();
-            return user;
-        }
-
-        public async Task<bool> EmailExistsAsync(string email)
-        {
-            return await _dbSet.AnyAsync(u => u.Email == email);
         }
 
         public async Task<User> GetByEmailAsync(string email)
         {
-            return await _dbSet.FirstOrDefaultAsync(u => u.Email == email);
+            return await _context.Users
+                .SingleOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
         }
 
-        public async Task<User> GetByIdAsync(Guid id)
+        public async Task<bool> EmailExistsAsync(string email)
         {
-            return await _dbSet.FindAsync(id);
+            return await _context.Users
+                .AnyAsync(u => u.Email.ToLower() == email.ToLower());
         }
 
-        public async Task<User> UpdateAsync(User user)
+        public async Task<User> GetWithDetailsByIdAsync(Guid id)
         {
-            _context.Entry(user).State = EntityState.Modified;
-            user.UpdatedAt = DateTime.UtcNow;
-            await SaveChangesAsync();
-            return user;
+            return await _context.Users
+                .Include(u => u.Trips)
+                .Include(u => u.Images)
+                .SingleOrDefaultAsync(u => u.Id == id);
+        }
+
+        public async Task<int> GetTotalStorageUsedAsync(Guid userId)
+        {
+            return await _context.Images
+                .Where(i => i.UserId == userId)
+                .SumAsync(i => i.FileSize) / (1024 * 1024); // Convert to MB
+        }
+
+        public async Task<int> GetAiImageCountAsync(Guid userId, DateTime monthStart)
+        {
+            var monthEnd = monthStart.AddMonths(1);
+
+            return await _context.Images
+                .CountAsync(i => i.UserId == userId &&
+                             i.IsAiGenerated &&
+                             i.CreatedAt >= monthStart &&
+                             i.CreatedAt < monthEnd);
         }
     }
 }

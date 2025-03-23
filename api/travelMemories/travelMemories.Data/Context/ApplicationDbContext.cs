@@ -1,42 +1,104 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using travelMemories.Core.Models;
-using File = travelMemories.Core.Models.File;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TravelMemories.Core.Models;
 
-namespace travelMemories.Data.Context
+namespace TravelMemories.Data.Context
 {
     public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<File> Files { get; set; } // הוספת DbSet עבור File
+        public DbSet<Trip> Trips { get; set; }
+        public DbSet<Image> Images { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<ImageTag> ImageTags { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             // User configuration
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Email).HasMaxLength(100).IsRequired();
                 entity.HasIndex(e => e.Email).IsUnique();
-                entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.FirstName).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.LastName).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.Role).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.PasswordHash).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.FirstName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.LastName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Role).HasMaxLength(20).IsRequired();
                 entity.Property(e => e.StorageQuota).HasDefaultValue(10240);
                 entity.Property(e => e.AiQuota).HasDefaultValue(50);
-                entity.Property(e => e.CreatedAt).HasDefaultValueSql("NOW()");
             });
 
-            // File configuration
-            modelBuilder.Entity<File>(entity =>
+            // Trip configuration
+            modelBuilder.Entity<Trip>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                // הגדרות נוספות עבור File
+                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Description).HasColumnType("text");
+                entity.Property(e => e.ShareId).IsRequired(false);
+                entity.HasIndex(e => e.ShareId).IsUnique();
+                entity.Property(e => e.Latitude).HasColumnType("decimal(10,8)").IsRequired(false);
+                entity.Property(e => e.Longitude).HasColumnType("decimal(11,8)").IsRequired(false);
+                entity.Property(e => e.LocationName).HasMaxLength(100).IsRequired(false);
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.Trips)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
-            base.OnModelCreating(modelBuilder);
+            // Image configuration
+            modelBuilder.Entity<Image>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.FileName).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.FilePath).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.MimeType).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.AiPrompt).HasColumnType("text").IsRequired(false);
+                entity.Property(e => e.AiStyle).HasMaxLength(50).IsRequired(false);
+
+                entity.HasOne(e => e.Trip)
+                    .WithMany(t => t.Images)
+                    .HasForeignKey(e => e.TripId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.Images)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Tag configuration
+            modelBuilder.Entity<Tag>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
+                entity.HasIndex(e => e.Name).IsUnique();
+            });
+
+            // ImageTag configuration (junction table)
+            modelBuilder.Entity<ImageTag>(entity =>
+            {
+                entity.HasKey(e => new { e.ImageId, e.TagId });
+
+                entity.HasOne(e => e.Image)
+                    .WithMany(i => i.ImageTags)
+                    .HasForeignKey(e => e.ImageId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Tag)
+                    .WithMany(t => t.ImageTags)
+                    .HasForeignKey(e => e.TagId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }

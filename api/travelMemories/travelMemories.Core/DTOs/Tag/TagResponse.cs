@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace travelMemories.Core.DTOs.Tag
+namespace TravelMemories.Core.DTOs.Tag
 {
-    internal class TagResponse
+    public class TagResponse
     {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
     }
 }

@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace travelMemories.Core.DTOs.Admin
+namespace TravelMemories.Core.DTOs.Admin
 {
-    internal class SystemSettingsRequest
+    public class SystemSettingsRequest
     {
+        public int DefaultStorageQuota { get; set; }
+        public int DefaultAiQuota { get; set; }
+        public bool RegistrationEnabled { get; set; }
     }
 }

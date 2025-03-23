@@ -1,14 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using travelMemories.Core.DTOs.Auth;
-using travelMemories.Core.Models;
+using TravelMemories.Core.DTOs.Auth;
+using TravelMemories.Core.Models;
 
-namespace travelMemories.Core.Interfaces
+namespace TravelMemories.Core.Interfaces
 {
     public interface IAuthService
     {
-        Task<AuthResponse> RegisterAsync(RegisterRequest request);
-        Task<AuthResponse> LoginAsync(LoginRequest request);
-        Task<bool> ValidateTokenAsync(string token);
+        Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
+        Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
+        Task<User> GetCurrentUserAsync(Guid userId);
+        Task<bool> IsEmailAvailableAsync(string email);
+        Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword);
     }
 }

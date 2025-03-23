@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace travelMemories.Core.Interfaces.External
+
+namespace TravelMemories.Core.Interfaces.External
 {
-   public interface IHuggingFaceClient
+    public interface IHuggingFaceClient
     {
-        Task<string> GenerateImageAsync(string prompt, string style, string size);
+        Task<byte[]> GenerateImageAsync(string prompt, string? style = null, string size = "512x512");
     }
 }

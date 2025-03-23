@@ -1,112 +1,143 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using travelMemories.Core.Constants;
-using travelMemories.Core.DTOs.Auth;
-using travelMemories.Core.Interfaces;
-using travelMemories.Core.Interfaces.Repositories;
-using travelMemories.Core.Models;   
-using travelMemories.Service.Helpers;
+using TravelMemories.Core.DTOs.Auth;
+using TravelMemories.Core.Interfaces.Repositories;
+using TravelMemories.Core.Interfaces;
+using TravelMemories.Core.Models;
+using Microsoft.AspNetCore.Identity;
 
-namespace travelMemories.Service.Services
+
+namespace TravelMemories.Service.Services
 {
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
-        private readonly JwtHelper _jwtHelper;
+        private readonly IJwtService _jwtService;
 
-        public AuthService(IUserRepository userRepository, JwtHelper jwtHelper)
+        public AuthService(IUserRepository userRepository, IJwtService jwtService)
         {
             _userRepository = userRepository;
-            _jwtHelper = jwtHelper;
+            _jwtService = jwtService;
         }
 
-        public async Task<AuthResponse> LoginAsync(LoginRequest request)
+        public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
-            var user = await _userRepository.GetByEmailAsync(request.Email);
-            if (user == null)
+            // Check if email already exists
+            if (await _userRepository.EmailExistsAsync(registerDto.Email))
             {
-                throw new Exception("Invalid email or password");
+                throw new InvalidOperationException("Email is already in use");
             }
 
-            var passwordHasher = new PasswordHasher<User>();
-            var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
-
-            if (result == PasswordVerificationResult.Failed)
-            {
-                throw new Exception("Invalid email or password");
-            }
-
-            string token = _jwtHelper.GenerateToken(user);
-            DateTime expiresAt = DateTime.UtcNow.AddHours(12);
-
-            return new AuthResponse
-            {
-                UserId = user.Id,
-                Token = token,
-                ExpiresAt = expiresAt,
-                UserDetails = new UserDetails
-                {
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Role = user.Role,
-                    StorageQuota = user.StorageQuota,
-                    StorageUsed = 0, // Will be implemented later
-                    AiQuota = user.AiQuota,
-                    AiUsed = 0 // Will be implemented later
-                }
-            };
-        }
-
-        public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
-        {
-            bool emailExists = await _userRepository.EmailExistsAsync(request.Email);
-            if (emailExists)
-            {
-                throw new Exception("Email already exists");
-            }
-
-            var passwordHasher = new PasswordHasher<User>();
+            // Create user
             var user = new User
             {
-                Id = Guid.NewGuid(),
-                Email = request.Email,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                Role = Roles.User,
-                CreatedAt = DateTime.UtcNow
+                Email = registerDto.Email,
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
+                PasswordHash = HashPassword(registerDto.Password),
+                Role = UserRoles.User,
+                StorageQuota = 10240, // 10GB in MB
+                AiQuota = 50 // Default 50 AI images per month
             };
 
-            user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
+            await _userRepository.AddAsync(user);
+            await _userRepository.SaveChangesAsync();
 
-            await _userRepository.CreateAsync(user);
+            // Generate token
+            var token = _jwtService.GenerateJwtToken(user);
 
-            string token = _jwtHelper.GenerateToken(user);
-            DateTime expiresAt = DateTime.UtcNow.AddHours(12);
-
-            return new AuthResponse
+            return new AuthResponseDto
             {
                 UserId = user.Id,
                 Token = token,
-                ExpiresAt = expiresAt,
-                UserDetails = new UserDetails
-                {
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Role = user.Role,
-                    StorageQuota = user.StorageQuota,
-                    StorageUsed = 0,
-                    AiQuota = user.AiQuota,
-                    AiUsed = 0
-                }
+                ExpiresAt = DateTime.UtcNow.AddHours(24),
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Role = user.Role
             };
         }
 
-        public async Task<bool> ValidateTokenAsync(string token)
+        public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
-            return _jwtHelper.ValidateToken(token);
+            var user = await _userRepository.GetByEmailAsync(loginDto.Email);
+
+            if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash))
+            {
+                throw new InvalidOperationException("Invalid email or password");
+            }
+
+            var token = _jwtService.GenerateJwtToken(user);
+
+            return new AuthResponseDto
+            {
+                UserId = user.Id,
+                Token = token,
+                ExpiresAt = DateTime.UtcNow.AddHours(24),
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Role = user.Role
+            };
         }
+
+        public async Task<User> GetCurrentUserAsync(Guid userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
+
+            return user;
+        }
+
+        public async Task<bool> IsEmailAvailableAsync(string email)
+        {
+            return !await _userRepository.EmailExistsAsync(email);
+        }
+
+        public async Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
+
+            if (!VerifyPassword(currentPassword, user.PasswordHash))
+            {
+                return false;
+            }
+
+            user.PasswordHash = HashPassword(newPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+
+            _userRepository.Update(user);
+            return await _userRepository.SaveChangesAsync();
+        }
+
+        #region Private Helper Methods
+
+        private string HashPassword(string password)
+        {
+            var passwordHasher = new PasswordHasher<User>();
+            return passwordHasher.HashPassword(null, password);
+        }
+
+        private bool VerifyPassword(string password, string passwordHash)
+        {
+            var passwordHasher = new PasswordHasher<User>();
+            var result = passwordHasher.VerifyHashedPassword(null, passwordHash, password);
+
+            return result == PasswordVerificationResult.Success;
+        }
+
+        #endregion
     }
 }

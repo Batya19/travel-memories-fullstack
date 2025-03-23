@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace travelMemories.Core.DTOs.Tag
+namespace TravelMemories.Core.DTOs.Tag
 {
-    internal class TagRequest
+    public class TagRequest
     {
+        [Required]
+        [MaxLength(50)]
+        public string Name { get; set; }
     }
 }

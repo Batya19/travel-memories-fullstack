@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-using travelMemories.Core.DTOs.Auth;
-using travelMemories.Core.Interfaces;
+using TravelMemories.Core.DTOs;
+using TravelMemories.Core.DTOs.Auth;
+using TravelMemories.Core.Interfaces;
 
-namespace travelMemories.API.Controllers
+namespace TravelMemories.Controllers
 {
     [ApiController]
     [Route("api/auth")]
@@ -18,31 +19,43 @@ namespace travelMemories.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
+        public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto registerDto)
         {
             try
             {
-                var response = await _authService.RegisterAsync(request);
-                return Ok(response);
+                var result = await _authService.RegisterAsync(registerDto);
+                return Ok(result);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(ErrorDto.FromException(ex.Message, "ValidationError"));
             }
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
+        public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto loginDto)
         {
             try
             {
-                var response = await _authService.LoginAsync(request);
-                return Ok(response);
+                var result = await _authService.LoginAsync(loginDto);
+                return Ok(result);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(ErrorDto.FromException("Invalid email or password", "AuthenticationError"));
             }
+        }
+
+        [HttpGet("check-email")]
+        public async Task<ActionResult<bool>> CheckEmailAvailable([FromQuery] string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest(ErrorDto.FromException("Email is required", "ValidationError"));
+            }
+
+            var isAvailable = await _authService.IsEmailAvailableAsync(email);
+            return Ok(isAvailable);
         }
     }
 }
