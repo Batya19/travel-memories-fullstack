@@ -76,7 +76,7 @@ const Header: React.FC = () => {
         />
         <HStack spacing={8} alignItems="center">
           <Flex align="center">
-            <Image src="/logo.png" alt="TravelMemories Logo" h="40px" mr={2} />
+            <Image src="/logo.png" alt="TravelMemories Logo" h="40px" mr={2} fallbackSrc="https://via.placeholder.com/40x40?text=TM" />
             <Text
               as={RouterLink}
               to="/"
@@ -92,8 +92,8 @@ const Header: React.FC = () => {
             {currentUser && (
               <>
                 <NavLink to="/">Home</NavLink>
-                <NavLink to="/my-trips">My Trips</NavLink>
-                <NavLink to="/create-trip">New Trip</NavLink>
+                <NavLink to="/trips">My Trips</NavLink>
+                <NavLink to="/trips/new">New Trip</NavLink>
               </>
             )}
           </HStack>
@@ -161,8 +161,8 @@ const Header: React.FC = () => {
             {currentUser ? (
               <>
                 <NavLink to="/">Home</NavLink>
-                <NavLink to="/my-trips">My Trips</NavLink>
-                <NavLink to="/create-trip">New Trip</NavLink>
+                <NavLink to="/trips">My Trips</NavLink>
+                <NavLink to="/trips/new">New Trip</NavLink>
               </>
             ) : (
               <>

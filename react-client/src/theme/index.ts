@@ -1,44 +1,45 @@
-import { extendTheme, ThemeConfig } from '@chakra-ui/react';
-
-// הגדרת קונפיגורציה בסיסית
-const config: ThemeConfig = {
-  initialColorMode: 'light',
-  useSystemColorMode: false,
-};
+import { extendTheme } from '@chakra-ui/react';
 
 const theme = extendTheme({
-  config,
   colors: {
     brand: {
-      50: '#e6f1ff',
-      100: '#b8d6ff',
-      200: '#8abaff',
-      300: '#5c9fff',
-      400: '#2e83ff',
-      500: '#1569e5', // צבע עיקרי של המותג
-      600: '#0d52b8',
-      700: '#073b8c',
-      800: '#03255f',
-      900: '#001034',
+      50: '#e6f7ff',
+      100: '#b3e0ff',
+      200: '#80c9ff',
+      300: '#4db2ff',
+      400: '#1a9bff',
+      500: '#0084e6',
+      600: '#0068b4',
+      700: '#004d82',
+      800: '#003350',
+      900: '#001a1f',
     },
   },
   fonts: {
-    heading: 'Poppins, sans-serif',
-    body: 'Inter, sans-serif',
+    heading: '"Open Sans", sans-serif',
+    body: '"Open Sans", sans-serif',
   },
   components: {
     Button: {
       baseStyle: {
-        fontWeight: 'medium',
+        fontWeight: 'semibold',
         borderRadius: 'md',
       },
       variants: {
-        solid: (props: { colorScheme: string }) => ({
-          bg: props.colorScheme === 'brand' ? 'brand.500' : undefined,
+        solid: {
+          bg: 'brand.500',
+          color: 'white',
           _hover: {
-            bg: props.colorScheme === 'brand' ? 'brand.600' : undefined,
+            bg: 'brand.600',
           },
-        }),
+        },
+      },
+    },
+  },
+  styles: {
+    global: {
+      body: {
+        bg: 'gray.50',
       },
     },
   },

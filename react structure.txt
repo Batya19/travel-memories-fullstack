@@ -1,0 +1,57 @@
+src/
+│   App.css
+│   App.tsx (Updated with new routes)
+│   index.css
+│   main.tsx
+│   vite-env.d.ts
+│
+├───assets
+│       react.svg
+│
+├───components
+│   ├───auth
+│   │       LoginForm.tsx
+│   │       RegisterForm.tsx
+│   │
+│   ├───common
+│   │       LoadingSpinner.tsx
+│   │
+│   ├───layout
+│   │       Footer.tsx
+│   │       Header.tsx
+│   │
+│   └───trips (New folder)
+│           ImageGallery.tsx
+│           ImageUploader.tsx
+│           MapLocationPicker.tsx
+│           TripForm.tsx
+│           TripMap.tsx
+│
+├───contexts
+│       AuthContext.tsx
+│
+├───pages
+│   │   HomePage.tsx
+│   │   NotFoundPage.tsx
+│   │   TripsPage.tsx (New file)
+│   │
+│   ├───auth
+│   │       LoginPage.tsx
+│   │       RegisterPage.tsx
+│   │
+│   └───trips (New folder)
+│           SharedTripPage.tsx
+│           TripDetailPage.tsx
+│           TripFormPage.tsx
+│
+├───services
+│       api.ts
+│       authService.ts
+│       imageService.ts (New file)
+│       tripService.ts (New file)
+│
+├───theme
+│       index.ts
+│
+└───types
+        index.ts (Already includes Trip and Image types)

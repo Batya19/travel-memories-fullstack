@@ -40,7 +40,7 @@ const Footer: React.FC = () => {
         <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={8}>
           <Stack align="flex-start">
             <Flex align="center">
-              <Image src="/logo.png" alt="TravelMemories Logo" h="40px" mr={2} />
+              <Image src="/logo.png" alt="TravelMemories Logo" h="40px" mr={2} fallbackSrc="https://via.placeholder.com/40x40?text=TM" />
               <Text
                 fontWeight="bold"
                 fontSize="lg"
@@ -65,8 +65,8 @@ const Footer: React.FC = () => {
           <Stack align="flex-start">
             <ListHeader>Quick Links</ListHeader>
             <Link as={RouterLink} to="/">Home</Link>
-            <Link as={RouterLink} to="/my-trips">My Trips</Link>
-            <Link as={RouterLink} to="/create-trip">Create New Trip</Link>
+            <Link as={RouterLink} to="/trips">My Trips</Link>
+            <Link as={RouterLink} to="/trips/new">Create New Trip</Link>
           </Stack>
 
           <Stack align="flex-start">

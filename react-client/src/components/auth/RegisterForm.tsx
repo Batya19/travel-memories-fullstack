@@ -38,7 +38,7 @@ const RegisterForm: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
+
     // Clear errors when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
@@ -77,16 +77,16 @@ const RegisterForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
-
+  
     try {
-      const userData: RegisterFormData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-      };
-      await register(userData);
-      navigate('/');
+      await register(
+        formData.email,
+        formData.password,
+        formData.firstName,
+        formData.lastName
+      );
+      // Remove this line - navigation is now handled in AuthContext
+      // navigate('/');
     } catch (error) {
       // Error is handled by the AuthContext's toast notifications
     }

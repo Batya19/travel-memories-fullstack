@@ -57,10 +57,11 @@ const LoginForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
-
+  
     try {
       await login(formData.email, formData.password);
-      navigate('/');
+      // Remove this line - navigation is now handled in AuthContext
+      // navigate('/');
     } catch (error) {
       // Error is handled by the AuthContext's toast notifications
     }

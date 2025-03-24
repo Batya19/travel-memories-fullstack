@@ -1,100 +1,85 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ChakraProvider, Box } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import theme from './theme';
+
+// Layout components
+import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
+
+// Pages
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
-import LoadingSpinner from './components/common/LoadingSpinner';
+import NotFoundPage from './pages/NotFoundPage';
+import TripDetailPage from './pages/trips/TripDetailPage';
+import TripsPage from './pages/trips/TripsPage';
+import TripFormPage from './pages/trips/TripFormPage';
+import SharedTripPage from './pages/trips/SharedTripPage';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
-
-// Protected Route Component
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+// Protected Route component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, loading } = useAuth();
 
   if (loading) {
-    return <LoadingSpinner text="Authenticating..." />;
+    return null; // Or loading spinner
   }
 
-  if (!currentUser) {
-    return <Navigate to="/login" />;
-  }
-
-  return <>{children}</>;
+  return currentUser ? <>{children}</> : <Navigate to="/login" />;
 };
 
-interface PublicRouteProps {
-  children: React.ReactNode;
-}
-
-// Public route that redirects authenticated users to homepage
-const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
-  const { currentUser, loading } = useAuth();
-
-  if (loading) {
-    return <LoadingSpinner text="Authenticating..." />;
-  }
-
-  if (currentUser) {
-    return <Navigate to="/" />;
-  }
-
-  return <>{children}</>;
-};
-
-const AppRoutes: React.FC = () => {
+function App() {
   return (
-    <Routes>
-      {/* Public routes (only accessible when not logged in) */}
-      <Route 
-        path="/login" 
-        element={
-          <PublicRoute>
-            <LoginPage />
-          </PublicRoute>
-        } 
-      />
-      <Route 
-        path="/register" 
-        element={
-          <PublicRoute>
-            <RegisterPage />
-          </PublicRoute>
-        } 
-      />
-      
-      {/* Protected routes (require authentication) */}
-      <Route 
-        path="/" 
-        element={
-          <HomePage />
-        } 
-      />
-      
-      {/* Add more routes here */}
-      
-      {/* Fallback route - redirect to home */}
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
-  );
-};
+    <ChakraProvider theme={theme}>
+      <Router>
+        <AuthProvider>
+          <Header />
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/trips/shared/:shareId" element={<SharedTripPage />} />
 
-const App: React.FC = () => {
-  return (
-    <ChakraProvider theme={theme} resetCSS>
-      <Box width="100%" height="100vh">
-        <Router>
-          <AuthProvider>
-            <AppRoutes />
-          </AuthProvider>
-        </Router>
-      </Box>
+            {/* Protected routes */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/trips" element={
+              <ProtectedRoute>
+                <TripsPage />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/trips/new" element={
+              <ProtectedRoute>
+                <TripFormPage />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/trips/:id" element={
+              <ProtectedRoute>
+                <TripDetailPage />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/trips/:id/edit" element={
+              <ProtectedRoute>
+                <TripFormPage isEditing />
+              </ProtectedRoute>
+            } />
+
+            {/* Catch-all route for 404 */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+          <Footer />
+        </AuthProvider>
+      </Router>
     </ChakraProvider>
   );
-};
+}
 
 export default App;

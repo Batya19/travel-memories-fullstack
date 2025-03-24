@@ -36,7 +36,7 @@ builder.Services.RegisterServices();
 builder.Services.RegisterRepositories();
 builder.Services.RegisterExternalServices(builder.Configuration);
 
-// Configure CORS
+// Configure CORS - Combined both CORS policies into one section
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
@@ -46,6 +46,13 @@ builder.Services.AddCors(options =>
                    .AllowAnyMethod()
                    .AllowAnyHeader();
         });
+
+    options.AddPolicy("AllowReactApp", builder =>
+    {
+        builder.WithOrigins("http://localhost:5173") // Your React app URL
+               .AllowAnyHeader()
+               .AllowAnyMethod();
+    });
 });
 
 // Add Swagger/OpenAPI with more detailed configuration
@@ -94,6 +101,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
 
 var app = builder.Build();
 
@@ -147,7 +155,10 @@ app.UseStaticFiles(); // Add this if you have static files
 
 app.UseRouting();
 
+// Use CORS middleware - You can choose which policy to use
 app.UseCors("AllowAllOrigins");
+// Or use the React-specific policy if needed
+// app.UseCors("AllowReactApp");
 
 // Add JWT middleware
 app.UseMiddleware<JwtMiddleware>();
