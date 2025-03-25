@@ -100,6 +100,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     let successCount = 0;
     
     try {
+      // Check if token exists before attempting upload
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found. Please log in again.');
+      }
+      
       // Upload files one by one for better tracking and error handling
       for (let i = 0; i < files.length; i++) {
         currentFileRef.current = i;
@@ -176,7 +182,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       console.error('Upload error:', error);
       toast({
         title: 'Upload error',
-        description: 'An unexpected error occurred during upload.',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred during upload.',
         status: 'error',
         duration: 5000,
         isClosable: true,

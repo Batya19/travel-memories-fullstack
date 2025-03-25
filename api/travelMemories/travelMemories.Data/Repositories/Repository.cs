@@ -17,8 +17,9 @@ namespace TravelMemories.Data.Repositories
 
         public Repository(ApplicationDbContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
+
 
         public async Task<T> GetByIdAsync(Guid id)
         {

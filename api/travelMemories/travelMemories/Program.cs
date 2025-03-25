@@ -1,3 +1,7 @@
+using Amazon;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.Runtime;
+using Amazon.S3;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using SixLabors.ImageSharp;
 using System;
 using System.IO;
 using System.Reflection;
@@ -14,6 +19,9 @@ using TravelMemories.Data.Context;
 using TravelMemories.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load user secrets
+builder.Configuration.AddUserSecrets<Program>();
 
 // Configure logging
 builder.Logging.ClearProviders();
@@ -26,7 +34,21 @@ builder.Services.AddControllers();
 
 // Add database context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(3),
+            errorCodesToAdd: null)));
+
+// הגדרת שירותי AWS S3 - תוקן
+builder.Services.AddAWSService<IAmazonS3>(new AWSOptions
+{
+    Credentials = new BasicAWSCredentials(
+        builder.Configuration["AWS:S3:AccessKey"],  // שינוי מ-AWS:AccessKey ל-AWS:S3:AccessKey
+        builder.Configuration["AWS:S3:SecretKey"]), // שינוי מ-AWS:SecretKey ל-AWS:S3:SecretKey
+    Region = RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"])
+});
 
 // Add authentication and authorization
 builder.Services.AddJwtAuthentication(builder.Configuration);
@@ -36,7 +58,7 @@ builder.Services.RegisterServices();
 builder.Services.RegisterRepositories();
 builder.Services.RegisterExternalServices(builder.Configuration);
 
-// Configure CORS - Combined both CORS policies into one section
+// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
@@ -71,11 +93,6 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-    // Uncomment if you have XML comments
-    // var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    // c.IncludeXmlComments(xmlPath);
-
     // Add JWT Authentication to Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -101,7 +118,6 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-
 
 var app = builder.Build();
 
@@ -155,15 +171,13 @@ app.UseStaticFiles(); // Add this if you have static files
 
 app.UseRouting();
 
-// Use CORS middleware - You can choose which policy to use
+// Use CORS middleware
 app.UseCors("AllowAllOrigins");
-// Or use the React-specific policy if needed
-// app.UseCors("AllowReactApp");
 
-// Add JWT middleware
-app.UseMiddleware<JwtMiddleware>();
-
+// שים לב לסדר: Authentication, Middleware, Authorization
 app.UseAuthentication();
+// Move JwtMiddleware after UseAuthentication but before UseAuthorization
+app.UseMiddleware<JwtMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

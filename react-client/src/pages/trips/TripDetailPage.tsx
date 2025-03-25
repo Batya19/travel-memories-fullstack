@@ -12,7 +12,6 @@ import {
     TabPanels,
     Tab,
     TabPanel,
-    useToast,
     HStack,
     Icon,
     Modal,
@@ -31,23 +30,31 @@ import {
     AlertDialogHeader,
     AlertDialogContent,
     AlertDialogOverlay,
+    useToast,
 } from '@chakra-ui/react';
-import { FocusableElement } from "@chakra-ui/utils";
 import { FaEdit, FaTrash, FaShare, FaCalendarAlt, FaMapMarkerAlt, FaImages, FaPlus } from 'react-icons/fa';
+import { format } from 'date-fns';
 import tripService from '../../services/tripService';
 import imageService from '../../services/imageService';
 import { Trip, Image } from '../../types';
 import ImageUploader from '../../components/trips/ImageUploader';
 import ImageGallery from '../../components/trips/ImageGallery';
 import TripMap from '../../components/trips/TripMap';
-import { format } from 'date-fns';
+import ImageFilter, { ImageFilters } from '../../components/trips/ImageFilter';
 
 const TripDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [trip, setTrip] = useState<Trip | null>(null);
     const [images, setImages] = useState<Image[]>([]);
+    const [filteredImages, setFilteredImages] = useState<Image[]>([]);
     const [loading, setLoading] = useState(true);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
+    const [filters, setFilters] = useState<ImageFilters>({
+        searchTerm: '',
+        sortBy: 'newest',
+        filterType: 'all',
+    });
+    
     const navigate = useNavigate();
     const toast = useToast();
 
@@ -70,7 +77,7 @@ const TripDetailPage: React.FC = () => {
         onOpen: onDeleteOpen,
         onClose: onDeleteClose
     } = useDisclosure();
-    const cancelRef = React.useRef<any>(null);
+    const cancelRef = React.useRef<HTMLButtonElement>(null);
 
     // Fetch trip details and images
     const fetchTripData = async () => {
@@ -83,6 +90,9 @@ const TripDetailPage: React.FC = () => {
 
             const imagesData = await imageService.getImages(id);
             setImages(imagesData);
+            
+            // Initially, filtered images are the same as all images
+            setFilteredImages(imagesData);
         } catch (error) {
             console.error('Error fetching trip data:', error);
             toast({
@@ -100,6 +110,49 @@ const TripDetailPage: React.FC = () => {
     useEffect(() => {
         fetchTripData();
     }, [id]);
+
+    // Filter and sort images whenever images array or filters change
+    useEffect(() => {
+        let result = [...images];
+        
+        // Apply search filter
+        if (filters.searchTerm) {
+            const term = filters.searchTerm.toLowerCase();
+            result = result.filter(img => 
+                img.fileName.toLowerCase().includes(term)
+            );
+        }
+        
+        // Apply type filter
+        if (filters.filterType === 'ai') {
+            result = result.filter(img => img.isAiGenerated);
+        } else if (filters.filterType === 'regular') {
+            result = result.filter(img => !img.isAiGenerated);
+        }
+        
+        // Apply sorting
+        result = result.sort((a, b) => {
+            switch (filters.sortBy) {
+                case 'newest':
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                case 'oldest':
+                    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                case 'name':
+                    return a.fileName.localeCompare(b.fileName);
+                case 'size':
+                    return b.fileSize - a.fileSize;
+                default:
+                    return 0;
+            }
+        });
+        
+        setFilteredImages(result);
+    }, [images, filters]);
+
+    // Update filter state
+    const handleFilterChange = (newFilters: ImageFilters) => {
+        setFilters(newFilters);
+    };
 
     // Share trip
     const handleShare = async () => {
@@ -180,6 +233,9 @@ const TripDetailPage: React.FC = () => {
             onDeleteClose();
         }
     };
+
+    // Check if there are any AI-generated images
+    const hasAiImages = images.some(img => img.isAiGenerated);
 
     if (loading) {
         return (
@@ -308,12 +364,26 @@ const TripDetailPage: React.FC = () => {
                                 </Button>
                             </Box>
                         ) : (
-                            <ImageGallery
-                                images={images}
-                                onDelete={(imageId) => {
-                                    setImages(current => current.filter(img => img.id !== imageId));
-                                }}
-                            />
+                            <>
+                                {/* Add ImageFilter component */}
+                                <ImageFilter 
+                                    onFilterChange={handleFilterChange} 
+                                    hasAiImages={hasAiImages} 
+                                />
+                                
+                                {/* Display count of filtered images */}
+                                <Text fontSize="sm" color="gray.500" mb={4}>
+                                    Showing {filteredImages.length} of {images.length} images
+                                </Text>
+                                
+                                <ImageGallery
+                                    images={filteredImages}
+                                    onDelete={(imageId) => {
+                                        // Update the state to remove the deleted image
+                                        setImages(current => current.filter(img => img.id !== imageId));
+                                    }}
+                                />
+                            </>
                         )}
                     </TabPanel>
 

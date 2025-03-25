@@ -1,3 +1,4 @@
+// ImageGallery.tsx - הוספת שינוי תצוגה
 import React, { useState, RefObject } from 'react';
 import {
     Box,
@@ -20,8 +21,9 @@ import {
     AlertDialogContent,
     AlertDialogOverlay,
     Button,
+    HStack,
 } from '@chakra-ui/react';
-import { FaTrash, FaArrowLeft, FaArrowRight, FaRobot, FaCalendarAlt } from 'react-icons/fa';
+import { FaTrash, FaArrowLeft, FaArrowRight, FaRobot, FaCalendarAlt, FaThLarge, FaList } from 'react-icons/fa';
 import { Image } from '../../types';
 import imageService from '../../services/imageService';
 import { format } from 'date-fns';
@@ -32,6 +34,8 @@ interface ImageGalleryProps {
     readonly?: boolean;
 }
 
+type ViewMode = 'grid' | 'list';
+
 const ImageGallery: React.FC<ImageGalleryProps> = ({
     images,
     onDelete,
@@ -39,6 +43,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
 }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState<number | null>(null);
     const [imageToDelete, setImageToDelete] = useState<string | null>(null);
+    const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const { isOpen: isViewerOpen, onOpen: openViewer, onClose: closeViewer } = useDisclosure();
     const { isOpen: isDeleteOpen, onOpen: openDelete, onClose: closeDelete } = useDisclosure();
     const cancelRef = React.useRef<HTMLButtonElement>(null);
@@ -102,68 +107,170 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
 
     const currentImage = currentImageIndex !== null ? images[currentImageIndex] : null;
 
+    const renderGridView = () => (
+        <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 5 }} spacing={4}>
+            {images.map((image, index) => (
+                <Box
+                    key={image.id}
+                    position="relative"
+                    borderRadius="md"
+                    overflow="hidden"
+                    boxShadow="md"
+                    transition="transform 0.2s"
+                    _hover={{ transform: 'scale(1.02)' }}
+                    cursor="pointer"
+                    onClick={() => handleImageClick(index)}
+                >
+                    <Box paddingBottom="100%" bg="gray.100" position="relative">
+                        <ChakraImage
+                            src={image.filePath}
+                            alt={image.fileName}
+                            position="absolute"
+                            top={0}
+                            left={0}
+                            width="100%"
+                            height="100%"
+                            objectFit="cover"
+                            loading="lazy"
+                        />
+
+                        {image.isAiGenerated && (
+                            <Badge
+                                position="absolute"
+                                top={2}
+                                left={2}
+                                colorScheme="purple"
+                                display="flex"
+                                alignItems="center"
+                                gap={1}
+                            >
+                                <FaRobot /> AI
+                            </Badge>
+                        )}
+
+                        {!readonly && (
+                            <IconButton
+                                aria-label="Delete image"
+                                icon={<FaTrash />}
+                                size="sm"
+                                colorScheme="red"
+                                position="absolute"
+                                top={2}
+                                right={2}
+                                opacity={0}
+                                _groupHover={{ opacity: 1 }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    confirmDelete(image.id);
+                                }}
+                            />
+                        )}
+                    </Box>
+                </Box>
+            ))}
+        </SimpleGrid>
+    );
+
+    const renderListView = () => (
+        <Box>
+            {images.map((image, index) => (
+                <Flex 
+                    key={image.id}
+                    mb={4}
+                    borderWidth="1px"
+                    borderRadius="md"
+                    overflow="hidden"
+                    boxShadow="sm"
+                    transition="transform 0.2s"
+                    _hover={{ transform: 'translateX(5px)' }}
+                    cursor="pointer"
+                    onClick={() => handleImageClick(index)}
+                >
+                    <Box width="120px" height="90px" flexShrink={0}>
+                        <ChakraImage
+                            src={image.filePath}
+                            alt={image.fileName}
+                            width="100%"
+                            height="100%"
+                            objectFit="cover"
+                            loading="lazy"
+                        />
+                    </Box>
+                    <Flex flex="1" p={3} direction="column" justifyContent="center">
+                        <Text fontWeight="medium" noOfLines={1}>
+                            {image.fileName}
+                        </Text>
+                        <Flex fontSize="xs" color="gray.500" alignItems="center" mt={1}>
+                            {image.takenAt && (
+                                <Flex alignItems="center" mr={3}>
+                                    <FaCalendarAlt size="0.8em" />
+                                    <Text ml={1}>
+                                        {format(new Date(image.takenAt), 'yyyy-MM-dd')}
+                                    </Text>
+                                </Flex>
+                            )}
+                            <Text>{Math.round(image.fileSize / 1024)} KB</Text>
+                        </Flex>
+                    </Flex>
+                    <Flex p={2} alignItems="center">
+                        {image.isAiGenerated && (
+                            <Badge
+                                colorScheme="purple"
+                                display="flex"
+                                alignItems="center"
+                                gap={1}
+                                mr={2}
+                            >
+                                <FaRobot /> AI
+                            </Badge>
+                        )}
+                        
+                        {!readonly && (
+                            <IconButton
+                                aria-label="Delete image"
+                                icon={<FaTrash />}
+                                size="sm"
+                                colorScheme="red"
+                                variant="ghost"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    confirmDelete(image.id);
+                                }}
+                            />
+                        )}
+                    </Flex>
+                </Flex>
+            ))}
+        </Box>
+    );
+
     return (
         <Box>
-            <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 5 }} spacing={4}>
-                {images.map((image, index) => (
-                    <Box
-                        key={image.id}
-                        position="relative"
-                        borderRadius="md"
-                        overflow="hidden"
-                        boxShadow="md"
-                        transition="transform 0.2s"
-                        _hover={{ transform: 'scale(1.02)' }}
-                        cursor="pointer"
-                        onClick={() => handleImageClick(index)}
-                    >
-                        <Box paddingBottom="100%" bg="gray.100" position="relative">
-                            <ChakraImage
-                                src={image.filePath}
-                                alt={image.fileName}
-                                position="absolute"
-                                top={0}
-                                left={0}
-                                width="100%"
-                                height="100%"
-                                objectFit="cover"
-                            />
+            {/* View toggle */}
+            <Flex justifyContent="flex-end" mb={4}>
+                <HStack spacing={2}>
+                    <Text fontSize="sm" color="gray.500">View:</Text>
+                    <IconButton
+                        aria-label="Grid view"
+                        icon={<FaThLarge />}
+                        size="sm"
+                        colorScheme={viewMode === 'grid' ? 'brand' : 'gray'}
+                        variant={viewMode === 'grid' ? 'solid' : 'ghost'}
+                        onClick={() => setViewMode('grid')}
+                    />
+                    <IconButton
+                        aria-label="List view"
+                        icon={<FaList />}
+                        size="sm"
+                        colorScheme={viewMode === 'list' ? 'brand' : 'gray'}
+                        variant={viewMode === 'list' ? 'solid' : 'ghost'}
+                        onClick={() => setViewMode('list')}
+                    />
+                </HStack>
+            </Flex>
 
-                            {image.isAiGenerated && (
-                                <Badge
-                                    position="absolute"
-                                    top={2}
-                                    left={2}
-                                    colorScheme="purple"
-                                    display="flex"
-                                    alignItems="center"
-                                    gap={1}
-                                >
-                                    <FaRobot /> AI
-                                </Badge>
-                            )}
-
-                            {!readonly && (
-                                <IconButton
-                                    aria-label="Delete image"
-                                    icon={<FaTrash />}
-                                    size="sm"
-                                    colorScheme="red"
-                                    position="absolute"
-                                    top={2}
-                                    right={2}
-                                    opacity={0}
-                                    _groupHover={{ opacity: 1 }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        confirmDelete(image.id);
-                                    }}
-                                />
-                            )}
-                        </Box>
-                    </Box>
-                ))}
-            </SimpleGrid>
+            {/* Gallery content based on view mode */}
+            {viewMode === 'grid' ? renderGridView() : renderListView()}
 
             {/* Full-size image viewer modal */}
             <Modal isOpen={isViewerOpen} onClose={closeViewer} size="full" isCentered>

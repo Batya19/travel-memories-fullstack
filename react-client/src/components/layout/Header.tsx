@@ -6,7 +6,6 @@ import {
   HStack,
   Link,
   Button,
-  Image,
   Text,
   Menu,
   MenuButton,
@@ -21,6 +20,7 @@ import {
 import { Icon } from '@chakra-ui/react';
 import { FaBars, FaTimes, FaChevronDown } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
+import AppLogo from '../common/AppLogo';
 
 interface NavLinkProps {
   children: React.ReactNode;
@@ -75,19 +75,9 @@ const Header: React.FC = () => {
           onClick={isOpen ? onClose : onOpen}
         />
         <HStack spacing={8} alignItems="center">
-          <Flex align="center">
-            <Image src="/logo.png" alt="TravelMemories Logo" h="40px" mr={2} fallbackSrc="https://via.placeholder.com/40x40?text=TM" />
-            <Text
-              as={RouterLink}
-              to="/"
-              fontWeight="bold"
-              fontSize="lg"
-              color={useColorModeValue('brand.500', 'brand.300')}
-              _hover={{ textDecoration: 'none' }}
-            >
-              TravelMemories
-            </Text>
-          </Flex>
+          <Box as={RouterLink} to="/" _hover={{ textDecoration: 'none' }}>
+            <AppLogo />
+          </Box>
           <HStack as="nav" spacing={4} display={{ base: 'none', md: 'flex' }}>
             {currentUser && (
               <>

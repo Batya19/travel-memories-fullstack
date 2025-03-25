@@ -1,5 +1,6 @@
 import { apiService } from './api';
 import { Image } from '../types';
+import axios from 'axios';
 
 interface UploadResponse {
     id: string;
@@ -40,30 +41,61 @@ const imageService = {
     uploadImages: async (files: File[], tripId: string, onProgress?: (progress: number) => void) => {
         try {
             const formData = new FormData();
-            formData.append('tripId', tripId);
+
+            // שמור על האותיות גדולות בהתחלה
+            formData.append('TripId', tripId);  // T גדולה
 
             // Append each file to the form data
             Array.from(files).forEach(file => {
-                formData.append('files', file);
+                formData.append('Files', file);  // F גדולה
             });
 
-            // Custom config for the file upload with progress tracking
-            const config = {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                },
-                onUploadProgress: (progressEvent: any) => {
-                    if (onProgress && progressEvent.total) {
-                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                        onProgress(percentCompleted);
+            // הוסף לוג לדיבוג
+            console.log('FormData contents:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: `, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+            }
+
+            const baseURL = import.meta.env.VITE_API_URL ?
+                `${import.meta.env.VITE_API_URL}/api` :
+                'http://localhost:7051/api';
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Authentication token not found. Please log in again.');
+            }
+
+            const response = await axios.post(
+                `${baseURL}/images/upload`,
+                formData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,  // וודא שזה בפורמט הנכון עם רווח אחרי Bearer
+                    },
+                    onUploadProgress: (progressEvent: any) => {
+                        if (onProgress && progressEvent.total) {
+                            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                            onProgress(percentCompleted);
+                        }
                     }
                 }
-            };
+            );
 
-            // Use the underlying axios instance for more control
-            return await apiService.post<UploadResponse[]>('/images/upload', formData, config);
+            return response.data;
         } catch (error) {
+            // השאר את הטיפול בשגיאות ללא שינוי...
             console.error('Failed to upload images:', error);
+
+            // בקובץ imageService.ts, בבלוק ה-catch:
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    console.error('Error data:', error.response.data);
+                    // הוסף את השורה הבאה כדי לראות את המידע המפורט
+                    console.error('Error details:', error.response.data.errors);
+                    console.error('Error status:', error.response.status);
+                    console.error('Error headers:', error.response.headers);
+                }
+            }
             throw error;
         }
     },
@@ -81,7 +113,7 @@ const imageService = {
     // Generate an AI image
     generateAiImage: async (request: GenerateAiImageRequest) => {
         try {
-            return await apiService.post<Image>('/images/generate-ai', request);
+            return await apiService.post<Image>('/ai-images', request);
         } catch (error) {
             console.error('Failed to generate AI image:', error);
             throw error;

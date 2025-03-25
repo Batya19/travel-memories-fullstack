@@ -8,9 +8,9 @@ import {
   Text,
   Link,
   Flex,
-  Image,
   useColorModeValue,
 } from '@chakra-ui/react';
+import AppLogo from '../common/AppLogo';
 
 interface ListHeaderProps {
   children: React.ReactNode;
@@ -39,16 +39,7 @@ const Footer: React.FC = () => {
       <Container as={Stack} maxW="6xl" py={10}>
         <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={8}>
           <Stack align="flex-start">
-            <Flex align="center">
-              <Image src="/logo.png" alt="TravelMemories Logo" h="40px" mr={2} fallbackSrc="https://via.placeholder.com/40x40?text=TM" />
-              <Text
-                fontWeight="bold"
-                fontSize="lg"
-                color={useColorModeValue('brand.500', 'brand.300')}
-              >
-                TravelMemories
-              </Text>
-            </Flex>
+            <AppLogo />
             <Text fontSize="sm" color="gray.500" mt={4}>
               Create, manage, and share your travel memories with ease.
             </Text>
