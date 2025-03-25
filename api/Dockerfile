@@ -4,15 +4,9 @@ WORKDIR /app
 # Copy everything to the working directory
 COPY . .
 
-# Find and list all solution files for debugging
-RUN find . -name "*.sln" -type f
-
-# Find and list all project files for debugging
-RUN find . -name "*.csproj" -type f
-
-# Restore and publish the application (adjust paths as needed)
-RUN dotnet restore
-RUN dotnet publish -c Release -o /app/out
+# Restore and publish the application with the correct case-sensitive paths
+RUN dotnet restore ./travelMemories/travelMemories.sln
+RUN dotnet publish ./travelMemories/travelMemories/travelMemories.csproj -c Release -o /app/out
 
 # Build the runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
