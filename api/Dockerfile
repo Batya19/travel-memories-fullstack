@@ -4,9 +4,16 @@ WORKDIR /app
 # Copy everything to the working directory
 COPY . .
 
-# Restore and publish the application with the correct case-sensitive paths
-RUN dotnet restore ./travelMemories/travelMemories.sln
-RUN dotnet publish ./travelMemories/travelMemories/travelMemories.csproj -c Release -o /app/out
+# Show directory structure for debugging
+RUN ls -la
+RUN find . -name "*.sln" -type f
+RUN find . -name "*.csproj" -type f
+
+# Check the content of the solution file
+RUN cat $(find . -name "*.sln" -type f)
+
+# Display the structure of travelMemories directory
+RUN ls -la ./travelMemories
 
 # Build the runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
