@@ -42,17 +42,12 @@ function App() {
               <Header />
               <Routes>
                 {/* Public routes */}
+                <Route path="/" element={<HomePage />} /> {/* שינוי כאן - עמוד הבית עכשיו ציבורי */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/trips/shared/:shareId" element={<SharedTripPage />} />
 
                 {/* Protected routes */}
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <HomePage />
-                  </ProtectedRoute>
-                } />
-
                 <Route path="/trips" element={
                   <ProtectedRoute>
                     <TripsPage />

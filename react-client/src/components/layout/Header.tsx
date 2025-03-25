@@ -24,6 +24,7 @@ import { HamburgerIcon, CloseIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import { FaPlus } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import DarkModeToggle from '../common/DarkModeToggle';
+import AppLogo from '../common/AppLogo';
 
 const Header: React.FC = () => {
   const { isOpen, onToggle } = useDisclosure();
@@ -33,6 +34,9 @@ const Header: React.FC = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.200');
   const brandColor = useColorModeValue('brand.500', 'brand.400');
+
+  // הוספתי את זה כאן למעלה - כל הקריאות ל-useColorModeValue צריכות להיות בתחילת הקומפוננטה
+  const hoverBgColor = useColorModeValue('gray.100', 'gray.700');
 
   return (
     <Box
@@ -50,7 +54,7 @@ const Header: React.FC = () => {
         <Flex minH={'60px'} py={{ base: 2 }} px={{ base: 4 }} align={'center'} justify={'space-between'}>
           <Flex flex={{ base: 1 }} justify={{ base: 'start', md: 'start' }}>
             <Link as={RouterLink} to={'/'} fontWeight={'bold'} fontSize={'xl'} color={brandColor}>
-              TravelMemories
+              <AppLogo></AppLogo>
             </Link>
 
             <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
@@ -69,7 +73,6 @@ const Header: React.FC = () => {
 
           {currentUser ? (
             <HStack spacing={4}>
-              {/* כפתור מצב אפל נוסף כאן */}
               <DarkModeToggle />
 
               <Button
@@ -88,7 +91,7 @@ const Header: React.FC = () => {
                   as={Button}
                   variant="ghost"
                   rightIcon={<ChevronDownIcon />}
-                  _hover={{ bg: useColorModeValue('gray.100', 'gray.700') }}
+                  _hover={{ bg: hoverBgColor }}
                 >
                   <HStack>
                     <Avatar

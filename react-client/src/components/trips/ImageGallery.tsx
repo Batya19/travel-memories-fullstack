@@ -21,7 +21,7 @@ import {
     AlertDialogOverlay,
     Button,
     HStack,
-    useColorModeValue, // הוספה לשימוש בערכי צבע
+    useColorModeValue,
 } from '@chakra-ui/react';
 import { FaTrash, FaArrowLeft, FaArrowRight, FaRobot, FaCalendarAlt, FaThLarge, FaList } from 'react-icons/fa';
 import { Image } from '../../types';
@@ -49,7 +49,6 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
     const cancelRef = React.useRef<HTMLButtonElement>(null);
     const toast = useToast();
 
-    // צבעים מותאמים למצב בהיר/כהה
     const cardBg = useColorModeValue('white', 'gray.800');
     const cardBorderColor = useColorModeValue('gray.200', 'gray.700');
     const imageBgColor = useColorModeValue('gray.100', 'gray.700');

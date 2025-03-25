@@ -1,4 +1,3 @@
-// OptimizedImage.tsx
 import React, { useState } from 'react';
 import { Box, Skeleton, Image as ChakraImage, ImageProps as ChakraImageProps, useColorModeValue } from '@chakra-ui/react';
 
@@ -17,7 +16,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   
-  // צבעים מותאמים למצב בהיר/כהה
   const skeletonStartColor = useColorModeValue('gray.100', 'gray.700');
   const skeletonEndColor = useColorModeValue('gray.300', 'gray.600');
 

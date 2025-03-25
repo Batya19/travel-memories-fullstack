@@ -1,4 +1,3 @@
-// src/contexts/TripContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Trip, Image } from '../types';
 import tripService from '../services/tripService';
