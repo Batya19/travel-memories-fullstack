@@ -60,7 +60,7 @@ const RegisterForm: React.FC = () => {
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Password must be at least 8 characters';
     }
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
@@ -110,7 +110,7 @@ const RegisterForm: React.FC = () => {
         borderColor={borderColor}
       >
         <VStack spacing={6} align="center" mb={8}>
-          <Image src="/logo.png" alt="TravelMemories Logo" h="50px" />
+          <Image src="/images/journey1.jpg" alt="Start your journey with TravelMemories - Beautiful landscape view" h="300px" />
           <Heading as="h1" size="xl" fontWeight="bold">
             Create Account
           </Heading>
@@ -171,7 +171,7 @@ const RegisterForm: React.FC = () => {
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Create a password (at least 6 characters)"
+                placeholder="Create a password (at least 8 characters)"
                 size="lg"
               />
               <FormErrorMessage>{errors.password}</FormErrorMessage>

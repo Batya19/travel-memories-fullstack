@@ -34,8 +34,6 @@ const Header: React.FC = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.200');
   const brandColor = useColorModeValue('brand.500', 'brand.400');
-
-  // הוספתי את זה כאן למעלה - כל הקריאות ל-useColorModeValue צריכות להיות בתחילת הקומפוננטה
   const hoverBgColor = useColorModeValue('gray.100', 'gray.700');
 
   return (
@@ -48,13 +46,28 @@ const Header: React.FC = () => {
       boxShadow={'sm'}
       position="sticky"
       top={0}
-      zIndex={10}
+      zIndex={20} // Increased z-index to ensure it's above other content
     >
       <Container maxW="container.xl">
-        <Flex minH={'60px'} py={{ base: 2 }} px={{ base: 4 }} align={'center'} justify={'space-between'}>
-          <Flex flex={{ base: 1 }} justify={{ base: 'start', md: 'start' }}>
-            <Link as={RouterLink} to={'/'} fontWeight={'bold'} fontSize={'xl'} color={brandColor}>
-              <AppLogo></AppLogo>
+        <Flex 
+          minH={'60px'} 
+          py={{ base: 2 }} 
+          px={{ base: 4 }} 
+          align={'center'} 
+          justify={'space-between'}
+          position="relative" // Added to control z-index context
+        >
+          <Flex flex={{ base: 1 }} justify={{ base: 'start', md: 'start' }} align="center">
+            <Link 
+              as={RouterLink} 
+              to={'/'} 
+              fontWeight={'bold'} 
+              fontSize={'xl'} 
+              color={brandColor}
+              display="flex"
+              alignItems="center"
+            >
+              <AppLogo />
             </Link>
 
             <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
@@ -64,7 +77,6 @@ const Header: React.FC = () => {
                     <Link as={RouterLink} to={'/trips'} color={textColor} fontWeight={500}>
                       My Trips
                     </Link>
-                    {/* יכולים להוסיף עוד לינקים כאן */}
                   </>
                 )}
               </Stack>
@@ -72,7 +84,7 @@ const Header: React.FC = () => {
           </Flex>
 
           {currentUser ? (
-            <HStack spacing={4}>
+            <HStack spacing={4} align="center">
               <DarkModeToggle />
 
               <Button
@@ -120,8 +132,8 @@ const Header: React.FC = () => {
               />
             </HStack>
           ) : (
-            <HStack spacing={4}>
-              <DarkModeToggle /> {/* כפתור מצב אפל נוסף כאן גם למצב לא מחובר */}
+            <HStack spacing={4} align="center">
+              <DarkModeToggle />
               <Button as={RouterLink} to="/login" variant={'ghost'} fontWeight={400}>
                 Sign In
               </Button>
@@ -137,7 +149,7 @@ const Header: React.FC = () => {
           )}
         </Flex>
 
-        {/* תפריט נייד שנפתח */}
+        {/* Mobile menu */}
         <Collapse in={isOpen} animateOpacity>
           <Box
             pb={4}

@@ -85,7 +85,7 @@ const LoginForm: React.FC = () => {
         borderColor={borderColor}
       >
         <VStack spacing={6} align="center" mb={8}>
-          <Image src="/logo.png" alt="TravelMemories Logo" h="50px" />
+          <Image src="/images/welcome-landscape.jpg" alt="Scenic travel destination with mountains and nature views" h="300px" />
           <Heading as="h1" size="xl" fontWeight="bold">
             Sign In
           </Heading>

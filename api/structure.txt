@@ -1,14 +1,9 @@
 TravelMemories
 │   TravelMemories.sln
 │
-├───TravelMemories
-│   │   appsettings.Development.json
-│   │   appsettings.json
+├───TravelMemories (API Layer)
 │   │   Program.cs
 │   │   ServiceExtensions.cs
-│   │   TravelMemories.csproj
-│   │   TravelMemories.csproj.user
-│   │   TravelMemories.http
 │   │
 │   ├───Controllers
 │   │       AIImageController.cs
@@ -17,124 +12,53 @@ TravelMemories
 │   │       TripController.cs
 │   │       UsersController.cs
 │   │
-│   ├───Middleware
-│   │       ExceptionMiddleware.cs
-│   │       JwtMiddleware.cs
-│   │
-│   └───Properties
-│           launchSettings.json
+│   └───Middleware
+│           ExceptionMiddleware.cs
+│           JwtMiddleware.cs
 │
-├───TravelMemories.Core
-│   │   TravelMemories.Core.csproj
-│   │
+├───TravelMemories.Core (Domain Layer)
 │   ├───DTOs
-│   │   │   ErrorDto.cs
-│   │   │
 │   │   ├───Admin
-│   │   │       StatisticsResponse.cs
-│   │   │       SystemSettingsRequest.cs
-│   │   │       UserActivityItem.cs
-│   │   │       UserManagementRequest.cs
-│   │   │       UserManagementResponse.cs
-│   │   │
 │   │   ├───AIImage
-│   │   │       AIImageRequest.cs
-│   │   │       AIImageResponse.cs
-│   │   │       AIQuotaResponse.cs
-│   │   │
 │   │   ├───Auth
-│   │   │       AuthResponseDto.cs
-│   │   │       LoginDto.cs
-│   │   │       RegisterDto.cs
-│   │   │
 │   │   ├───Image
-│   │   │       ImageResponse.cs
-│   │   │       ImageSearchRequest.cs
-│   │   │       ImageSearchResponse.cs
-│   │   │       ImageUploadRequest.cs
-│   │   │
 │   │   ├───Tag
-│   │   │       TagRequest.cs
-│   │   │       TagResponse.cs
-│   │   │
 │   │   ├───Trip
-│   │   │       TripDetailResponse.cs
-│   │   │       TripRequest.cs
-│   │   │       TripResponse.cs
-│   │   │
 │   │   └───User
-│   │           ChangePasswordDto.cs
-│   │           UpdateUserDto.cs
-│   │           UserDto.cs
-│   │           UserQuotaDto.cs
 │   │
 │   ├───Interfaces
-│   │   │   IAIImageService.cs
-│   │   │   IAuthService.cs
-│   │   │   IImageService.cs
-│   │   │   IJwtService.cs
-│   │   │   ITripService.cs
-│   │   │   IUserService.cs
-│   │   │
 │   │   ├───External
-│   │   │       IHuggingFaceClient.cs
-│   │   │       IS3Service.cs
-│   │   │
 │   │   └───Repositories
-│   │           IAIImageRepository.cs
-│   │           IImageRepository.cs
-│   │           IRepository.cs
-│   │           ITagRepository.cs
-│   │           ITripRepository.cs
-│   │           IUserRepository.cs
 │   │
 │   └───Models
-│           BaseEntity.cs
-│           Image.cs
-│           ImageTag.cs
-│           Tag.cs
 │           Trip.cs
 │           User.cs
-│           UserRoles.cs
+│           Image.cs
+│           Tag.cs
 │
-├───TravelMemories.Data
-│   │   TravelMemories.Data.csproj
-│   │
-│   ├───Constants
-│   │   (ריקה או לא מוצגת תכולה)
-│   │
+├───TravelMemories.Data (Data Access Layer)
 │   ├───Context
 │   │       ApplicationDbContext.cs
 │   │
 │   ├───Migrations
-│   │       20250323175022_InitialCreate.cs
-│   │       20250323175022_InitialCreate.Designer.cs
-│   │       ApplicationDbContextModelSnapshot.cs
 │   │
 │   └───Repositories
-│           AIImageRepository.cs
-│           ImageRepository.cs
 │           Repository.cs
-│           TagRepository.cs
 │           TripRepository.cs
 │           UserRepository.cs
 │
-└───TravelMemories.Service
-    │   TravelMemories.Service.csproj
-    │
+└───TravelMemories.Service (Business Logic Layer)
     ├───External
     │       HuggingFaceClient.cs
     │       S3Service.cs
     │
     ├───Helpers
-    │       ImageHelper.cs
     │       JwtHelper.cs
-    │       S3Helper.cs
+    │       ImageHelper.cs
     │
     └───Services
             AIImageService.cs
             AuthService.cs
             ImageService.cs
-            JwtService.cs
             TripService.cs
             UserService.cs

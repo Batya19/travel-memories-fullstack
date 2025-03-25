@@ -30,7 +30,7 @@ const imageService = {
     },
 
     // Upload one or more images to a trip
-    uploadImages: async (files: File[], tripId: string, onProgress?: (progress: number) => void) => {
+    uploadImages: async (files: File[], tripId: string, tags: string[], onProgress?: (progress: number) => void) => {
         try {
             const formData = new FormData();
 
@@ -42,7 +42,20 @@ const imageService = {
                 formData.append('Files', file);  // F גדולה
             });
 
-            // הוסף לוג לדיבוג
+            // הוסף לוג של תוכן ה-tags לפני שמנסים לשלוח אותם
+            console.log('Tags:', tags);
+
+            // הוסף את תגיות ה-`Tags` אם זה מערך
+            if (Array.isArray(tags)) {
+                tags.forEach(tag => {
+                    console.log(`Appending tag: ${tag}`); // לוג של כל תגית שמוסיפים
+                    formData.append('Tags', tag);
+                });
+            } else {
+                console.error('Tags is not an array:', tags); // לוג במקרה שה-`tags` לא מערך
+            }
+
+            // הוסף לוג לדיבוג כדי לראות את כל תוכן ה-FormData
             console.log('FormData contents:');
             for (let [key, value] of formData.entries()) {
                 console.log(`${key}: `, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
@@ -75,14 +88,10 @@ const imageService = {
 
             return response.data;
         } catch (error) {
-            // השאר את הטיפול בשגיאות ללא שינוי...
             console.error('Failed to upload images:', error);
-
-            // בקובץ imageService.ts, בבלוק ה-catch:
             if (axios.isAxiosError(error)) {
                 if (error.response) {
                     console.error('Error data:', error.response.data);
-                    // הוסף את השורה הבאה כדי לראות את המידע המפורט
                     console.error('Error details:', error.response.data.errors);
                     console.error('Error status:', error.response.status);
                     console.error('Error headers:', error.response.headers);

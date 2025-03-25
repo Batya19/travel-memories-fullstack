@@ -117,8 +117,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         });
 
         try {
+          const tags = ['vacation', 'family', '2025'];  // מגדיר את התגים, ודא שאתה שולח את הערכים הנכונים
+
           // Upload the current file
-          await imageService.uploadImages([files[i]], tripId, (progress) => {
+          await imageService.uploadImages([files[i]], tripId, tags, (progress) => {
             // Update progress for this file
             setFiles(current => {
               const newFiles = [...current];
@@ -127,7 +129,15 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             });
 
             // Calculate overall progress
-            const totalProgress = files.slice(0, i).reduce((sum) => sum + 100, 0) + progress;
+            const totalProgress = files.reduce((sum, _, index) => {
+              if (index < i) {
+                sum += 100;  // אם הקובץ כבר הועלה, נחשב אותו כשלם
+              } else if (index === i) {
+                sum += progress;  // הוסף את ההתקדמות הנוכחית של הקובץ
+              }
+              return sum;
+            }, 0);
+
             setUploadProgress(Math.floor(totalProgress / files.length));
           });
 
@@ -141,7 +151,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           successCount++;
         } catch (error) {
           console.error(`Error uploading file ${files[i].name}:`, error);
-
           // Mark this file as failed
           setFiles(current => {
             const newFiles = [...current];

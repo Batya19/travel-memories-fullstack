@@ -236,7 +236,7 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
 
   const uploadImages = async (files: File[], tripId: string, onProgress?: (progress: number) => void) => {
     try {
-      const uploadedImages = await imageService.uploadImages(files, tripId, onProgress);
+      const uploadedImages = await imageService.uploadImages(files, tripId, [], onProgress);
 
       // Add new images to the current list
       setTripImages(prevImages => [...prevImages, ...uploadedImages]);

@@ -1,4 +1,3 @@
-// src/components/sections/HeroSection.tsx
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
@@ -20,50 +19,68 @@ const HeroSection: React.FC = () => {
     return (
         <Box
             position="relative"
-            color="white"
-            py={{ base: 16, md: 24 }}
-            px={4}
+            height="100vh"
             overflow="hidden"
-            _before={{
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundImage: "url('/images/travel-background.jpg')",
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                zIndex: -1,
-            }}
         >
+            {/* Video Background */}
+            <Box
+                as="video"
+                position="absolute"
+                top="0"
+                left="0"
+                width="100%"
+                height="100%"
+                objectFit="cover"
+                autoPlay
+                loop
+                muted
+                src="/images/IMG_0177.MOV"
+            />
+
             {/* Dark overlay for text readability */}
             <Box
                 position="absolute"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
+                top="0"
+                left="0"
+                width="100%"
+                height="100%"
                 bg="rgba(0,0,0,0.5)"
-                zIndex={-1}
             />
 
-            <Container maxW="6xl">
-                <VStack spacing={6} textAlign="center" zIndex={2} position="relative" py={8}>
-                    <Heading as="h1" size="2xl" fontWeight="bold" textShadow="0 2px 4px rgba(0,0,0,0.4)">
+            <Container 
+                maxW="container.xl" 
+                position="relative" 
+                zIndex={10} 
+                height="100%" 
+                display="flex" 
+                alignItems="center"
+            >
+                <VStack 
+                    spacing={6} 
+                    align="center" 
+                    color="white" 
+                    textAlign="center"
+                >
+                    <Heading 
+                        as="h1" 
+                        size="2xl" 
+                        fontWeight="bold"
+                    >
                         Document Your Journey, Preserve Your Memories
                     </Heading>
-                    <Text fontSize="xl" maxW="xl" opacity={0.9} textShadow="0 1px 3px rgba(0,0,0,0.6)">
+                    <Text 
+                        fontSize="xl" 
+                        maxW="600px"
+                    >
                         TravelMemories helps you organize, manage, and share your travel experiences in one place.
                     </Text>
-
                     {currentUser ? (
                         <Button
                             as={RouterLink}
-                            to="/trips/new"
-                            size="lg"
-                            colorScheme={buttonColorScheme}
+                            to="/create-trip"
                             leftIcon={<FaPlus />}
+                            colorScheme={buttonColorScheme}
+                            size="lg"
                             mt={4}
                             _hover={{ bg: "white", color: "brand.500" }}
                         >
@@ -73,10 +90,9 @@ const HeroSection: React.FC = () => {
                         <Button
                             as={RouterLink}
                             to="/register"
-                            size="lg"
                             colorScheme={buttonColorScheme}
+                            size="lg"
                             mt={4}
-                            _hover={{ bg: "white", color: "brand.500" }}
                         >
                             Get Started Free
                         </Button>

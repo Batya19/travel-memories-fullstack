@@ -1,4 +1,3 @@
-// src/components/sections/CTASection.tsx
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
@@ -38,7 +37,7 @@ const CTASection: React.FC = () => {
             left={0}
             right={0}
             bottom={0}
-            backgroundImage="url('/images/travel-memories-collage.jpg')"
+            backgroundImage="url('/images/travel-background.jpg')"
             backgroundSize="cover"
             backgroundPosition="center"
             opacity={0.1}
@@ -102,7 +101,7 @@ const CTASection: React.FC = () => {
               right={0}
               bottom={0}
               left={0}
-              backgroundImage="url('/images/travel-collage.jpg')"
+              backgroundImage="url('/images/travel-background.jpg')"
               backgroundSize="cover"
               backgroundPosition="center"
               borderLeftWidth="1px"

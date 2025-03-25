@@ -41,18 +41,23 @@ export interface Trip {
 }
 
 // Image types
+// In your types.ts file
 export interface Image {
   id: string;
   fileName: string;
   filePath: string;
   fileSize: number;
   mimeType: string;
-  takenAt?: string;
-  tripId?: string;
+  fileUrl: string; // Add this property
+  takenAt: string | null;
+  tripId: string;
+  tripName: string;
   isAiGenerated: boolean;
-  aiPrompt?: string;
-  aiStyle?: string;
+  aiPrompt: string | null;
+  aiStyle: string | null;
+  userId: string;
   createdAt: string;
+  tags: any[] | null;
 }
 
 // Tag types

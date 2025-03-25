@@ -1,8 +1,7 @@
-import React, { useState, RefObject } from 'react';
+import React, { useState, RefObject, useEffect } from 'react';
 import {
     Box,
     SimpleGrid,
-    Image as ChakraImage,
     IconButton,
     useDisclosure,
     Modal,
@@ -22,14 +21,17 @@ import {
     Button,
     HStack,
     useColorModeValue,
+    AspectRatio,
+    Skeleton,
 } from '@chakra-ui/react';
 import { FaTrash, FaArrowLeft, FaArrowRight, FaRobot, FaCalendarAlt, FaThLarge, FaList } from 'react-icons/fa';
-import { Image } from '../../types';
+import { Image as ImageType } from '../../types';
 import imageService from '../../services/imageService';
 import { format } from 'date-fns';
+import { getImageUrl } from '../../utils/imageUtils';
 
 interface ImageGalleryProps {
-    images: Image[];
+    images: ImageType[];
     onDelete?: (imageId: string) => void;
     readonly?: boolean;
 }
@@ -44,6 +46,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
     const [currentImageIndex, setCurrentImageIndex] = useState<number | null>(null);
     const [imageToDelete, setImageToDelete] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
+    const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
     const { isOpen: isViewerOpen, onOpen: openViewer, onClose: closeViewer } = useDisclosure();
     const { isOpen: isDeleteOpen, onOpen: openDelete, onClose: closeDelete } = useDisclosure();
     const cancelRef = React.useRef<HTMLButtonElement>(null);
@@ -53,6 +56,22 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
     const cardBorderColor = useColorModeValue('gray.200', 'gray.700');
     const imageBgColor = useColorModeValue('gray.100', 'gray.700');
     const metaTextColor = useColorModeValue('gray.500', 'gray.400');
+
+    // Track which images have loaded
+    useEffect(() => {
+        const newLoadedState: Record<string, boolean> = {};
+        images.forEach(img => {
+            newLoadedState[img.id] = loadedImages[img.id] || false;
+        });
+        setLoadedImages(newLoadedState);
+    }, [images]);
+
+    const handleImageLoad = (imageId: string) => {
+        setLoadedImages(prev => ({
+            ...prev,
+            [imageId]: true
+        }));
+    };
 
     const handleImageClick = (index: number) => {
         setCurrentImageIndex(index);
@@ -129,51 +148,68 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                     onClick={() => handleImageClick(index)}
                     bg={cardBg}
                 >
-                    <Box paddingBottom="100%" bg={imageBgColor} position="relative">
-                        <ChakraImage
-                            src={image.filePath}
-                            alt={image.fileName}
-                            position="absolute"
-                            top={0}
-                            left={0}
-                            width="100%"
-                            height="100%"
-                            objectFit="cover"
-                            loading="lazy"
-                        />
-
-                        {image.isAiGenerated && (
-                            <Badge
-                                position="absolute"
-                                top={2}
-                                left={2}
-                                colorScheme="purple"
-                                display="flex"
-                                alignItems="center"
-                                gap={1}
-                            >
-                                <FaRobot /> AI
-                            </Badge>
-                        )}
-
-                        {!readonly && (
-                            <IconButton
-                                aria-label="Delete image"
-                                icon={<FaTrash />}
-                                size="sm"
-                                colorScheme="red"
-                                position="absolute"
-                                top={2}
-                                right={2}
-                                opacity={0}
-                                _groupHover={{ opacity: 1 }}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    confirmDelete(image.id);
-                                }}
+                    <AspectRatio ratio={1}>
+                        <Box position="relative" bg={imageBgColor}>
+                            {!loadedImages[image.id] && (
+                                <Skeleton 
+                                    position="absolute" 
+                                    top="0" 
+                                    left="0" 
+                                    width="100%" 
+                                    height="100%"
+                                    startColor={useColorModeValue('gray.100', 'gray.700')}
+                                    endColor={useColorModeValue('gray.300', 'gray.600')}
+                                />
+                            )}
+                            <Box
+                                as="img"
+                                src={getImageUrl(image)}
+                                alt={image.fileName}
+                                width="100%"
+                                height="100%"
+                                objectFit="cover"
+                                loading="lazy"
+                                onLoad={() => handleImageLoad(image.id)}
+                                style={{ opacity: loadedImages[image.id] ? 1 : 0 }}
+                                transition="opacity 0.3s ease-in-out"
                             />
-                        )}
-                    </Box>
+
+                            {image.isAiGenerated && (
+                                <Badge
+                                    position="absolute"
+                                    top={2}
+                                    left={2}
+                                    colorScheme="purple"
+                                    display="flex"
+                                    alignItems="center"
+                                    gap={1}
+                                    zIndex={1}
+                                >
+                                    <FaRobot /> AI
+                                </Badge>
+                            )}
+
+                            {!readonly && (
+                                <IconButton
+                                    aria-label="Delete image"
+                                    icon={<FaTrash />}
+                                    size="sm"
+                                    colorScheme="red"
+                                    position="absolute"
+                                    top={2}
+                                    right={2}
+                                    opacity={0}
+                                    _groupHover={{ opacity: 1 }}
+                                    _hover={{ opacity: 1 }}
+                                    zIndex={1}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        confirmDelete(image.id);
+                                    }}
+                                />
+                            )}
+                        </Box>
+                    </AspectRatio>
                 </Box>
             ))}
         </SimpleGrid>
@@ -196,14 +232,27 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                     cursor="pointer"
                     onClick={() => handleImageClick(index)}
                 >
-                    <Box width="120px" height="90px" flexShrink={0} bg={imageBgColor}>
-                        <ChakraImage
-                            src={image.filePath}
+                    <Box width="120px" height="90px" flexShrink={0} bg={imageBgColor} position="relative">
+                        {!loadedImages[image.id] && (
+                            <Skeleton 
+                                position="absolute" 
+                                top="0" 
+                                left="0" 
+                                width="100%" 
+                                height="100%"
+                            />
+                        )}
+                        <Box
+                            as="img"
+                            src={getImageUrl(image)}
                             alt={image.fileName}
                             width="100%"
                             height="100%"
                             objectFit="cover"
                             loading="lazy"
+                            onLoad={() => handleImageLoad(image.id)}
+                            style={{ opacity: loadedImages[image.id] ? 1 : 0 }}
+                            transition="opacity 0.3s ease-in-out"
                         />
                     </Box>
                     <Flex flex="1" p={3} direction="column" justifyContent="center">
@@ -333,15 +382,16 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                                 maxH="90vh"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <ChakraImage
-                                    src={currentImage.filePath}
+                                <Box
+                                    as="img"
+                                    src={getImageUrl(currentImage)}
                                     alt={currentImage.fileName}
                                     maxH="80vh"
                                     maxW="90vw"
                                     objectFit="contain"
                                     borderRadius="md"
                                 />
-
+                                
                                 {/* Image info */}
                                 <Box
                                     bg="blackAlpha.700"
