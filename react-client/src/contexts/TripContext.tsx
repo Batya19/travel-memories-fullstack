@@ -1,5 +1,5 @@
 // src/contexts/TripContext.tsx
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Trip, Image } from '../types';
 import tripService from '../services/tripService';
 import imageService from '../services/imageService';
@@ -11,11 +11,11 @@ interface TripContextType {
   currentTrip: Trip | null;
   isLoading: boolean;
   error: string | null;
-  
+
   // Trip images
   tripImages: Image[];
   isImagesLoading: boolean;
-  
+
   // Actions
   fetchTrips: () => Promise<Trip[]>;
   fetchTrip: (tripId: string) => Promise<Trip | null>;
@@ -59,13 +59,13 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   const [tripImages, setTripImages] = useState<Image[]>([]);
   const [isImagesLoading, setIsImagesLoading] = useState<boolean>(false);
-  
+
   const toast = useToast();
-  
+
   const fetchTrips = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const data = await tripService.getTrips();
       setTrips(data);
@@ -85,11 +85,11 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-  
+
   const fetchTrip = async (tripId: string) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const trip = await tripService.getTrip(tripId);
       setCurrentTrip(trip);
@@ -109,10 +109,10 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-  
+
   const fetchTripImages = async (tripId: string) => {
     setIsImagesLoading(true);
-    
+
     try {
       const images = await imageService.getImages(tripId);
       setTripImages(images);
@@ -131,10 +131,10 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       setIsImagesLoading(false);
     }
   };
-  
+
   const createTrip = async (tripData: Omit<Trip, "id" | "createdAt">) => {
     setIsLoading(true);
-    
+
     try {
       const newTrip = await tripService.createTrip(tripData);
       setTrips(prevTrips => [...prevTrips, newTrip]);
@@ -160,23 +160,23 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-  
+
   const updateTrip = async (tripId: string, tripData: Partial<Trip>) => {
     setIsLoading(true);
-    
+
     try {
       const updatedTrip = await tripService.updateTrip(tripId, tripData);
-      
+
       // Update trips list
-      setTrips(prevTrips => 
+      setTrips(prevTrips =>
         prevTrips.map(trip => trip.id === tripId ? { ...trip, ...updatedTrip } : trip)
       );
-      
+
       // Update current trip if it's the one being edited
       if (currentTrip && currentTrip.id === tripId) {
         setCurrentTrip({ ...currentTrip, ...updatedTrip });
       }
-      
+
       toast({
         title: 'Trip updated',
         description: `${updatedTrip.name} has been updated successfully.`,
@@ -184,7 +184,7 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
         duration: 5000,
         isClosable: true,
       });
-      
+
       return updatedTrip;
     } catch (err) {
       console.error(`Error updating trip ${tripId}:`, err);
@@ -200,19 +200,19 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-  
+
   const deleteTrip = async (tripId: string) => {
     try {
       await tripService.deleteTrip(tripId);
-      
+
       // Remove from trips list
       setTrips(prevTrips => prevTrips.filter(trip => trip.id !== tripId));
-      
+
       // Clear current trip if it's the one being deleted
       if (currentTrip && currentTrip.id === tripId) {
         setCurrentTrip(null);
       }
-      
+
       toast({
         title: 'Trip deleted',
         description: 'The trip has been deleted successfully.',
@@ -220,7 +220,7 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
         duration: 5000,
         isClosable: true,
       });
-      
+
       return true;
     } catch (err) {
       console.error(`Error deleting trip ${tripId}:`, err);
@@ -234,14 +234,14 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       return false;
     }
   };
-  
+
   const uploadImages = async (files: File[], tripId: string, onProgress?: (progress: number) => void) => {
     try {
       const uploadedImages = await imageService.uploadImages(files, tripId, onProgress);
-      
+
       // Add new images to the current list
       setTripImages(prevImages => [...prevImages, ...uploadedImages]);
-      
+
       toast({
         title: 'Images uploaded',
         description: `Successfully uploaded ${uploadedImages.length} images.`,
@@ -249,7 +249,7 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
         duration: 3000,
         isClosable: true,
       });
-      
+
       return uploadedImages;
     } catch (err) {
       console.error('Error uploading images:', err);
@@ -263,14 +263,14 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       return [];
     }
   };
-  
+
   const deleteImage = async (imageId: string) => {
     try {
       await imageService.deleteImage(imageId);
-      
+
       // Remove from images list
       setTripImages(prevImages => prevImages.filter(img => img.id !== imageId));
-      
+
       toast({
         title: 'Image deleted',
         description: 'The image has been deleted successfully.',
@@ -278,7 +278,7 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
         duration: 3000,
         isClosable: true,
       });
-      
+
       return true;
     } catch (err) {
       console.error(`Error deleting image ${imageId}:`, err);
@@ -292,7 +292,7 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       return false;
     }
   };
-  
+
   const generateShareLink = async (tripId: string) => {
     try {
       const response = await tripService.generateShareLink(tripId);
@@ -309,7 +309,7 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       return { shareId: '' };
     }
   };
-  
+
   // Provide all the values and functions to the context
   const value = {
     trips,
@@ -328,7 +328,7 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
     deleteImage,
     generateShareLink,
   };
-  
+
   return <TripContext.Provider value={value}>{children}</TripContext.Provider>;
 };
 

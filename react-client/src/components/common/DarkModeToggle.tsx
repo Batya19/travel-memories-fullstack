@@ -3,7 +3,7 @@ import { IconButton, useColorMode, useColorModeValue, Tooltip } from '@chakra-ui
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 
 const DarkModeToggle: React.FC = () => {
-    const { colorMode, toggleColorMode } = useColorMode();
+    const { toggleColorMode } = useColorMode();
     const SwitchIcon = useColorModeValue(MoonIcon, SunIcon);
     const buttonText = useColorModeValue('Switch to Dark Mode', 'Switch to Light Mode');
 

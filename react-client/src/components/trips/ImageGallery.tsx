@@ -52,7 +52,6 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
     // צבעים מותאמים למצב בהיר/כהה
     const cardBg = useColorModeValue('white', 'gray.800');
     const cardBorderColor = useColorModeValue('gray.200', 'gray.700');
-    const iconColor = useColorModeValue('gray.500', 'gray.400');
     const imageBgColor = useColorModeValue('gray.100', 'gray.700');
     const metaTextColor = useColorModeValue('gray.500', 'gray.400');
 

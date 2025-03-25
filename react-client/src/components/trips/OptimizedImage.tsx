@@ -20,7 +20,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // צבעים מותאמים למצב בהיר/כהה
   const skeletonStartColor = useColorModeValue('gray.100', 'gray.700');
   const skeletonEndColor = useColorModeValue('gray.300', 'gray.600');
-  const blurBgColor = useColorModeValue('rgba(255,255,255,0.7)', 'rgba(26,32,44,0.7)');
 
   return (
     <Box position="relative" overflow="hidden" {...props}>

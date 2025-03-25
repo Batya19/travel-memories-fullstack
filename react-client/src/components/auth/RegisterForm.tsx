@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -31,7 +31,6 @@ const RegisterForm: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
   const { register, loading } = useAuth();
-  const navigate = useNavigate();
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
@@ -77,7 +76,7 @@ const RegisterForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
-  
+
     try {
       await register(
         formData.email,

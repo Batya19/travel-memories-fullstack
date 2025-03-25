@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -25,14 +25,13 @@ const LoginForm: React.FC = () => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const { login, loading } = useAuth();
-  const navigate = useNavigate();
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
+
     // Clear errors when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
@@ -57,7 +56,7 @@ const LoginForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
-  
+
     try {
       await login(formData.email, formData.password);
       // Remove this line - navigation is now handled in AuthContext

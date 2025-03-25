@@ -6,7 +6,6 @@ import {
     InputGroup,
     InputLeftElement,
     Select,
-    HStack,
     FormControl,
     FormLabel,
     Collapse,
@@ -16,7 +15,7 @@ import {
     IconButton,
     Divider
 } from '@chakra-ui/react';
-import { FaSearch, FaFilter, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaSearch, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 interface ImageFilterProps {
     onFilterChange: (filters: ImageFilters) => void;

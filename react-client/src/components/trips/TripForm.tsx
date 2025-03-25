@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Box,
@@ -60,22 +60,26 @@ const TripForm: React.FC<TripFormProps> = ({ initialData, isEditing = false }) =
         }
     };
 
-    const handleStartDateChange = (date: Date) => {
-        setFormData({ ...formData, startDate: date });
-        if (errors.startDate) {
-            setErrors({ ...errors, startDate: '' });
-        }
+    const handleStartDateChange = (date: Date | null) => {
+        if (date) {
+            setFormData({ ...formData, startDate: date });
+            if (errors.startDate) {
+                setErrors({ ...errors, startDate: '' });
+            }
 
-        // If the end date is before the start date, update it
-        if (formData.endDate < date) {
-            setFormData(prev => ({ ...prev, endDate: date }));
+            // If the end date is before the start date, update it
+            if (formData.endDate < date) {
+                setFormData(prev => ({ ...prev, endDate: date }));
+            }
         }
     };
 
-    const handleEndDateChange = (date: Date) => {
-        setFormData({ ...formData, endDate: date });
-        if (errors.endDate) {
-            setErrors({ ...errors, endDate: '' });
+    const handleEndDateChange = (date: Date | null) => {
+        if (date) {
+            setFormData({ ...formData, endDate: date });
+            if (errors.endDate) {
+                setErrors({ ...errors, endDate: '' });
+            }
         }
     };
 

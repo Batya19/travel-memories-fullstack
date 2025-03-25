@@ -2,14 +2,6 @@ import { apiService } from './api';
 import { Image } from '../types';
 import axios from 'axios';
 
-interface UploadResponse {
-    id: string;
-    fileName: string;
-    filePath: string;
-    fileSize: number;
-    mimeType: string;
-}
-
 interface GenerateAiImageRequest {
     prompt: string;
     style?: string;

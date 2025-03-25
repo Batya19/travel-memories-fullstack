@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Flex,
@@ -28,7 +28,6 @@ import DarkModeToggle from '../common/DarkModeToggle';
 const Header: React.FC = () => {
   const { isOpen, onToggle } = useDisclosure();
   const { currentUser, logout } = useAuth();
-  const navigate = useNavigate();
 
   const backgroundColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -85,9 +84,9 @@ const Header: React.FC = () => {
               </Button>
 
               <Menu>
-                <MenuButton 
-                  as={Button} 
-                  variant="ghost" 
+                <MenuButton
+                  as={Button}
+                  variant="ghost"
                   rightIcon={<ChevronDownIcon />}
                   _hover={{ bg: useColorModeValue('gray.100', 'gray.700') }}
                 >

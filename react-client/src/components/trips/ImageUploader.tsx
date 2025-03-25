@@ -10,11 +10,10 @@ import {
   HStack,
   Icon,
   Image as ChakraImage,
-  Badge,
   SimpleGrid,
   IconButton,
 } from '@chakra-ui/react';
-import { FaUpload, FaImage, FaTrash, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
+import { FaUpload, FaTrash, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 import imageService from '../../services/imageService';
 import { useDropzone } from 'react-dropzone';
 
@@ -31,35 +30,35 @@ interface PreviewFile extends File {
   progress?: number;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ 
-  tripId, 
-  onUploadComplete, 
-  maxFiles = 10 
+const ImageUploader: React.FC<ImageUploaderProps> = ({
+  tripId,
+  onUploadComplete,
+  maxFiles = 10
 }) => {
   const [files, setFiles] = useState<PreviewFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const toast = useToast();
-  
+
   // Keep track of which file is currently being uploaded
   const currentFileRef = useRef<number>(0);
-  
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // Filter out files that would exceed the maxFiles limit
     const availableSlots = maxFiles - files.length;
     const newFiles = acceptedFiles.slice(0, availableSlots);
-    
+
     // Create preview URLs for the files
-    const filesWithPreview = newFiles.map(file => 
+    const filesWithPreview = newFiles.map(file =>
       Object.assign(file, {
         preview: URL.createObjectURL(file),
         status: 'pending' as const,
         progress: 0
       })
     );
-    
+
     setFiles(current => [...current, ...filesWithPreview]);
-    
+
     // Show a warning if some files were skipped
     if (acceptedFiles.length > availableSlots) {
       toast({
@@ -71,7 +70,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       });
     }
   }, [files.length, maxFiles, toast]);
-  
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -79,7 +78,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     },
     disabled: isUploading || files.length >= maxFiles
   });
-  
+
   const removeFile = (index: number) => {
     setFiles(current => {
       const newFiles = [...current];
@@ -91,32 +90,32 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       return newFiles;
     });
   };
-  
+
   const handleUpload = async () => {
     if (files.length === 0 || isUploading) return;
-    
+
     setIsUploading(true);
     currentFileRef.current = 0;
     let successCount = 0;
-    
+
     try {
       // Check if token exists before attempting upload
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication token not found. Please log in again.');
       }
-      
+
       // Upload files one by one for better tracking and error handling
       for (let i = 0; i < files.length; i++) {
         currentFileRef.current = i;
-        
+
         // Update file status to uploading
         setFiles(current => {
           const newFiles = [...current];
           newFiles[i].status = 'uploading';
           return newFiles;
         });
-        
+
         try {
           // Upload the current file
           await imageService.uploadImages([files[i]], tripId, (progress) => {
@@ -126,23 +125,23 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
               newFiles[i].progress = progress;
               return newFiles;
             });
-            
+
             // Calculate overall progress
-            const totalProgress = files.slice(0, i).reduce((sum, file) => sum + 100, 0) + progress;
+            const totalProgress = files.slice(0, i).reduce((sum) => sum + 100, 0) + progress;
             setUploadProgress(Math.floor(totalProgress / files.length));
           });
-          
+
           // Mark this file as successfully uploaded
           setFiles(current => {
             const newFiles = [...current];
             newFiles[i].status = 'success';
             return newFiles;
           });
-          
+
           successCount++;
         } catch (error) {
           console.error(`Error uploading file ${files[i].name}:`, error);
-          
+
           // Mark this file as failed
           setFiles(current => {
             const newFiles = [...current];
@@ -151,7 +150,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           });
         }
       }
-      
+
       // Show success toast
       if (successCount > 0) {
         toast({
@@ -161,13 +160,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           duration: 5000,
           isClosable: true,
         });
-        
+
         // Call the completion callback
         if (onUploadComplete) {
           onUploadComplete();
         }
       }
-      
+
       // Show warning if some files failed
       if (successCount < files.length) {
         toast({
@@ -190,12 +189,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
-      
+
       // Remove successfully uploaded files from the list
       setFiles(current => current.filter(file => file.status !== 'success'));
     }
   };
-  
+
   return (
     <Box width="100%">
       <VStack spacing={4} align="stretch">
@@ -221,10 +220,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
               {isDragActive
                 ? 'Drop the images here...'
                 : isUploading
-                ? 'Upload in progress...'
-                : files.length >= maxFiles
-                ? `Maximum ${maxFiles} images reached`
-                : 'Drag and drop images here, or click to select files'}
+                  ? 'Upload in progress...'
+                  : files.length >= maxFiles
+                    ? `Maximum ${maxFiles} images reached`
+                    : 'Drag and drop images here, or click to select files'}
             </Text>
             <Text fontSize="sm" color="gray.500" textAlign="center">
               Supported formats: JPEG, PNG, GIF, WebP
@@ -234,7 +233,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             </Text>
           </VStack>
         </Box>
-        
+
         {/* Upload progress */}
         {isUploading && (
           <Box>
@@ -242,16 +241,16 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             <Progress value={uploadProgress} size="sm" colorScheme="brand" borderRadius="md" />
           </Box>
         )}
-        
+
         {/* File previews */}
         {files.length > 0 && (
           <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} spacing={4}>
             {files.map((file, index) => (
-              <Box 
-                key={index} 
-                position="relative" 
-                borderWidth={1} 
-                borderRadius="md" 
+              <Box
+                key={index}
+                position="relative"
+                borderWidth={1}
+                borderRadius="md"
                 overflow="hidden"
               >
                 <Box position="relative" paddingBottom="100%" bg="gray.100">
@@ -266,14 +265,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     objectFit="cover"
                     opacity={file.status === 'uploading' ? 0.7 : 1}
                   />
-                  
+
                   {/* Status indicators */}
                   {file.status === 'uploading' && (
                     <Box position="absolute" bottom={0} left={0} right={0} bg="rgba(0,0,0,0.5)" p={1}>
                       <Progress size="xs" value={file.progress} colorScheme="brand" />
                     </Box>
                   )}
-                  
+
                   {file.status === 'success' && (
                     <Flex
                       position="absolute"
@@ -288,7 +287,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                       <Icon as={FaCheck} color="white" boxSize={8} />
                     </Flex>
                   )}
-                  
+
                   {file.status === 'error' && (
                     <Flex
                       position="absolute"
@@ -304,15 +303,15 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     </Flex>
                   )}
                 </Box>
-                
+
                 <HStack justify="space-between" p={2} bg="white">
                   <Text fontSize="xs" noOfLines={1} maxW="70%">
-                    {file.name.length > 20 
+                    {file.name.length > 20
                       ? `${file.name.substring(0, 10)}...${file.name.substring(file.name.length - 7)}`
                       : file.name
                     }
                   </Text>
-                  
+
                   {file.status !== 'uploading' && (
                     <IconButton
                       aria-label="Remove file"
@@ -331,7 +330,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             ))}
           </SimpleGrid>
         )}
-        
+
         {/* Upload button */}
         <Button
           leftIcon={<FaUpload />}

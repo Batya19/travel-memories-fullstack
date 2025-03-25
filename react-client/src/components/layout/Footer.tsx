@@ -7,7 +7,6 @@ import {
   SimpleGrid,
   Text,
   Link,
-  Flex,
   useColorModeValue,
 } from '@chakra-ui/react';
 import AppLogo from '../common/AppLogo';
