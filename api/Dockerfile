@@ -1,19 +1,19 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
 
-# העתקת קבצי הפרויקט
+# Copy everything to the working directory
 COPY . .
 
-# שחזור חבילות ובניית הפרויקט
-RUN dotnet restore
-RUN dotnet publish TravelMemories/TravelMemories.csproj -c Release -o /app/out
+# Restore and publish the application
+RUN dotnet restore TravelMemories/TravelMemories.sln
+RUN dotnet publish TravelMemories/TravelMemories/TravelMemories.csproj -c Release -o /app/out
 
-# בניית תמונת ההרצה
+# Build the runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
 COPY --from=build /app/out ./
 
-# הגדרת משתני סביבה
+# Configure the environment
 ENV ASPNETCORE_URLS=http://+:8080
 
 EXPOSE 8080
