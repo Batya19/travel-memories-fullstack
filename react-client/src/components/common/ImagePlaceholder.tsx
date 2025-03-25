@@ -15,6 +15,7 @@ const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({
     height = 'auto',
     aspectRatio = '1 / 1',
 }) => {
+    // צבעים מותאמים למצב בהיר/כהה
     const bgColor = useColorModeValue('gray.100', 'gray.700');
     const textColor = useColorModeValue('gray.500', 'gray.300');
     const iconColor = useColorModeValue('gray.300', 'gray.500');

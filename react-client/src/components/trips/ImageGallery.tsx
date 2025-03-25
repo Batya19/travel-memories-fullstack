@@ -1,4 +1,3 @@
-// ImageGallery.tsx - הוספת שינוי תצוגה
 import React, { useState, RefObject } from 'react';
 import {
     Box,
@@ -22,6 +21,7 @@ import {
     AlertDialogOverlay,
     Button,
     HStack,
+    useColorModeValue, // הוספה לשימוש בערכי צבע
 } from '@chakra-ui/react';
 import { FaTrash, FaArrowLeft, FaArrowRight, FaRobot, FaCalendarAlt, FaThLarge, FaList } from 'react-icons/fa';
 import { Image } from '../../types';
@@ -48,6 +48,13 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
     const { isOpen: isDeleteOpen, onOpen: openDelete, onClose: closeDelete } = useDisclosure();
     const cancelRef = React.useRef<HTMLButtonElement>(null);
     const toast = useToast();
+
+    // צבעים מותאמים למצב בהיר/כהה
+    const cardBg = useColorModeValue('white', 'gray.800');
+    const cardBorderColor = useColorModeValue('gray.200', 'gray.700');
+    const iconColor = useColorModeValue('gray.500', 'gray.400');
+    const imageBgColor = useColorModeValue('gray.100', 'gray.700');
+    const metaTextColor = useColorModeValue('gray.500', 'gray.400');
 
     const handleImageClick = (index: number) => {
         setCurrentImageIndex(index);
@@ -116,12 +123,15 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                     borderRadius="md"
                     overflow="hidden"
                     boxShadow="md"
+                    borderWidth="1px"
+                    borderColor={cardBorderColor}
                     transition="transform 0.2s"
                     _hover={{ transform: 'scale(1.02)' }}
                     cursor="pointer"
                     onClick={() => handleImageClick(index)}
+                    bg={cardBg}
                 >
-                    <Box paddingBottom="100%" bg="gray.100" position="relative">
+                    <Box paddingBottom="100%" bg={imageBgColor} position="relative">
                         <ChakraImage
                             src={image.filePath}
                             alt={image.fileName}
@@ -174,19 +184,21 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
     const renderListView = () => (
         <Box>
             {images.map((image, index) => (
-                <Flex 
+                <Flex
                     key={image.id}
                     mb={4}
                     borderWidth="1px"
                     borderRadius="md"
+                    borderColor={cardBorderColor}
                     overflow="hidden"
                     boxShadow="sm"
+                    bg={cardBg}
                     transition="transform 0.2s"
                     _hover={{ transform: 'translateX(5px)' }}
                     cursor="pointer"
                     onClick={() => handleImageClick(index)}
                 >
-                    <Box width="120px" height="90px" flexShrink={0}>
+                    <Box width="120px" height="90px" flexShrink={0} bg={imageBgColor}>
                         <ChakraImage
                             src={image.filePath}
                             alt={image.fileName}
@@ -200,7 +212,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                         <Text fontWeight="medium" noOfLines={1}>
                             {image.fileName}
                         </Text>
-                        <Flex fontSize="xs" color="gray.500" alignItems="center" mt={1}>
+                        <Flex fontSize="xs" color={metaTextColor} alignItems="center" mt={1}>
                             {image.takenAt && (
                                 <Flex alignItems="center" mr={3}>
                                     <FaCalendarAlt size="0.8em" />
@@ -224,7 +236,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                                 <FaRobot /> AI
                             </Badge>
                         )}
-                        
+
                         {!readonly && (
                             <IconButton
                                 aria-label="Delete image"
@@ -249,7 +261,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
             {/* View toggle */}
             <Flex justifyContent="flex-end" mb={4}>
                 <HStack spacing={2}>
-                    <Text fontSize="sm" color="gray.500">View:</Text>
+                    <Text fontSize="sm" color={metaTextColor}>View:</Text>
                     <IconButton
                         aria-label="Grid view"
                         icon={<FaThLarge />}
@@ -380,7 +392,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                 onClose={closeDelete}
             >
                 <AlertDialogOverlay>
-                    <AlertDialogContent>
+                    <AlertDialogContent bg={cardBg}>
                         <AlertDialogHeader fontSize="lg" fontWeight="bold">
                             Delete Image
                         </AlertDialogHeader>

@@ -77,7 +77,7 @@ const TripDetailPage: React.FC = () => {
         onOpen: onDeleteOpen,
         onClose: onDeleteClose
     } = useDisclosure();
-    const cancelRef = React.useRef<HTMLButtonElement>(null);
+    const cancelRef = React.useRef<HTMLButtonElement>(null!) as React.RefObject<HTMLButtonElement>;
 
     // Fetch trip details and images
     const fetchTripData = async () => {

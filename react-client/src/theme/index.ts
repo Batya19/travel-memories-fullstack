@@ -1,6 +1,14 @@
-import { extendTheme } from '@chakra-ui/react';
+// src/theme/index.ts
+import { extendTheme, ThemeConfig } from '@chakra-ui/react';
+
+// הגדרת תצורה לתמיכה במצב חשוך
+const config: ThemeConfig = {
+  initialColorMode: 'light',
+  useSystemColorMode: true, // אם רוצים שהאפליקציה תשתמש בהגדרת המערכת
+};
 
 const theme = extendTheme({
+  config,
   colors: {
     brand: {
       50: '#e6f7ff',
@@ -35,13 +43,22 @@ const theme = extendTheme({
         },
       },
     },
+    Card: {
+      baseStyle: (props: { colorMode: string }) => ({
+        container: {
+          bg: props.colorMode === 'dark' ? 'gray.800' : 'white',
+          borderColor: props.colorMode === 'dark' ? 'gray.700' : 'gray.200',
+        }
+      })
+    }
   },
   styles: {
-    global: {
+    global: (props: { colorMode: string }) => ({
       body: {
-        bg: 'gray.50',
+        bg: props.colorMode === 'dark' ? 'gray.900' : 'gray.50',
+        color: props.colorMode === 'dark' ? 'white' : 'gray.800',
       },
-    },
+    }),
   },
 });
 
