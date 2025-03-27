@@ -11,7 +11,6 @@ import {
     Input,
     Button,
     Divider,
-    useToast,
     Avatar,
     Flex,
     Badge,
@@ -133,14 +132,19 @@ const ProfilePage: React.FC = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        setFormData(prev => ({ ...prev, [name]: value }));
 
-        // ניקוי שגיאות בעת הקלדה
+        // Clear specific field error when typing
         if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[name];
+                return newErrors;
+            });
         }
     };
 
+    // Similar method for password input changes
     const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setPasswordForm({ ...passwordForm, [name]: value });
@@ -154,12 +158,22 @@ const ProfilePage: React.FC = () => {
     const validateProfileForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
+        // Validate first name
         if (!formData.firstName.trim()) {
             newErrors.firstName = 'First name is required';
+        } else if (formData.firstName.trim().length > 50) {
+            newErrors.firstName = 'First name must be 50 characters or less';
+        } else if (!/^[A-Za-z\s'-]+$/.test(formData.firstName.trim())) {
+            newErrors.firstName = 'First name can only contain letters, spaces, hyphens, and apostrophes';
         }
 
+        // Validate last name
         if (!formData.lastName.trim()) {
             newErrors.lastName = 'Last name is required';
+        } else if (formData.lastName.trim().length > 50) {
+            newErrors.lastName = 'Last name must be 50 characters or less';
+        } else if (!/^[A-Za-z\s'-]+$/.test(formData.lastName.trim())) {
+            newErrors.lastName = 'Last name can only contain letters, spaces, hyphens, and apostrophes';
         }
 
         setErrors(newErrors);
@@ -169,20 +183,30 @@ const ProfilePage: React.FC = () => {
     const validatePasswordForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-        if (!passwordForm.currentPassword) {
+        // Validate current password
+        if (!passwordForm.currentPassword.trim()) {
             newErrors.currentPassword = 'Current password is required';
         }
 
-        if (!passwordForm.newPassword) {
+        // Validate new password
+        if (!passwordForm.newPassword.trim()) {
             newErrors.newPassword = 'New password is required';
         } else if (passwordForm.newPassword.length < 8) {
             newErrors.newPassword = 'Password must be at least 8 characters long';
+        } else if (passwordForm.newPassword.length > 100) {
+            newErrors.newPassword = 'Password must be 100 characters or less';
         }
 
-        if (!passwordForm.confirmPassword) {
+        // Validate confirm password
+        if (!passwordForm.confirmPassword.trim()) {
             newErrors.confirmPassword = 'Please confirm your new password';
         } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
             newErrors.confirmPassword = 'Passwords do not match';
+        }
+
+        // Additional check: new password should not be the same as current password
+        if (passwordForm.currentPassword === passwordForm.newPassword) {
+            newErrors.newPassword = 'New password must be different from current password';
         }
 
         setErrors(newErrors);
@@ -213,14 +237,15 @@ const ProfilePage: React.FC = () => {
 
         setIsChangingPassword(true);
         try {
-            // שימוש בפונקציה מהקונטקסט לשינוי הסיסמה
+            // Added third parameter for confirm password
             const success = await changePassword(
                 passwordForm.currentPassword,
-                passwordForm.newPassword
+                passwordForm.newPassword,
+                passwordForm.confirmPassword
             );
 
             if (success) {
-                // איפוס טופס הסיסמה
+                // Reset password form
                 setPasswordForm({
                     currentPassword: '',
                     newPassword: '',
@@ -582,18 +607,6 @@ const ProfilePage: React.FC = () => {
                 </Card>
             </SimpleGrid>
 
-            {/* Recent activity section */}
-            <Card bg={bgColor} boxShadow="md" mt={8} borderRadius="lg" overflow="hidden" borderWidth="1px" borderColor={borderColor}>
-                <CardHeader>
-                    <Heading size="md">Recent Activity</Heading>
-                </CardHeader>
-
-                <CardBody>
-                    <Text color="gray.500">
-                        Your recent trips and actions will appear here.
-                    </Text>
-                </CardBody>
-            </Card>
         </Container>
     );
 };

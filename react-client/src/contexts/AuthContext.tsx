@@ -11,7 +11,7 @@ interface AuthContextType {
   register: (email: string, password: string, firstName: string, lastName: string) => Promise<User | null>;
   logout: () => void;
   updateProfile: (data: { firstName: string, lastName: string }) => Promise<User | null>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  changePassword: (currentPassword: string, newPassword: string, confirmPassword: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -162,11 +162,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const updateProfile = async (data: { firstName: string, lastName: string }): Promise<User | null> => {
     setLoading(true);
     try {
-      const updatedUser = await authService.updateProfile(data);
-      
+      // שימוש בפונקציה מהקונטקסט לעדכון הפרופיל
+      await authService.updateProfile(data);
+
       // עדכון המשתמש ב-context
       setCurrentUser(prevUser => prevUser ? { ...prevUser, ...data } : null);
-      
+
       toast({
         title: 'Profile updated',
         description: 'Your profile information has been updated successfully.',
@@ -174,46 +175,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         duration: 3000,
         isClosable: true,
       });
-      
-      return updatedUser;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to update profile.';
+
+      return currentUser;
+    } catch (error) {
+      console.error('Error in profile update:', error);
+
       toast({
         title: 'Update failed',
-        description: errorMessage,
+        description: 'Failed to update profile.',
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
+
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-  const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Promise<boolean> => {
     setLoading(true);
     try {
-      await authService.changePassword(currentPassword, newPassword);
-      
-      toast({
-        title: 'Password changed',
-        description: 'Your password has been changed successfully.',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-      
-      return true;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to change password.';
+      const success = await authService.changePassword(
+        currentPassword,
+        newPassword,
+        confirmPassword
+      ) as boolean;
+
+      if (success) {
+        toast({
+          title: 'Password changed',
+          description: 'Your password has been changed successfully.',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+
+      return success;
+    } catch (error) {
+      console.error('Error in password change:', error);
+
       toast({
         title: 'Password change failed',
-        description: errorMessage,
+        description: 'Failed to change password.',
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
+
       return false;
     } finally {
       setLoading(false);
