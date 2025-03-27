@@ -45,12 +45,14 @@ namespace TravelMemories.Data.Repositories
 
         public async Task<int> GetAiImageCountAsync(Guid userId, DateTime monthStart)
         {
-            var monthEnd = monthStart.AddMonths(1);
+            // המר את monthStart ל-UTC
+            DateTime utcMonthStart = DateTime.SpecifyKind(monthStart, DateTimeKind.Utc);
+            var monthEnd = utcMonthStart.AddMonths(1);
 
             return await _context.Images
                 .CountAsync(i => i.UserId == userId &&
                              i.IsAiGenerated &&
-                             i.CreatedAt >= monthStart &&
+                             i.CreatedAt >= utcMonthStart &&
                              i.CreatedAt < monthEnd);
         }
     }

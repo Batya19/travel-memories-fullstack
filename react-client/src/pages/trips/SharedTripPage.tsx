@@ -22,9 +22,9 @@ import { FaCalendarAlt, FaMapMarkerAlt, FaImages, FaArrowLeft } from 'react-icon
 import tripService from '../../services/tripService';
 import imageService from '../../services/imageService';
 import { Trip, Image } from '../../types';
-import ImageGallery from '../../components/trips/ImageGallery';
-import TripMap from '../../components/trips/TripMap';
+import TripMap from '../../components/features/trips/map/TripMap';
 import { format } from 'date-fns';
+import ImageGallery from '../../components/features/images/gallery/ImageGallery';
 
 const SharedTripPage: React.FC = () => {
     const { shareId } = useParams<{ shareId: string }>();

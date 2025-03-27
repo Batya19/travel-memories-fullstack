@@ -1,4 +1,4 @@
-import { apiService } from './api';
+import { apiService } from './api/client';
 import { Trip } from '../types';
 
 const tripService = {

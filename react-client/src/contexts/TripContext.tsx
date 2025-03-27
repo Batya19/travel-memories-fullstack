@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback } from 'react';
 import { Trip, Image } from '../types';
 import tripService from '../services/tripService';
 import imageService from '../services/imageService';
@@ -11,14 +11,16 @@ interface TripContextType {
   isLoading: boolean;
   error: string | null;
 
-  // Trip images
-  tripImages: Image[];
+  // Trip images - משתנה לאחסון מידע לפי טיול
+  tripImagesMap: Record<string, Image[]>;
+  tripImages: Image[]; // לתאימות לאחור
   isImagesLoading: boolean;
 
   // Actions
   fetchTrips: () => Promise<Trip[]>;
   fetchTrip: (tripId: string) => Promise<Trip | null>;
   fetchTripImages: (tripId: string) => Promise<Image[]>;
+  clearTripImages: () => void; // פונקציה חדשה לניקוי התמונות
   createTrip: (tripData: Omit<Trip, "id" | "createdAt">) => Promise<Trip | null>;
   updateTrip: (tripId: string, tripData: Partial<Trip>) => Promise<Trip | null>;
   deleteTrip: (tripId: string) => Promise<boolean>;
@@ -32,11 +34,13 @@ const TripContext = createContext<TripContextType>({
   currentTrip: null,
   isLoading: false,
   error: null,
+  tripImagesMap: {}, // מבנה נתונים חדש
   tripImages: [],
   isImagesLoading: false,
   fetchTrips: async () => [],
   fetchTrip: async () => null,
   fetchTripImages: async () => [],
+  clearTripImages: () => { },
   createTrip: async () => null,
   updateTrip: async () => null,
   deleteTrip: async () => false,
@@ -56,10 +60,18 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
   const [currentTrip, setCurrentTrip] = useState<Trip | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [tripImages, setTripImages] = useState<Image[]>([]);
+
+  // מבנה נתונים חדש: מפה של תמונות לפי מזהה טיול
+  const [tripImagesMap, setTripImagesMap] = useState<Record<string, Image[]>>({});
   const [isImagesLoading, setIsImagesLoading] = useState<boolean>(false);
 
   const toast = useToast();
+
+  // הגדרת tripImages כנגזרת של tripImagesMap והטיול הנוכחי
+  const tripImages = useMemo(() => {
+    if (!currentTrip) return [];
+    return tripImagesMap[currentTrip.id] || [];
+  }, [currentTrip, tripImagesMap]);
 
   const fetchTrips = async () => {
     setIsLoading(true);
@@ -113,8 +125,16 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
     setIsImagesLoading(true);
 
     try {
+      console.log(`Fetching images for trip: ${tripId}`);
       const images = await imageService.getImages(tripId);
-      setTripImages(images);
+      console.log(`Received ${images.length} images for trip ${tripId}`);
+
+      // שמירת התמונות במפה לפי מזהה הטיול
+      setTripImagesMap(prev => ({
+        ...prev,
+        [tripId]: images
+      }));
+
       return images;
     } catch (err) {
       console.error(`Error fetching images for trip ${tripId}:`, err);
@@ -131,12 +151,36 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
     }
   };
 
+  // Enhanced clearTripImages function with more options
+  const clearTripImages = useCallback(() => {
+    if (currentTrip) {
+      // Clear only current trip's images from the map
+      console.log(`Clearing images for trip: ${currentTrip.id}`);
+      setTripImagesMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[currentTrip.id];
+        return newMap;
+      });
+    } else {
+      // If no current trip, clear all images
+      console.log('Clearing all trip images');
+      setTripImagesMap({});
+    }
+  }, [currentTrip]);
+
   const createTrip = async (tripData: Omit<Trip, "id" | "createdAt">) => {
     setIsLoading(true);
 
     try {
       const newTrip = await tripService.createTrip(tripData);
       setTrips(prevTrips => [...prevTrips, newTrip]);
+
+      // איתחול מפת התמונות עבור הטיול החדש
+      setTripImagesMap(prev => ({
+        ...prev,
+        [newTrip.id]: []
+      }));
+
       toast({
         title: 'Trip created',
         description: `${newTrip.name} has been created successfully.`,
@@ -207,6 +251,13 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       // Remove from trips list
       setTrips(prevTrips => prevTrips.filter(trip => trip.id !== tripId));
 
+      // Remove trip images from the map
+      setTripImagesMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[tripId];
+        return newMap;
+      });
+
       // Clear current trip if it's the one being deleted
       if (currentTrip && currentTrip.id === tripId) {
         setCurrentTrip(null);
@@ -237,9 +288,16 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
   const uploadImages = async (files: File[], tripId: string, onProgress?: (progress: number) => void) => {
     try {
       const uploadedImages = await imageService.uploadImages(files, tripId, [], onProgress);
+      console.log(`Uploaded ${uploadedImages.length} images to trip ${tripId}`);
 
-      // Add new images to the current list
-      setTripImages(prevImages => [...prevImages, ...uploadedImages]);
+      // עדכון תמונות הטיול במפה
+      setTripImagesMap(prev => {
+        const currentImages = prev[tripId] || [];
+        return {
+          ...prev,
+          [tripId]: [...currentImages, ...uploadedImages]
+        };
+      });
 
       toast({
         title: 'Images uploaded',
@@ -267,8 +325,25 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
     try {
       await imageService.deleteImage(imageId);
 
-      // Remove from images list
-      setTripImages(prevImages => prevImages.filter(img => img.id !== imageId));
+      // מחיקת התמונה מכל הטיולים במפה
+      setTripImagesMap(prev => {
+        const newMap = { ...prev };
+        // Find which trip this image belongs to
+        let foundInTrip = '';
+
+        // עבור על כל הטיולים במפה
+        Object.keys(newMap).forEach(tripId => {
+          const hasImage = newMap[tripId].some(img => img.id === imageId);
+          if (hasImage) {
+            foundInTrip = tripId;
+            // עדכן את התמונות בטיול זה
+            newMap[tripId] = newMap[tripId].filter(img => img.id !== imageId);
+          }
+        });
+
+        console.log(`Deleted image ${imageId} from trip ${foundInTrip}`);
+        return newMap;
+      });
 
       toast({
         title: 'Image deleted',
@@ -315,11 +390,13 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
     currentTrip,
     isLoading,
     error,
+    tripImagesMap,
     tripImages,
     isImagesLoading,
     fetchTrips,
     fetchTrip,
     fetchTripImages,
+    clearTripImages,
     createTrip,
     updateTrip,
     deleteTrip,

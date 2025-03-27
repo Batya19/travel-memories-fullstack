@@ -10,6 +10,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<User | null>;
   register: (email: string, password: string, firstName: string, lastName: string) => Promise<User | null>;
   logout: () => void;
+  updateProfile: (data: { firstName: string, lastName: string }) => Promise<User | null>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,6 +20,8 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => null,
   register: async () => null,
   logout: () => { },
+  updateProfile: async () => null,
+  changePassword: async () => false
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -155,12 +159,75 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
   };
 
+  const updateProfile = async (data: { firstName: string, lastName: string }): Promise<User | null> => {
+    setLoading(true);
+    try {
+      const updatedUser = await authService.updateProfile(data);
+      
+      // עדכון המשתמש ב-context
+      setCurrentUser(prevUser => prevUser ? { ...prevUser, ...data } : null);
+      
+      toast({
+        title: 'Profile updated',
+        description: 'Your profile information has been updated successfully.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      return updatedUser;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to update profile.';
+      toast({
+        title: 'Update failed',
+        description: errorMessage,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    setLoading(true);
+    try {
+      await authService.changePassword(currentPassword, newPassword);
+      
+      toast({
+        title: 'Password changed',
+        description: 'Your password has been changed successfully.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      return true;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to change password.';
+      toast({
+        title: 'Password change failed',
+        description: errorMessage,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     currentUser,
     loading,
     login,
     register,
     logout,
+    updateProfile,
+    changePassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

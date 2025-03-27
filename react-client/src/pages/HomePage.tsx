@@ -1,22 +1,25 @@
-// HomePage.tsx - Main component
+// Updated HomePage.tsx
 import React, { useEffect, useState } from 'react';
 import { Box } from '@chakra-ui/react';
-import { Trip } from '../types';
+import { Trip, Image } from '../types';
 import tripService from '../services/tripService';
+import imageService from '../services/imageService';
 import { useAuth } from '../contexts/AuthContext';
-import HeroSection from '../components/sections/HeroSection';
-import RecentTripsSection from '../components/sections/RecentTripsSection';
-import FeaturesSection from '../components/sections/FeaturesSection';
-import CTASection from '../components/sections/CTASection';
+import HeroSection from '../components/features/home/HeroSection';
+import RecentTripsSection from '../components/features/home/RecentTripsSection';
+import FeaturesSection from '../components/features/home/FeaturesSection';
+import CTASection from '../components/features/home/CTASection';
+import MapDashboardSection from '../components/features/home/MapDashboardSection';
 
 const HomePage: React.FC = () => {
-  const [recentTrips, setRecentTrips] = useState<Trip[]>([]);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { currentUser } = useAuth();
 
   useEffect(() => {
-    const fetchRecentTrips = async () => {
+    const fetchUserData = async () => {
       if (!currentUser) {
         setLoading(false);
         return;
@@ -25,32 +28,68 @@ const HomePage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const trips = await tripService.getTrips();
-        // Sort trips by date (most recent first) and take only the first 4
-        const sortedTrips = trips
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, 4);
-        setRecentTrips(sortedTrips);
+        
+        // Fetch trips
+        const tripsData = await tripService.getTrips();
+        const sortedTrips = tripsData.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setTrips(sortedTrips);
+        
+        // Fetch images for the recent trips
+        // Limit to 5 trips to avoid too many API calls
+        const recentTripsForImages = sortedTrips.slice(0, 5);
+        
+        // Create an array of promises for fetching images
+        const imagePromises = recentTripsForImages.map(trip => 
+          imageService.getImages(trip.id).catch(err => {
+            console.error(`Error fetching images for trip ${trip.id}:`, err);
+            return []; // Return empty array if error occurs
+          })
+        );
+        
+        // Wait for all image fetch operations to complete
+        const imageResults = await Promise.all(imagePromises);
+        
+        // Flatten the array of image arrays into a single array
+        const allImages = imageResults.flat();
+        setImages(allImages);
+        
       } catch (err) {
-        console.error('Error fetching recent trips:', err);
-        setError('Failed to load recent trips. Please try again later.');
+        console.error('Error fetching data:', err);
+        setError('Failed to load your travel data. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRecentTrips();
+    fetchUserData();
   }, [currentUser]);
 
   return (
     <Box>
-      {/* Hero Section - Shown to everyone */}
-      <HeroSection />
+      {/* Display different content based on login status */}
+      {currentUser ? (
+        // For logged-in users, show the map dashboard
+        <MapDashboardSection 
+          trips={trips} 
+          images={images}
+          loading={loading}
+          error={error}
+          user={{
+            firstName: currentUser.firstName,
+            lastName: currentUser.lastName
+          }}
+        />
+      ) : (
+        // For non-logged-in users, show the original hero section with video
+        <HeroSection />
+      )}
 
       {/* Recent Trips Section - Only shown to logged in users */}
       {currentUser && (
         <RecentTripsSection
-          trips={recentTrips}
+          trips={trips.slice(0, 4)} // Show only 4 trips in this section
           loading={loading}
           error={error}
         />

@@ -37,10 +37,30 @@ import { format } from 'date-fns';
 import tripService from '../../services/tripService';
 import imageService from '../../services/imageService';
 import { Trip, Image } from '../../types';
-import ImageUploader from '../../components/trips/ImageUploader';
-import ImageGallery from '../../components/trips/ImageGallery';
-import TripMap from '../../components/trips/TripMap';
-import ImageFilter, { ImageFilters } from '../../components/trips/ImageFilter';
+import TripMap from '../../components/features/trips/map/TripMap';
+import ImageFilter, { ImageFilters } from '../../components/features/trips/filters/ImageFilter';
+import ImageGallery from '../../components/features/images/gallery/ImageGallery';
+import ImageUploader from '../../components/features/images/upload/ImageUploader';
+
+// Debug function to analyze image data
+const debugImages = (images: Image[], tripId: string) => {
+    console.log(`DEBUG: Images response for trip ${tripId}:`, images);
+
+    // Log each image's details
+    images.forEach((img, index) => {
+        console.log(`DEBUG: Image ${index + 1}:`, {
+            id: img.id,
+            tripId: img.tripId,
+            fileName: img.fileName,
+            createdAt: img.createdAt
+        });
+
+        // Check if tripId matches
+        if (img.tripId !== tripId) {
+            console.error(`ERROR: Image ${img.id} has tripId ${img.tripId} but was returned for trip ${tripId}!`);
+        }
+    });
+};
 
 const TripDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -49,12 +69,13 @@ const TripDetailPage: React.FC = () => {
     const [filteredImages, setFilteredImages] = useState<Image[]>([]);
     const [loading, setLoading] = useState(true);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
+    const [isImagesLoading, setIsImagesLoading] = useState(false);
     const [filters, setFilters] = useState<ImageFilters>({
         searchTerm: '',
         sortBy: 'newest',
         filterType: 'all',
     });
-    
+
     const navigate = useNavigate();
     const toast = useToast();
 
@@ -79,57 +100,105 @@ const TripDetailPage: React.FC = () => {
     } = useDisclosure();
     const cancelRef = React.useRef<HTMLButtonElement>(null!) as React.RefObject<HTMLButtonElement>;
 
-    // Fetch trip details and images
-    const fetchTripData = async () => {
-        if (!id) return;
+    // Critical: Reset ALL images when ID changes
+    useEffect(() => {
+        // When the ID changes, clear images immediately
+        console.log(`Trip ID changed to: ${id}, clearing all images`);
+        setImages([]);
+        setFilteredImages([]);
+    }, [id]);
 
-        setLoading(true);
+    // Fetch trip data
+    useEffect(() => {
+        const fetchTripData = async () => {
+            if (!id) return;
+
+            console.log(`Starting to fetch data for trip ID: ${id}`);
+            setLoading(true);
+
+            try {
+                // Fetch trip details
+                const tripData = await tripService.getTrip(id);
+                setTrip(tripData);
+                console.log(`Loaded trip: ${tripData.name}`);
+
+                // Fetch images separately
+                await fetchTripImages(id);
+            } catch (error) {
+                console.error('Error fetching trip data:', error);
+                toast({
+                    title: 'Error',
+                    description: 'Failed to load trip details. Please try again.',
+                    status: 'error',
+                    duration: 5000,
+                    isClosable: true,
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTripData();
+    }, [id]);
+
+    // Separate function to fetch images
+    const fetchTripImages = async (tripId: string) => {
+        if (!tripId) return;
+
+        console.log(`Fetching images for trip ID: ${tripId}`);
+        setIsImagesLoading(true);
+
         try {
-            const tripData = await tripService.getTrip(id);
-            setTrip(tripData);
+            const imagesData = await imageService.getImages(tripId);
 
-            const imagesData = await imageService.getImages(id);
+            // Add debugging to inspect the returned images
+            debugImages(imagesData, tripId);
+
+            console.log(`Loaded ${imagesData.length} images for trip ${tripId}`);
+
+            // Set the retrieved images
             setImages(imagesData);
-            
-            // Initially, filtered images are the same as all images
+
+            // Also set filtered images initially
             setFilteredImages(imagesData);
         } catch (error) {
-            console.error('Error fetching trip data:', error);
+            console.error('Error fetching trip images:', error);
             toast({
                 title: 'Error',
-                description: 'Failed to load trip details. Please try again.',
+                description: 'Failed to load trip images. Please try again.',
                 status: 'error',
                 duration: 5000,
                 isClosable: true,
             });
         } finally {
-            setLoading(false);
+            setIsImagesLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchTripData();
-    }, [id]);
-
     // Filter and sort images whenever images array or filters change
     useEffect(() => {
+        if (!images.length) {
+            setFilteredImages([]);
+            return;
+        }
+
         let result = [...images];
-        
+
         // Apply search filter
         if (filters.searchTerm) {
             const term = filters.searchTerm.toLowerCase();
-            result = result.filter(img => 
+            result = result.filter(img =>
                 img.fileName.toLowerCase().includes(term)
             );
         }
-        
+
         // Apply type filter
         if (filters.filterType === 'ai') {
             result = result.filter(img => img.isAiGenerated);
         } else if (filters.filterType === 'regular') {
             result = result.filter(img => !img.isAiGenerated);
         }
-        
+
         // Apply sorting
         result = result.sort((a, b) => {
             switch (filters.sortBy) {
@@ -145,7 +214,7 @@ const TripDetailPage: React.FC = () => {
                     return 0;
             }
         });
-        
+
         setFilteredImages(result);
     }, [images, filters]);
 
@@ -231,6 +300,51 @@ const TripDetailPage: React.FC = () => {
             });
         } finally {
             onDeleteClose();
+        }
+    };
+
+    // Handle image upload completion
+    const handleUploadComplete = async () => {
+        if (!id) return;
+
+        // Refresh images after upload
+        await fetchTripImages(id);
+        onUploadClose();
+    };
+
+    // Handle image deletion
+    const handleImageDelete = async (imageId: string) => {
+        if (!id) return;
+
+        try {
+            // Optimistic UI update - remove the image locally first
+            setImages(prevImages => prevImages.filter(img => img.id !== imageId));
+
+            // Then perform the actual deletion on the server
+            await imageService.deleteImage(imageId);
+
+            // Refresh images to ensure consistency
+            await fetchTripImages(id);
+
+            toast({
+                title: 'Image deleted',
+                description: 'The image has been deleted successfully.',
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+            });
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            toast({
+                title: 'Error',
+                description: 'Failed to delete the image. Please try again.',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
+
+            // Refresh images to revert optimistic update if it failed
+            await fetchTripImages(id);
         }
     };
 
@@ -343,7 +457,11 @@ const TripDetailPage: React.FC = () => {
                             </Button>
                         </Flex>
 
-                        {images.length === 0 ? (
+                        {isImagesLoading ? (
+                            <Flex justify="center" py={12}>
+                                <Spinner size="lg" color="brand.500" />
+                            </Flex>
+                        ) : images.length === 0 ? (
                             <Box
                                 borderWidth={2}
                                 borderRadius="md"
@@ -366,22 +484,19 @@ const TripDetailPage: React.FC = () => {
                         ) : (
                             <>
                                 {/* Add ImageFilter component */}
-                                <ImageFilter 
-                                    onFilterChange={handleFilterChange} 
-                                    hasAiImages={hasAiImages} 
+                                <ImageFilter
+                                    onFilterChange={handleFilterChange}
+                                    hasAiImages={hasAiImages}
                                 />
-                                
+
                                 {/* Display count of filtered images */}
                                 <Text fontSize="sm" color="gray.500" mb={4}>
                                     Showing {filteredImages.length} of {images.length} images
                                 </Text>
-                                
+
                                 <ImageGallery
                                     images={filteredImages}
-                                    onDelete={(imageId) => {
-                                        // Update the state to remove the deleted image
-                                        setImages(current => current.filter(img => img.id !== imageId));
-                                    }}
+                                    onDelete={handleImageDelete}
                                 />
                             </>
                         )}
@@ -411,10 +526,7 @@ const TripDetailPage: React.FC = () => {
                     <ModalBody>
                         <ImageUploader
                             tripId={trip.id}
-                            onUploadComplete={() => {
-                                fetchTripData(); // Refresh images after upload
-                                onUploadClose();
-                            }}
+                            onUploadComplete={handleUploadComplete}
                         />
                     </ModalBody>
                 </ModalContent>

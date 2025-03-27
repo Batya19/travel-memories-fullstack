@@ -1,10 +1,8 @@
-// src/theme/index.ts
 import { extendTheme, ThemeConfig } from '@chakra-ui/react';
 
-// הגדרת תצורה לתמיכה במצב חשוך
 const config: ThemeConfig = {
   initialColorMode: 'light',
-  useSystemColorMode: true, // אם רוצים שהאפליקציה תשתמש בהגדרת המערכת
+  useSystemColorMode: true, 
 };
 
 const theme = extendTheme({

@@ -41,14 +41,13 @@ export interface Trip {
 }
 
 // Image types
-// In your types.ts file
 export interface Image {
   id: string;
   fileName: string;
   filePath: string;
   fileSize: number;
   mimeType: string;
-  fileUrl: string; // Add this property
+  fileUrl: string;
   takenAt: string | null;
   tripId: string;
   tripName: string;

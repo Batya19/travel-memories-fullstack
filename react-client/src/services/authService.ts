@@ -1,4 +1,4 @@
-import { apiService } from './api';
+import { apiService } from './api/client';
 import { jwtDecode } from 'jwt-decode';
 import { User } from '../types';
 
@@ -31,7 +31,7 @@ const authService = {
         lastName
       });
       console.log('Registration successful, token received');
-      
+
       // Map the response to a User object
       const user: User = {
         id: response.userId,
@@ -42,18 +42,18 @@ const authService = {
         storageQuota: 10240, // Default values
         aiQuota: 50
       };
-      
+
       console.log('Saving user to localStorage:', user);
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       return user;
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;
     }
   },
-  
+
   login: async (email: string, password: string) => {
     try {
       console.log('Attempting login with:', { email });
@@ -62,7 +62,7 @@ const authService = {
         password
       });
       console.log('Login successful, token received');
-      
+
       // Map the response to a User object
       const user: User = {
         id: response.userId,
@@ -73,11 +73,11 @@ const authService = {
         storageQuota: 10240, // Default values
         aiQuota: 50
       };
-      
+
       console.log('Saving user to localStorage:', user);
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       return user;
     } catch (error) {
       console.error('Login failed:', error);
@@ -94,9 +94,9 @@ const authService = {
   getCurrentUser: (): User | null => {
     const userStr = localStorage.getItem('user');
     console.log('getCurrentUser - userStr from localStorage:', userStr);
-    
+
     if (!userStr) return null;
-  
+
     try {
       const user = JSON.parse(userStr);
       console.log('getCurrentUser - parsed user:', user);
@@ -128,6 +128,60 @@ const authService = {
     } catch (error) {
       console.error('Backend connection test failed:', error);
       return false;
+    }
+  },
+  // עדכונים ל-authService.ts - הוסף את הפונקציות הבאות
+
+  updateProfile: async (data: { firstName: string, lastName: string }) => {
+    try {
+      const response = await apiService.put<User>('/users/me', data);
+
+      // עדכון המשתמש בלוקל סטורג'
+      const user = authService.getCurrentUser();
+      if (user) {
+        const updatedUser = { ...user, ...data };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      throw error;
+    }
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    try {
+      return await apiService.post('/users/change-password', {
+        currentPassword,
+        newPassword
+      });
+    } catch (error) {
+      console.error('Failed to change password:', error);
+      throw error;
+    }
+  },
+
+  // תיקון ל-getUserQuota ב-authService.ts
+  getUserQuota: async () => {
+    try {
+      return await apiService.get('/users/quota');
+    } catch (error) {
+      console.error('Failed to get user quota:', error);
+
+      // החזר אובייקט ברירת מחדל במקרה של שגיאה
+      const user = authService.getCurrentUser();
+      if (user) {
+        return {
+          storageQuotaMB: user.storageQuota,
+          storageUsedMB: 0,
+          storageRemainingMB: user.storageQuota,
+          aiQuotaTotal: user.aiQuota,
+          aiQuotaUsed: 0,
+          aiQuotaRemaining: user.aiQuota
+        };
+      }
+      throw error;
     }
   }
 };

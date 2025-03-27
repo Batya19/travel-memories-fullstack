@@ -1,57 +1,96 @@
 src/
-│   App.css
-│   App.tsx (Updated with new routes)
-│   index.css
-│   main.tsx
-│   vite-env.d.ts
+├── assets/
+│   └── react.svg
 │
-├───assets
-│       react.svg
-│
-├───components
-│   ├───auth
-│   │       LoginForm.tsx
-│   │       RegisterForm.tsx
+├── components/
+│   ├── common/
+│   │   ├── feedback/
+│   │   │   └── LoadingSpinner.tsx
+│   │   ├── layout/
+│   │   │   ├── Footer.tsx
+│   │   │   └── Header.tsx
+│   │   ├── media/
+│   │   │   ├── ImagePlaceholder.tsx
+│   │   │   ├── LazyImage.tsx
+│   │   │   └── OptimizedImage.tsx
+│   │   └── ui/
+│   │       ├── AppLogo.tsx
+│   │       └── DarkModeToggle.tsx
 │   │
-│   ├───common
-│   │       LoadingSpinner.tsx
+│   ├── features/
+│   │   ├── auth/
+│   │   │   ├── LoginForm.tsx
+│   │   │   └── RegisterForm.tsx
+│   │   │
+│   │   ├── home/
+│   │   │   ├── CTASection.tsx
+│   │   │   ├── FeaturesSection.tsx
+│   │   │   ├── HeroSection.tsx
+│   │   │   ├── MapDashboardSection.tsx
+│   │   │   └── RecentTripsSection.tsx
+│   │   │
+│   │   ├── images/
+│   │   │   ├── gallery/
+│   │   │   │   ├── ImageGallery.tsx
+│   │   │   │   ├── MasonryGrid.tsx
+│   │   │   │   └── ResponsivePhotoGrid.tsx
+│   │   │   │
+│   │   │   └── upload/
+│   │   │       ├── EnhancedImageUploader.tsx
+│   │   │       └── ImageUploader.tsx
+│   │   │
+│   │   └── trips/
+│   │       ├── filters/
+│   │       │   └── ImageFilter.tsx
+│   │       ├── map/
+│   │       │   ├── HomePageMap.tsx
+│   │       │   ├── MapLocationPicker.tsx
+│   │       │   └── TripMap.tsx
+│   │       ├── viewers/
+│   │       │   └── ImageViewer.tsx
+│   │       └── form/
+│   │           └── TripForm.tsx
+│
+├── contexts/
+│   ├── AuthContext.tsx
+│   └── TripContext.tsx
+│
+├── pages/
+│   ├── auth/
+│   │   ├── LoginPage.tsx
+│   │   └── RegisterPage.tsx
 │   │
-│   ├───layout
-│   │       Footer.tsx
-│   │       Header.tsx
+│   ├── error/
+│   │   └── NotFoundPage.tsx
 │   │
-│   └───trips (New folder)
-│           ImageGallery.tsx
-│           ImageUploader.tsx
-│           MapLocationPicker.tsx
-│           TripForm.tsx
-│           TripMap.tsx
-│
-├───contexts
-│       AuthContext.tsx
-│
-├───pages
-│   │   HomePage.tsx
-│   │   NotFoundPage.tsx
-│   │   TripsPage.tsx (New file)
+│   ├── trips/
+│   │   ├── SharedTripPage.tsx
+│   │   ├── TripDetailPage.tsx
+│   │   ├── TripFormPage.tsx
+│   │   ├── TripMap.tsx
+│   │   └── TripsPage.tsx
 │   │
-│   ├───auth
-│   │       LoginPage.tsx
-│   │       RegisterPage.tsx
-│   │
-│   └───trips (New folder)
-│           SharedTripPage.tsx
-│           TripDetailPage.tsx
-│           TripFormPage.tsx
+│   ├── HomePage.tsx
+│   └── ProfilePage.tsx
 │
-├───services
-│       api.ts
-│       authService.ts
-│       imageService.ts (New file)
-│       tripService.ts (New file)
+├── services/
+│   ├── api/
+│   │   └── client.ts (rename from api.ts)
+│   ├── authService.ts
+│   ├── imageService.ts
+│   └── tripService.ts
 │
-├───theme
-│       index.ts
+├── theme/
+│   └── index.ts
 │
-└───types
-        index.ts (Already includes Trip and Image types)
+├── types/
+│   └── index.ts
+│
+├── utils/
+│   └── imageUtils.ts
+│
+├── App.css
+├── App.tsx
+├── index.css
+├── main.tsx
+└── vite-env.d.ts

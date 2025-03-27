@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Container, Spinner, Flex } from '@chakra-ui/react';
-import TripForm from '../../components/trips/TripForm';
 import tripService from '../../services/tripService';
 import { Trip } from '../../types';
+import TripForm from '../../components/features/trips/form/TripForm';
 
 interface TripFormPageProps {
     isEditing?: boolean;

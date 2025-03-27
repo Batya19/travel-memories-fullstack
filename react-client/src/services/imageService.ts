@@ -1,4 +1,4 @@
-import { apiService } from './api';
+import { apiService } from './api/client';
 import { Image } from '../types';
 import axios from 'axios';
 
@@ -12,7 +12,28 @@ const imageService = {
     // Get all images for a specific trip
     getImages: async (tripId: string) => {
         try {
-            return await apiService.get<Image[]>(`/images?tripId=${tripId}`);
+            console.log(`API Call: Requesting images for tripId ${tripId}`);
+
+            // Fixed URL to use the correct endpoint
+            const url = `/images/trip/${tripId}?_debug=${Date.now()}`;
+
+            const response = await apiService.get<Image[]>(url);
+
+            console.log(`API Response: Received ${response.length} images for tripId ${tripId}`);
+
+            // Verify that all returned images actually belong to this trip
+            const foreignImages = response.filter(img => img.tripId !== tripId);
+            if (foreignImages.length > 0) {
+                console.error(`ERROR: Received ${foreignImages.length} images that don't belong to tripId ${tripId}:`, foreignImages);
+
+                // Filter out the foreign images to fix the issue
+                const correctImages = response.filter(img => img.tripId === tripId);
+                console.log(`FIXED: Filtered to ${correctImages.length} correct images for this trip`);
+
+                return correctImages;
+            }
+
+            return response;
         } catch (error) {
             console.error(`Failed to fetch images for trip ${tripId}:`, error);
             throw error;
