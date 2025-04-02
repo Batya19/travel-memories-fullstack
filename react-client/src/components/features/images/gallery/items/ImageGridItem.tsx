@@ -1,8 +1,9 @@
 import React from 'react';
-import { Box, Badge, IconButton, AspectRatio, Skeleton, useColorModeValue } from '@chakra-ui/react';
-import { FaTrash, FaRobot } from 'react-icons/fa';
-import { Image as ImageType } from '../../../../types';
-import { getImageUrl } from '../../../../utils/imageUtils';
+import { Box, IconButton, AspectRatio, Skeleton, useColorModeValue } from '@chakra-ui/react';
+import { FaTrash } from 'react-icons/fa';
+import { Image as ImageType } from '../../../../../types';
+import { getImageUrl } from '../../../../../utils/imageUtils';
+import { ImageBadge } from '../components/ImageBadge';
 
 interface ImageGridItemProps {
     image: ImageType;
@@ -65,20 +66,7 @@ export const ImageGridItem: React.FC<ImageGridItemProps> = ({
                         transition="opacity 0.3s ease-in-out"
                     />
 
-                    {image.isAiGenerated && (
-                        <Badge
-                            position="absolute"
-                            top={2}
-                            left={2}
-                            colorScheme="purple"
-                            display="flex"
-                            alignItems="center"
-                            gap={1}
-                            zIndex={1}
-                        >
-                            <FaRobot /> AI
-                        </Badge>
-                    )}
+                    <ImageBadge isAiGenerated={image.isAiGenerated} />
 
                     {!readonly && (
                         <IconButton
@@ -104,3 +92,5 @@ export const ImageGridItem: React.FC<ImageGridItemProps> = ({
         </Box>
     );
 };
+
+export default ImageGridItem;

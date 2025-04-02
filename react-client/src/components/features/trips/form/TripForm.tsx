@@ -101,7 +101,7 @@ const TripForm: React.FC<TripFormProps> = ({ initialData, isEditing = false }) =
         const newErrors: FormErrors = {};
         if (!formData.name.trim()) {
             newErrors.name = 'Trip name is required';
-        }
+        }   
 
         if (!formData.startDate) {
             newErrors.startDate = 'Start date is required';

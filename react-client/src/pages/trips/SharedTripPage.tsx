@@ -24,7 +24,7 @@ import imageService from '../../services/imageService';
 import { Trip, Image } from '../../types';
 import TripMap from '../../components/features/trips/map/TripMap';
 import { format } from 'date-fns';
-import ImageGallery from '../../components/features/images/gallery/ImageGallery';
+import Gallery from '../../components/features/images/gallery/Gallery';
 
 const SharedTripPage: React.FC = () => {
     const { shareId } = useParams<{ shareId: string }>();
@@ -151,8 +151,9 @@ const SharedTripPage: React.FC = () => {
                                 <Text>This trip doesn't have any photos yet.</Text>
                             </Box>
                         ) : (
-                            <ImageGallery
+                            <Gallery
                                 images={images}
+                                layout="grid"
                                 readonly={true}
                             />
                         )}

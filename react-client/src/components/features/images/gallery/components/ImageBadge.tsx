@@ -26,8 +26,9 @@ export const ImageBadge: React.FC<ImageBadgeProps> = ({
                 px={2}
                 py={1}
                 borderRadius="md"
+                zIndex={1}
             >
-                {showIcon ? 'AI' : <FaRobot size="0.8em" />}
+                {showIcon ? <FaRobot size="0.8em" /> : 'AI'}
             </Badge>
         );
     }
@@ -43,3 +44,5 @@ export const ImageBadge: React.FC<ImageBadgeProps> = ({
         </Badge>
     );
 };
+
+export default ImageBadge;

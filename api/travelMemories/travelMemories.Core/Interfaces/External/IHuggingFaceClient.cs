@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
-namespace TravelMemories.Core.Interfaces.External
+﻿namespace TravelMemories.Core.Interfaces.External
 {
     public interface IHuggingFaceClient
     {

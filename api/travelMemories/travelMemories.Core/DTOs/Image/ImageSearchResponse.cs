@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TravelMemories.Core.DTOs.Image
+﻿namespace TravelMemories.Core.DTOs.Image
 {
     public class ImageSearchResponse
     {

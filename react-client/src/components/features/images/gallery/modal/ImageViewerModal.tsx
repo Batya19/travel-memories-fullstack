@@ -1,3 +1,4 @@
+// src/components/features/images/gallery/modal/ImageViewerModal.tsx
 import React from 'react';
 import {
     Modal,
@@ -7,57 +8,11 @@ import {
     Flex,
     IconButton,
     Box,
-    Text,
-    Badge
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaArrowRight, FaRobot, FaCalendarAlt } from 'react-icons/fa';
-import { Image as ImageType } from '../../../../types';
-import { getImageUrl } from '../../../../utils/imageUtils';
-import { format } from 'date-fns';
-
-// קומפוננטת המידע של התמונה
-interface ImageDetailsProps {
-    image: ImageType;
-}
-
-export const ImageDetails: React.FC<ImageDetailsProps> = ({ image }) => {
-    return (
-        <Box
-            bg="blackAlpha.700"
-            p={3}
-            borderRadius="md"
-            mt={2}
-            color="white"
-        >
-            <Flex justify="space-between" align="center">
-                <Text fontSize="md" fontWeight="medium">
-                    {image.fileName}
-                </Text>
-
-                {image.isAiGenerated && (
-                    <Badge colorScheme="purple" display="flex" alignItems="center" gap={1}>
-                        <FaRobot /> AI Generated
-                    </Badge>
-                )}
-            </Flex>
-
-            {image.takenAt && (
-                <Flex align="center" gap={1} mt={1}>
-                    <FaCalendarAlt size="0.8em" />
-                    <Text fontSize="sm">
-                        Taken on {format(new Date(image.takenAt), 'MMMM d, yyyy')}
-                    </Text>
-                </Flex>
-            )}
-
-            {image.isAiGenerated && image.aiPrompt && (
-                <Text fontSize="sm" mt={1}>
-                    <strong>Prompt:</strong> {image.aiPrompt}
-                </Text>
-            )}
-        </Box>
-    );
-};
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { Image as ImageType } from '../../../../../types';
+import { getImageUrl } from '../../../../../utils/imageUtils';
+import { ImageDetails } from '../components/ImageDetails';  // ייבוא ImageDetails מהמיקום הנכון
 
 interface ImageViewerModalProps {
     isOpen: boolean;

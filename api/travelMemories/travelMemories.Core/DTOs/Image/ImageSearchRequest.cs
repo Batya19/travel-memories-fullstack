@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TravelMemories.Core.DTOs.Image
+﻿namespace TravelMemories.Core.DTOs.Image
 {
     public class ImageSearchRequest
     {
@@ -17,4 +11,4 @@ namespace TravelMemories.Core.DTOs.Image
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 20;
     }
-}   
+}

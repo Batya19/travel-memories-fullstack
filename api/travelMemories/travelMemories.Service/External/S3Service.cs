@@ -1,11 +1,6 @@
 ﻿using Amazon.S3;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TravelMemories.Core.Interfaces.External;
 using TravelMemories.Service.Helpers;
 

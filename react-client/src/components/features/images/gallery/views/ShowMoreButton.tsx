@@ -24,3 +24,5 @@ export const ShowMoreButton: React.FC<ShowMoreButtonProps> = ({
         </Flex>
     );
 };
+
+export default ShowMoreButton;

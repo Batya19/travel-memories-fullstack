@@ -1,9 +1,9 @@
 import React from 'react';
-import { Box } from '@chakra-ui/react';
-import { Image as ImageType } from '../../../../types';
-import { ImageListItem } from './ImageListItem';
+import { SimpleGrid } from '@chakra-ui/react';
+import { Image as ImageType } from '../../../../../types';
+import { ImageGridItem } from '../items/ImageGridItem';
 
-interface ImageListViewProps {
+interface ImageGridViewProps {
     images: ImageType[];
     loadedImages: Record<string, boolean>;
     onImageLoad: (imageId: string) => void;
@@ -12,7 +12,7 @@ interface ImageListViewProps {
     readonly?: boolean;
 }
 
-export const ImageListView: React.FC<ImageListViewProps> = ({
+export const ImageGridView: React.FC<ImageGridViewProps> = ({
     images,
     loadedImages,
     onImageLoad,
@@ -21,9 +21,9 @@ export const ImageListView: React.FC<ImageListViewProps> = ({
     readonly = false
 }) => {
     return (
-        <Box>
+        <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 5 }} spacing={4}>
             {images.map((image, index) => (
-                <ImageListItem
+                <ImageGridItem
                     key={image.id}
                     image={image}
                     isLoaded={!!loadedImages[image.id]}
@@ -33,6 +33,8 @@ export const ImageListView: React.FC<ImageListViewProps> = ({
                     readonly={readonly}
                 />
             ))}
-        </Box>
+        </SimpleGrid>
     );
 };
+
+export default ImageGridView;

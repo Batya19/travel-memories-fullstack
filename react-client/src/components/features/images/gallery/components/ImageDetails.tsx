@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Flex, Text } from '@chakra-ui/react';
 import { format } from 'date-fns';
-import { Image as ImageType } from '../../../../types';
+import { Image as ImageType } from '../../../../../types';
 import { ImageBadge } from './ImageBadge';
 
 interface ImageDetailsProps {
@@ -41,3 +41,5 @@ export const ImageDetails: React.FC<ImageDetailsProps> = ({ image }) => {
         </Box>
     );
 };
+
+export default ImageDetails;

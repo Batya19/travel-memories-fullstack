@@ -1,9 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TravelMemories.Core.DTOs.User;
 using TravelMemories.Core.Interfaces.Repositories;
 using TravelMemories.Core.Interfaces;

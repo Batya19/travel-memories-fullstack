@@ -52,3 +52,5 @@ export const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> =
         </AlertDialog>
     );
 };
+
+export default DeleteConfirmationDialog;

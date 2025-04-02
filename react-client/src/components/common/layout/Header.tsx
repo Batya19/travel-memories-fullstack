@@ -46,7 +46,7 @@ const Header: React.FC = () => {
       boxShadow={'sm'}
       position="sticky"
       top={0}
-      zIndex={20}
+      zIndex={2000}
     >
       <Container maxW="container.xl">
         <Flex

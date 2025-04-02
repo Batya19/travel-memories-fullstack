@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
-using TravelMemories.Core.Interfaces;
+﻿using TravelMemories.Core.Interfaces;
 
 namespace TravelMemories.Middleware
 {

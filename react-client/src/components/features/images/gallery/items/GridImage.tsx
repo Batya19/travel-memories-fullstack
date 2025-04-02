@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box } from '@chakra-ui/react';
-import { Image as ImageType } from '../../../../types';
-import { getImageUrl } from '../../../../utils/imageUtils';
-import OptimizedImage from '../../../common/media/OptimizedImage';
-import { ImageBadge } from './ImageBadge';
+import { Image as ImageType } from '../../../../../types';
+import { getImageUrl } from '../../../../../utils/imageUtils';
+import OptimizedImage from '../../../../common/media/OptimizedImage';
+import { ImageBadge } from '../components/ImageBadge';
 
 interface GridImageProps {
     image: ImageType;
@@ -29,3 +29,5 @@ export const GridImage: React.FC<GridImageProps> = ({
         </Box>
     );
 };
+
+export default GridImage;

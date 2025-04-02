@@ -1,14 +1,9 @@
-// Updated App.tsx - add new imports and update routes
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import TripProvider from './contexts/TripContext';
 import theme from './theme';
-
-// Layout components
-
-// Pages
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';

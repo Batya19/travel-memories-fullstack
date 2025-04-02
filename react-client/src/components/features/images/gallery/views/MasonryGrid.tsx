@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Box, SimpleGrid, useBreakpointValue } from '@chakra-ui/react';
-import { Image as ImageType } from '../../../../types';
-import { getImageUrl } from '../../../../utils/imageUtils';
-import LazyImage from '../../../common/media/LazyImage';
+import { Image as ImageType } from '../../../../../types';
+import { getImageUrl } from '../../../../../utils/imageUtils';
+import LazyImage from '../../../../common/media/LazyImage';
 
 interface MasonryGridProps {
   images: ImageType[];
@@ -17,15 +17,13 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({
   spacing = 4,
   onImageClick
 }) => {
-  const [columnHeights, setColumnHeights] = useState<number[]>([]);
   const [imageLayouts, setImageLayouts] = useState<Array<{ aspectRatio: number; column: number }>>([]);
   const currentColumns = useBreakpointValue(columns) || columns.base;
-console.log(columnHeights);
 
   // Simulate image loading to calculate aspect ratios
   useEffect(() => {
     const loadImages = async () => {
-      // Reset column heights
+      // Initialize column heights array
       const heights = Array(currentColumns).fill(0);
 
       // Calculate layouts based on image aspect ratios
@@ -63,7 +61,6 @@ console.log(columnHeights);
         })
       );
 
-      setColumnHeights(heights);
       setImageLayouts(layouts);
     };
 

@@ -1,10 +1,4 @@
-﻿using Microsoft.AspNetCore.Razor.TagHelpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TravelMemories.Core.DTOs.Image;
+﻿using TravelMemories.Core.DTOs.Image;
 using TravelMemories.Core.Interfaces.External;
 using TravelMemories.Core.Interfaces.Repositories;
 using TravelMemories.Core.Interfaces;

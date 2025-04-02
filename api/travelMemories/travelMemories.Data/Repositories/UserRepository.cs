@@ -1,9 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TravelMemories.Core.Interfaces.Repositories;
 using TravelMemories.Core.Models;
 using TravelMemories.Data.Context;
@@ -45,7 +40,6 @@ namespace TravelMemories.Data.Repositories
 
         public async Task<int> GetAiImageCountAsync(Guid userId, DateTime monthStart)
         {
-            // המר את monthStart ל-UTC
             DateTime utcMonthStart = DateTime.SpecifyKind(monthStart, DateTimeKind.Utc);
             var monthEnd = utcMonthStart.AddMonths(1);
 

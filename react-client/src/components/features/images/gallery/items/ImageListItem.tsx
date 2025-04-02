@@ -1,9 +1,10 @@
 import React from 'react';
-import { Box, Flex, Text, Badge, IconButton, Skeleton, useColorModeValue } from '@chakra-ui/react';
-import { FaTrash, FaRobot, FaCalendarAlt } from 'react-icons/fa';
-import { Image as ImageType } from '../../../../types';
-import { getImageUrl } from '../../../../utils/imageUtils';
+import { Box, Flex, Text, IconButton, Skeleton, useColorModeValue } from '@chakra-ui/react';
+import { FaTrash, FaCalendarAlt } from 'react-icons/fa';
+import { Image as ImageType } from '../../../../../types';
+import { getImageUrl } from '../../../../../utils/imageUtils';
 import { format } from 'date-fns';
+import { ImageBadge } from '../components/ImageBadge';
 
 interface ImageListItemProps {
     image: ImageType;
@@ -81,16 +82,11 @@ export const ImageListItem: React.FC<ImageListItemProps> = ({
                 </Flex>
             </Flex>
             <Flex p={2} alignItems="center">
+                {/* שימוש ב-ImageBadge במקום מימוש ישיר */}
                 {image.isAiGenerated && (
-                    <Badge
-                        colorScheme="purple"
-                        display="flex"
-                        alignItems="center"
-                        gap={1}
-                        mr={2}
-                    >
-                        <FaRobot /> AI
-                    </Badge>
+                    <Box mr={2}>
+                        <ImageBadge isAiGenerated={image.isAiGenerated} position="inline" />
+                    </Box>
                 )}
 
                 {!readonly && (
@@ -110,3 +106,5 @@ export const ImageListItem: React.FC<ImageListItemProps> = ({
         </Flex>
     );
 };
+
+export default ImageListItem;

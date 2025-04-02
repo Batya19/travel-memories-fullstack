@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace TravelMemories.Core.Models
+﻿namespace TravelMemories.Core.Models
 {
     public class Image : BaseEntity
     {

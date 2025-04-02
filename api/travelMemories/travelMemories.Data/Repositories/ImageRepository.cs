@@ -1,9 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TravelMemories.Core.Interfaces.Repositories;
 using TravelMemories.Core.Models;
 using TravelMemories.Data.Context;

@@ -7,7 +7,6 @@ namespace TravelMemories.Controllers
     [Route("api")]
     public class HomeController : Controller
     {
-        // In your .NET controller
         [HttpGet("health")]
         public IActionResult Health()
         {

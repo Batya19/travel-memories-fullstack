@@ -4,12 +4,6 @@ using Amazon.S3.Transfer;
 using Amazon.S3;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Amazon.Runtime;
 
 namespace TravelMemories.Service.Helpers
 {

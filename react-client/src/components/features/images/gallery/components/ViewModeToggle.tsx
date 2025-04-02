@@ -39,3 +39,5 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
         </Flex>
     );
 };
+
+export default ViewModeToggle;

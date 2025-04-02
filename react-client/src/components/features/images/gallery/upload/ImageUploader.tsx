@@ -14,7 +14,7 @@ import {
   IconButton,
 } from '@chakra-ui/react';
 import { FaUpload, FaTrash, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
-import imageService from '../../../../services/imageService';
+import imageService from '../../../../../services/imageService';
 import { useDropzone } from 'react-dropzone';
 
 interface ImageUploaderProps {

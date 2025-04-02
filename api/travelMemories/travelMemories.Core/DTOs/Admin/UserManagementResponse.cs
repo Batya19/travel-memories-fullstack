@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TravelMemories.Core.DTOs.Admin
+﻿namespace TravelMemories.Core.DTOs.Admin
 {
     public class UserManagementResponse
     {

@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 using TravelMemories.Core.DTOs;
 using TravelMemories.Core.DTOs.Auth;
 using TravelMemories.Core.Interfaces;

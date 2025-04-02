@@ -1,7 +1,7 @@
 import React from 'react';
 import { SimpleGrid, Text } from '@chakra-ui/react';
-import { Image as ImageType } from '../../../../types';
-import { GridImage } from './GridImage';
+import { Image as ImageType } from '../../../../../types';
+import { GridImage } from '../items/GridImage';
 
 interface RegularPhotoGridProps {
     images: ImageType[];
@@ -32,3 +32,5 @@ export const RegularPhotoGrid: React.FC<RegularPhotoGridProps> = ({
         </SimpleGrid>
     );
 };
+
+export default RegularPhotoGrid;

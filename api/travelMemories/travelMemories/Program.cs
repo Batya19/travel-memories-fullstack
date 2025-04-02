@@ -2,37 +2,28 @@ using Amazon;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
 using Amazon.S3;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using SixLabors.ImageSharp;
-using System;
-using System.IO;
-using System.Reflection;
 using TravelMemories;
 using TravelMemories.Data.Context;
 using TravelMemories.Middleware;
 
+// Entry point for the application
 var builder = WebApplication.CreateBuilder(args);
 
-// Load user secrets
+// Load user secrets for storing sensitive configuration (connection strings, API keys, etc.)
 builder.Configuration.AddUserSecrets<Program>();
 
-// Configure logging
+// Configure logging - clear existing providers and add console and debug providers
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
-// Add services to the container
+// Add controllers to the dependency injection container
 builder.Services.AddControllers();
 
-// Add database context
+// Configure Entity Framework with PostgreSQL database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -41,26 +32,27 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(3),
             errorCodesToAdd: null)));
 
-// הגדרת שירותי AWS S3 - תוקן
+// Configure AWS S3 service for file storage
 builder.Services.AddAWSService<IAmazonS3>(new AWSOptions
 {
     Credentials = new BasicAWSCredentials(
-        builder.Configuration["AWS:S3:AccessKey"],  // שינוי מ-AWS:AccessKey ל-AWS:S3:AccessKey
-        builder.Configuration["AWS:S3:SecretKey"]), // שינוי מ-AWS:SecretKey ל-AWS:S3:SecretKey
+        builder.Configuration["AWS:S3:AccessKey"],
+        builder.Configuration["AWS:S3:SecretKey"]),
     Region = RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"])
 });
 
-// Add authentication and authorization
+// Configure JWT authentication
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
-// Register services and repositories
+// Register application services, repositories, and external services
 builder.Services.RegisterServices();
 builder.Services.RegisterRepositories();
 builder.Services.RegisterExternalServices(builder.Configuration);
 
-// Configure CORS
+// Configure CORS policies to allow cross-origin requests
 builder.Services.AddCors(options =>
 {
+    // Development policy - allows all origins (not recommended for production)
     options.AddPolicy("AllowAllOrigins",
         builder =>
         {
@@ -69,18 +61,20 @@ builder.Services.AddCors(options =>
                    .AllowAnyHeader();
         });
 
+    // Production policy - allows only specific origins
     options.AddPolicy("AllowReactApp", builder =>
     {
-        builder.WithOrigins("http://localhost:5173") // Your React app URL
+        builder.WithOrigins("https://travel-memories-react.onrender.com") // React app URL
                .AllowAnyHeader()
                .AllowAnyMethod();
     });
 });
 
-// Add Swagger/OpenAPI with more detailed configuration
+// Configure Swagger/OpenAPI for API documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    // Basic API information
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Travel Memories API",
@@ -93,7 +87,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-    // Add JWT Authentication to Swagger
+    // Configure Swagger to use JWT authentication
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -119,14 +113,16 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// Build the application
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
+    // Show detailed error page in development
     app.UseDeveloperExceptionPage();
 
-    // Configure Swagger UI
+    // Configure Swagger UI for development environment
     app.UseSwagger(c =>
     {
         c.RouteTemplate = "swagger/{documentName}/swagger.json";
@@ -141,7 +137,7 @@ if (app.Environment.IsDevelopment())
         c.EnableFilter();
     });
 
-    // Apply migrations in development environment
+    // Automatically apply database migrations in development
     using (var scope = app.Services.CreateScope())
     {
         try
@@ -162,28 +158,29 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    // Use exception handler middleware in production
+    // Use custom exception handler middleware in production
     app.UseMiddleware<ExceptionMiddleware>();
 }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles(); // Add this if you have static files
+// Configure middleware pipeline in the correct order
+app.UseHttpsRedirection();  // Redirect HTTP requests to HTTPS
+app.UseStaticFiles();       // Serve static files (e.g., images, CSS, JavaScript)
+app.UseRouting();           // Enable endpoint routing
 
-app.UseRouting();
-
-// Use CORS middleware
+// Apply CORS policy
 app.UseCors("AllowAllOrigins");
 
-// שים לב לסדר: Authentication, Middleware, Authorization
-app.UseAuthentication();
-// Move JwtMiddleware after UseAuthentication but before UseAuthorization
-app.UseMiddleware<JwtMiddleware>();
-app.UseAuthorization();
+// IMPORTANT: Authentication middleware must come before Authorization
+app.UseAuthentication();    // Handle authentication
+app.UseMiddleware<JwtMiddleware>();  // Custom JWT middleware for additional processing
+app.UseAuthorization();     // Handle authorization
 
+// Map controller endpoints
 app.MapControllers();
 
-// Log application started
+// Log application started and provide Swagger URL
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Application started successfully. Swagger should be available at /swagger");
 
+// Start the application
 app.Run();

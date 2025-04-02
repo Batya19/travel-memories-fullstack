@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, SimpleGrid } from '@chakra-ui/react';
-import { Image as ImageType } from '../../../../types';
-import { GridImage } from './GridImage';
+import { Image as ImageType } from '../../../../../types';
+import { GridImage } from '../items/GridImage';
 
 interface HighlightedPhotoGridProps {
     images: ImageType[];
@@ -39,3 +39,5 @@ export const HighlightedPhotoGrid: React.FC<HighlightedPhotoGridProps> = ({
         </Box>
     );
 };
+
+export default HighlightedPhotoGrid;

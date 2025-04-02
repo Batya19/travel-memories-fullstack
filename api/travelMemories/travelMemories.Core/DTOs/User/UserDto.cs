@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TravelMemories.Core.DTOs.User
+﻿namespace TravelMemories.Core.DTOs.User
 {
     public class UserDto
     {

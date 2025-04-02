@@ -39,8 +39,8 @@ import imageService from '../../services/imageService';
 import { Trip, Image } from '../../types';
 import TripMap from '../../components/features/trips/map/TripMap';
 import ImageFilter, { ImageFilters } from '../../components/features/trips/filters/ImageFilter';
-import ImageGallery from '../../components/features/images/gallery/ImageGallery';
-import ImageUploader from '../../components/features/images/upload/ImageUploader';
+import Gallery from '../../components/features/images/gallery/Gallery';
+import ImageUploader from '../../components/features/images/gallery/upload/ImageUploader';
 
 // Debug function to analyze image data
 const debugImages = (images: Image[], tripId: string) => {
@@ -494,8 +494,9 @@ const TripDetailPage: React.FC = () => {
                                     Showing {filteredImages.length} of {images.length} images
                                 </Text>
 
-                                <ImageGallery
+                                <Gallery
                                     images={filteredImages}
+                                    layout="grid"
                                     onDelete={handleImageDelete}
                                 />
                             </>
