@@ -27,31 +27,76 @@ namespace TravelMemories.Service.External
 
         public async Task<byte[]> GenerateImageAsync(string prompt, string style = null, string size = "512x512")
         {
-            var requestData = new
+            try
             {
-                inputs = style != null ? $"{prompt} in {style} style" : prompt,
-                parameters = new
+                // שינוי הפרמטרים למבנה שמתאים למודלים של Stable Diffusion XL
+                var requestData = new
                 {
-                    return_type = "binary",
-                    img_size = size
+                    inputs = style != null ? $"{prompt} in {style} style" : prompt,
+                    // מחיקת parameters שלא תואמים את המודל הנוכחי
+                    // השאר רק את ה-input
+                };
+
+                var content = new StringContent(
+                    JsonSerializer.Serialize(requestData),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                // הוספת ניסיונות חוזרים במקרה של כישלון
+                int maxRetries = 2;
+                int retryCount = 0;
+                HttpResponseMessage response = null;
+
+                while (retryCount <= maxRetries)
+                {
+                    try
+                    {
+                        response = await _httpClient.PostAsync(_apiUrl, content);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            break;
+                        }
+                        else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
+                        {
+                            // המודל מתחמם, חכה ונסה שוב
+                            retryCount++;
+                            if (retryCount <= maxRetries)
+                            {
+                                await Task.Delay(2000); // המתנה לפני ניסיון חוזר
+                                continue;
+                            }
+                        }
+
+                        // כל שגיאה אחרת, נקבל פרטים ונזרוק שגיאה
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        throw new HttpRequestException($"Hugging Face API request failed: {response.StatusCode}. Details: {errorContent}");
+                    }
+                    catch (HttpRequestException)
+                    {
+                        retryCount++;
+                        if (retryCount <= maxRetries)
+                        {
+                            await Task.Delay(2000);
+                            continue;
+                        }
+                        throw;
+                    }
                 }
-            };
 
-            var content = new StringContent(
-                JsonSerializer.Serialize(requestData),
-                Encoding.UTF8,
-                "application/json"
-            );
+                if (response == null || !response.IsSuccessStatusCode)
+                {
+                    throw new HttpRequestException("Failed to get successful response from Hugging Face API");
+                }
 
-            var response = await _httpClient.PostAsync(_apiUrl, content);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Hugging Face API request failed: {response.StatusCode}. Details: {errorContent}");
+                return await response.Content.ReadAsByteArrayAsync();
             }
-
-            return await response.Content.ReadAsByteArrayAsync();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in HuggingFaceClient.GenerateImageAsync: {ex.Message}");
+                throw;
+            }
         }
     }
 }

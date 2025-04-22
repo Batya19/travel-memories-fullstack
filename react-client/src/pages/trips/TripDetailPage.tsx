@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
     Box,
     Button,
@@ -32,7 +32,7 @@ import {
     AlertDialogOverlay,
     useToast,
 } from '@chakra-ui/react';
-import { FaEdit, FaTrash, FaShare, FaCalendarAlt, FaMapMarkerAlt, FaImages, FaPlus } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaCalendarAlt, FaMapMarkerAlt, FaImages, FaPlus, FaMagic } from 'react-icons/fa';
 import { format } from 'date-fns';
 import tripService from '../../services/tripService';
 import imageService from '../../services/imageService';
@@ -41,6 +41,7 @@ import TripMap from '../../components/features/trips/map/TripMap';
 import ImageFilter, { ImageFilters } from '../../components/features/trips/filters/ImageFilter';
 import Gallery from '../../components/features/images/gallery/Gallery';
 import ImageUploader from '../../components/features/images/gallery/upload/ImageUploader';
+import ShareTripButton from '../../components/features/trips/sharing/ShareTripButton';
 
 // Debug function to analyze image data
 const debugImages = (images: Image[], tripId: string) => {
@@ -223,32 +224,6 @@ const TripDetailPage: React.FC = () => {
         setFilters(newFilters);
     };
 
-    // Share trip
-    const handleShare = async () => {
-        if (!trip) return;
-
-        try {
-            const response = await tripService.generateShareLink(trip.id);
-            const shareId = response.shareId;
-
-            // Construct the shareable URL
-            const baseUrl = window.location.origin;
-            const shareableUrl = `${baseUrl}/trips/shared/${shareId}`;
-
-            setShareUrl(shareableUrl);
-            onShareOpen();
-        } catch (error) {
-            console.error('Error generating share link:', error);
-            toast({
-                title: 'Error',
-                description: 'Failed to generate share link. Please try again.',
-                status: 'error',
-                duration: 5000,
-                isClosable: true,
-            });
-        }
-    };
-
     // Copy share URL to clipboard
     const copyShareUrl = () => {
         if (!shareUrl) return;
@@ -398,13 +373,19 @@ const TripDetailPage: React.FC = () => {
 
                 <HStack mt={{ base: 4, md: 0 }} spacing={3}>
                     <Button
-                        leftIcon={<FaShare />}
+                        as={Link}
+                        to={`/trips/${trip.id}/ai-images`}
+                        leftIcon={<FaMagic />}
                         variant="outline"
-                        onClick={handleShare}
+                        colorScheme="purple"
                         size={{ base: 'sm', md: 'md' }}
                     >
-                        Share
+                        AI Images
                     </Button>
+                    <ShareTripButton
+                        trip={trip}
+                    // size={{ base: "sm", md: "md" }}
+                    />
                     <Button
                         leftIcon={<FaEdit />}
                         variant="outline"

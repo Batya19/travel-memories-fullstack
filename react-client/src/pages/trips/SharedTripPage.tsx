@@ -20,7 +20,6 @@ import {
 } from '@chakra-ui/react';
 import { FaCalendarAlt, FaMapMarkerAlt, FaImages, FaArrowLeft } from 'react-icons/fa';
 import tripService from '../../services/tripService';
-import imageService from '../../services/imageService';
 import { Trip, Image } from '../../types';
 import TripMap from '../../components/features/trips/map/TripMap';
 import { format } from 'date-fns';
@@ -44,11 +43,15 @@ const SharedTripPage: React.FC = () => {
             setError(null);
 
             try {
+                console.log(`Fetching shared trip with shareId: ${shareId}`);
                 const tripData = await tripService.getSharedTrip(shareId);
+                console.log(`Received shared trip data:`, tripData);
                 setTrip(tripData);
 
-                const imagesData = await imageService.getImages(tripData.id);
-                setImages(imagesData);
+                if (tripData.images && tripData.images.length > 0) {
+                    setImages(tripData.images);
+                    console.log(`Loaded ${tripData.images.length} images from trip data`);
+                }
             } catch (error) {
                 console.error('Error fetching shared trip:', error);
                 setError("The trip you're looking for doesn't exist or is no longer shared.");
@@ -100,7 +103,24 @@ const SharedTripPage: React.FC = () => {
                 borderRadius="lg"
                 boxShadow="md"
                 mb={6}
+                position="relative"
             >
+                {/* "Shared Trip" badge */}
+                <Box
+                    position="absolute"
+                    top={2}
+                    right={2}
+                    bg="brand.50"
+                    color="brand.600"
+                    px={2}
+                    py={1}
+                    borderRadius="md"
+                    fontSize="xs"
+                    fontWeight="bold"
+                >
+                    Shared Trip
+                </Box>
+
                 <Heading as="h1" size="xl">{trip.name}</Heading>
                 <HStack mt={2} spacing={4}>
                     <HStack>
@@ -173,6 +193,18 @@ const SharedTripPage: React.FC = () => {
                     )}
                 </TabPanels>
             </Tabs>
+
+            <Box
+                textAlign="center"
+                mt={8}
+                p={4}
+                borderTop="1px"
+                borderColor="gray.200"
+            >
+                <Text fontSize="sm" color="gray.500">
+                    This trip was shared via TravelMemories
+                </Text>
+            </Box>
         </Container>
     );
 };

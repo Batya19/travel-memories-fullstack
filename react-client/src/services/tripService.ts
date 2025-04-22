@@ -55,7 +55,8 @@ const tripService = {
     // Generate a sharing link for a trip
     generateShareLink: async (id: string) => {
         try {
-            return await apiService.post<{ shareId: string }>(`/trips/${id}/share`);
+            const response = await apiService.post<{ shareId: string }>(`/trips/${id}/regenerate-share`);
+            return response;
         } catch (error) {
             console.error(`Failed to generate share link for trip ${id}:`, error);
             throw error;

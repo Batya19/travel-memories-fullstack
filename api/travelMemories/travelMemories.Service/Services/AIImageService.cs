@@ -6,53 +6,83 @@ using TravelMemories.Core.Interfaces.Repositories;
 using TravelMemories.Core.Interfaces;
 using TravelMemories.Core.Models;
 
-namespace TravelMemories.Service.Services
+public class AIImageService : IAIImageService
 {
-    public class AIImageService : IAIImageService
-    {
-        private readonly IHuggingFaceClient _huggingFaceClient;
-        private readonly IS3Service _s3Service;
-        private readonly IUserRepository _userRepository;
-        private readonly IAIImageRepository _aiImageRepository;
-        private readonly IConfiguration _configuration;
+    private readonly IHuggingFaceClient _huggingFaceClient;
+    private readonly IS3Service _s3Service;
+    private readonly IImageRepository _imageRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly IConfiguration _configuration;
 
-        public AIImageService(
-            IHuggingFaceClient huggingFaceClient,
-            IS3Service s3Service,
-            IUserRepository userRepository,
-            IAIImageRepository aiImageRepository,
-            IConfiguration configuration)
+    public AIImageService(
+        IHuggingFaceClient huggingFaceClient,
+        IS3Service s3Service,
+        IImageRepository imageRepository,
+        IUserRepository userRepository,
+        IConfiguration configuration)
+    {
+        _huggingFaceClient = huggingFaceClient;
+        _s3Service = s3Service;
+        _imageRepository = imageRepository;
+        _userRepository = userRepository;
+        _configuration = configuration;
+    }
+
+    public async Task<bool> CheckUserQuotaAsync(Guid userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
         {
-            _huggingFaceClient = huggingFaceClient;
-            _s3Service = s3Service;
-            _userRepository = userRepository;
-            _aiImageRepository = aiImageRepository;
-            _configuration = configuration;
+            throw new KeyNotFoundException($"User with ID {userId} not found");
         }
 
-        public async Task<Image> GenerateImageAsync(Guid userId, AIImageRequest request)
-        {
-            // Check if user has quota available
-            if (!await CheckUserQuotaAsync(userId))
-            {
-                throw new InvalidOperationException("AI image generation quota exceeded");
-            }
+        int usedCount = await GetUserAiGenerationCountAsync(userId);
+        return usedCount < user.AiQuota;
+    }
 
-            // Generate image using Hugging Face API
-            var imageBytes = await _huggingFaceClient.GenerateImageAsync(
+    public async Task<int> GetUserAiGenerationCountAsync(Guid userId)
+    {
+        var now = DateTime.UtcNow;
+        // Create DateTimes with explicit UTC kind
+        var startOfMonth = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1), DateTimeKind.Utc);
+        var endOfMonth = DateTime.SpecifyKind(startOfMonth.AddMonths(1).AddDays(-1), DateTimeKind.Utc);
+
+        return await _imageRepository.CountAsync(i =>
+            i.UserId == userId &&
+            i.IsAiGenerated &&
+            i.CreatedAt >= startOfMonth &&
+            i.CreatedAt <= endOfMonth);
+    }
+
+    public async Task<Image> GenerateImageAsync(Guid userId, AIImageRequest request)
+    {
+        // בדיקת מכסה
+        if (!await CheckUserQuotaAsync(userId))
+        {
+            throw new InvalidOperationException("AI image generation quota exceeded");
+        }
+
+        try
+        {
+            // יצירת תמונה באמצעות הhuggingFaceClient
+            byte[] imageBytes = await _huggingFaceClient.GenerateImageAsync(
                 request.Prompt,
-                request.Style,
-                request.Size
+                request.Style
             );
 
-            // Create filename and determine content type
+            if (imageBytes == null || imageBytes.Length == 0)
+            {
+                throw new InvalidOperationException("Generated image data is empty");
+            }
+
+            // יצירת שם קובץ וקביעת סוג תוכן
             var fileName = $"{Guid.NewGuid()}.png";
             var contentType = "image/png";
 
-            // Upload the image to S3
+            // העלאה ל-S3
             var folderName = $"users/{userId}/ai-images";
 
-            // Convert byte array to IFormFile for uploading to S3
+            // המרת מערך בתים ל-IFormFile להעלאה ל-S3
             using (var memoryStream = new MemoryStream(imageBytes))
             {
                 var formFile = new FormFile(
@@ -63,12 +93,13 @@ namespace TravelMemories.Service.Services
                     fileName: fileName
                 );
 
-                // Upload to S3
+                // העלאה ל-S3
                 var filePath = await _s3Service.UploadFileAsync(formFile, folderName, fileName);
 
-                // Create image entity
+                // יצירת אובייקט תמונה
                 var image = new Image
                 {
+                    Id = Guid.NewGuid(),
                     FileName = fileName,
                     FilePath = filePath,
                     FileSize = imageBytes.Length,
@@ -82,33 +113,21 @@ namespace TravelMemories.Service.Services
                     CreatedBy = userId
                 };
 
-                // Save to database
-                await _aiImageRepository.AddAsync(image);
-                await _aiImageRepository.SaveChangesAsync();
+                // שמירה במסד הנתונים
+                await _imageRepository.AddAsync(image);
 
                 return image;
             }
         }
-
-        public async Task<bool> CheckUserQuotaAsync(Guid userId)
+        catch (HttpRequestException ex)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new InvalidOperationException("User not found");
-            }
-
-            var currentMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
-            var count = await _userRepository.GetAiImageCountAsync(userId, currentMonth);
-
-            return count < user.AiQuota;
+            Console.WriteLine($"Error calling Hugging Face API: {ex.Message}");
+            throw new InvalidOperationException($"Failed to generate AI image: {ex.Message}", ex);
         }
-
-        public async Task<int> GetUserAiGenerationCountAsync(Guid userId)
+        catch (Exception ex)
         {
-            var currentMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
-            return await _userRepository.GetAiImageCountAsync(userId, currentMonth);
+            Console.WriteLine($"Error in AIImageService.GenerateImageAsync: {ex.Message}");
+            throw new InvalidOperationException($"Failed to process AI image: {ex.Message}", ex);
         }
     }
 }

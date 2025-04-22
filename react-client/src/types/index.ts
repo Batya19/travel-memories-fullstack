@@ -37,7 +37,10 @@ export interface Trip {
   latitude?: number;
   longitude?: number;
   shareId?: string;
+  shareUrl?: string;
   createdAt: string;
+  images?: Image[];
+  imageCount?: number;
 }
 
 // Image types

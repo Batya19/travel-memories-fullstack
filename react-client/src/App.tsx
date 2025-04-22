@@ -15,6 +15,7 @@ import SharedTripPage from './pages/trips/SharedTripPage';
 import Header from './components/common/layout/Header';
 import Footer from './components/common/layout/Footer';
 import ProfilePage from './pages/ProfilePage';
+import AIImageGenerator from './pages/ai/AIImageGenerator';
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -69,7 +70,8 @@ function App() {
                     <TripFormPage isEditing />
                   </ProtectedRoute>
                 } />
-
+                <Route path="/ai-images" element={<AIImageGenerator />} />
+                <Route path="/trips/:tripId/ai-images" element={<AIImageGenerator />} />
                 {/* Catch-all route for 404 */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
