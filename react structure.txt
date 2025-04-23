@@ -1,135 +1,108 @@
-TravelMemories (React Frontend)
-│   package.json
-│   vite.config.ts
-│   tsconfig.json
-│   index.html
+TravelMemories
 │
-├───public
-│   │   icon.png
-│   │
-│   └───images
-│           arizona.jpg
-│           IMG_0177.MOV
-│           journey1.jpg
-│           logo.jpg
-│           travel-background.jpg
-│           welcome-landscape.jpg
+├── public/
+│   ├── images/
+│   │   ├── arizona.jpg
+│   │   ├── IMG_0177.MOV
+│   │   ├── journey1.jpg
+│   │   ├── logo.jpg
+│   │   ├── travel-background.jpg
+│   │   └── welcome-landscape.jpg
+│   └── icon.png
 │
-└───src
-    │   App.css
-    │   App.tsx
-    │   index.css
-    │   main.tsx
-    │   vite-env.d.ts
-    │
-    ├───assets
-    │       react.svg
-    │
-    ├───components
-    │   ├───common
-    │   │   ├───feedback
-    │   │   │       LoadingSpinner.tsx
-    │   │   │
-    │   │   ├───layout
-    │   │   │       Footer.tsx
-    │   │   │       Header.tsx
-    │   │   │
-    │   │   ├───media
-    │   │   │       ImagePlaceholder.tsx
-    │   │   │       LazyImage.tsx
-    │   │   │       OptimizedImage.tsx
-    │   │   │
-    │   │   └───ui
-    │   │           AppLogo.tsx
-    │   │           DarkModeToggle.tsx
-    │   │
-    │   └───features
-    │       ├───auth
-    │       │       LoginForm.tsx
-    │       │       RegisterForm.tsx
-    │       │
-    │       ├───home
-    │       │       CTASection.tsx
-    │       │       FeaturesSection.tsx
-    │       │       HeroSection.tsx
-    │       │       MapDashboardSection.tsx
-    │       │       RecentTripsSection.tsx
-    │       │
-    │       ├───images
-    │       │   └───gallery
-    │       │       │   Gallery.tsx
-    │       │       │
-    │       │       ├───components
-    │       │       │       DeleteConfirmationDialog.tsx
-    │       │       │       ImageBadge.tsx
-    │       │       │       ImageDetails.tsx
-    │       │       │       ViewModeToggle.tsx
-    │       │       │
-    │       │       ├───items
-    │       │       │       GridImage.tsx
-    │       │       │       ImageGridItem.tsx
-    │       │       │       ImageListItem.tsx
-    │       │       │
-    │       │       ├───modal
-    │       │       │       ImageViewerModal.tsx
-    │       │       │
-    │       │       ├───upload
-    │       │       │       ImageUploader.tsx
-    │       │       │
-    │       │       └───views
-    │       │               HighlightedPhotoGrid.tsx
-    │       │               ImageGridView.tsx
-    │       │               ImageListView.tsx
-    │       │               MasonryGrid.tsx
-    │       │               RegularPhotoGrid.tsx
-    │       │               ShowMoreButton.tsx
-    │       │
-    │       └───trips
-    │           ├───filters
-    │           │       ImageFilter.tsx
-    │           │
-    │           ├───form
-    │           │       TripForm.tsx
-    │           │
-    │           └───map
-    │                   HomePageMap.tsx
-    │                   MapLocationPicker.tsx
-    │                   TripMap.tsx
-    │
-    ├───contexts
-    │       AuthContext.tsx
-    │       TripContext.tsx
-    │
-    ├───pages
-    │   │   HomePage.tsx
-    │   │   ProfilePage.tsx
-    │   │
-    │   ├───auth
-    │   │       LoginPage.tsx
-    │   │       RegisterPage.tsx
-    │   │
-    │   ├───error
-    │   │       NotFoundPage.tsx
-    │   │
-    │   └───trips
-    │           SharedTripPage.tsx
-    │           TripDetailPage.tsx
-    │           TripFormPage.tsx
-    │           TripsPage.tsx
-    │
-    ├───services
-    │   │   authService.ts
-    │   │   imageService.ts
-    │   │   tripService.ts
-    │   │
-    │   └───api
-    │           client.ts
-    │
-    ├───theme
-    │       index.ts
-    │
-    ├───types
-    │       index.ts
-    │
-    └───utils
-            imageUtils.ts
+├── src/
+│   ├── assets/
+│   │   └── react.svg
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── feedback/
+│   │   │   │   └── LoadingSpinner.tsx
+│   │   │   ├── layout/
+│   │   │   │   ├── Footer.tsx
+│   │   │   │   └── Header.tsx
+│   │   │   ├── media/
+│   │   │   │   ├── ImagePlaceholder.tsx
+│   │   │   │   ├── LazyImage.tsx
+│   │   │   │   └── OptimizedImage.tsx
+│   │   │   └── ui/
+│   │   │       ├── AppLogo.tsx
+│   │   │       └── DarkModeToggle.tsx
+│   │   ├── features/
+│   │   │   ├── auth/
+│   │   │   │   ├── LoginForm.tsx
+│   │   │   │   └── RegisterForm.tsx
+│   │   │   ├── home/
+│   │   │   │   ├── CTASection.tsx
+│   │   │   │   ├── FeaturesSection.tsx
+│   │   │   │   ├── HeroSection.tsx
+│   │   │   │   ├── MapDashboardSection.tsx
+│   │   │   │   └── RecentTripsSection.tsx
+│   │   │   ├── images/
+│   │   │   │   ├── gallery/
+│   │   │   │   │   ├── Gallery.tsx
+│   │   │   │   │   ├── components/
+│   │   │   │   │   │   ├── DeleteConfirmationDialog.tsx
+│   │   │   │   │   │   ├── ImageBadge.tsx
+│   │   │   │   │   │   ├── ImageDetails.tsx
+│   │   │   │   │   │   └── ViewModeToggle.tsx
+│   │   │   │   │   ├── items/
+│   │   │   │   │   │   ├── GridImage.tsx
+│   │   │   │   │   │   ├── ImageGridItem.tsx
+│   │   │   │   │   │   └── ImageListItem.tsx
+│   │   │   │   │   ├── modal/
+│   │   │   │   │   │   └── ImageViewerModal.tsx
+│   │   │   │   │   ├── upload/
+│   │   │   │   │   │   └── ImageUploader.tsx
+│   │   │   │   │   └── views/
+│   │   │   │   │       ├── HighlightedPhotoGrid.tsx
+│   │   │   │   │       ├── ImageGridView.tsx
+│   │   │   │   │       ├── ImageListView.tsx
+│   │   │   │   │       ├── MasonryGrid.tsx
+│   │   │   │   │       ├── RegularPhotoGrid.tsx
+│   │   │   │   │       └── ShowMoreButton.tsx
+│   │   │   └── trips/
+│   │   │       ├── filters/
+│   │   │       │   └── ImageFilter.tsx
+│   │   │       ├── form/
+│   │   │       │   └── TripForm.tsx
+│   │   │       ├── map/
+│   │   │       │   ├── HomePageMap.tsx
+│   │   │       │   ├── MapLocationPicker.tsx
+│   │   │       │   └── TripMap.tsx
+│   │   │       └── sharing/
+│   │   │           └── ShareTripButton.tsx
+│   ├── contexts/
+│   │   ├── AuthContext.tsx
+│   │   └── TripContext.tsx
+│   ├── pages/
+│   │   ├── ai/
+│   │   │   └── AIImageGenerator.tsx
+│   │   ├── auth/
+│   │   │   ├── LoginPage.tsx
+│   │   │   └── RegisterPage.tsx
+│   │   ├── error/
+│   │   │   └── NotFoundPage.tsx
+│   │   ├── trips/
+│   │   │   ├── SharedTripPage.tsx
+│   │   │   ├── TripDetailPage.tsx
+│   │   │   ├── TripFormPage.tsx
+│   │   │   └── TripsPage.tsx
+│   ├── services/
+│   │   ├── aiImageService.ts
+│   │   ├── authService.ts
+│   │   ├── imageService.ts
+│   │   └── tripService.ts
+│   ├── theme/
+│   │   └── index.ts
+│   ├── types/
+│   │   └── index.ts
+│   └── utils/
+│       └── imageUtils.ts
+│
+├── index.html
+├── main.tsx
+├── App.tsx
+├── App.css
+├── tsconfig.json
+├── vite-env.d.ts
+└── vite.config.ts

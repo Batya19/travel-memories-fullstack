@@ -26,6 +26,7 @@ const aiImageService = {
     // Generate an AI image
     generateImage: async (request: AIImageRequest): Promise<AIImageResponse> => {
         try {
+            console.log('Sending request to API:', request);
             const response = await apiClient.post<AIImageResponse>('/ai-images', request);
             return response.data;
         } catch (error) {

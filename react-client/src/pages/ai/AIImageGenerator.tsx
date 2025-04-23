@@ -31,6 +31,7 @@ import { FaArrowLeft, FaDownload, FaImage, FaMagic, FaSearch } from 'react-icons
 import aiImageService, { AIImageResponse, AIQuotaResponse } from '../../services/aiImageService';
 import tripService from '../../services/tripService';
 import { Trip } from '../../types';
+import { getAIImageUrl } from '../../utils/imageUtils';
 
 const AIImageGenerator: React.FC = () => {
     const { tripId } = useParams<{ tripId?: string }>();
@@ -151,7 +152,7 @@ const AIImageGenerator: React.FC = () => {
                     console.warn('Invalid tripId format:', tripId);
                 }
             }
-            console.log('Sending request to API:', JSON.stringify(request));
+            console.log('Sending request to API:', request);
 
             const response = await aiImageService.generateImage(request);
 
@@ -192,16 +193,22 @@ const AIImageGenerator: React.FC = () => {
         }
     };
 
+    // Convert relative URL to absolute URL
+    const getFullImageUrl = (url: string) => {
+        return getAIImageUrl(url);
+    };
+
     // View image in modal
     const handleViewImage = (imageUrl: string) => {
-        setSelectedImage(imageUrl);
+        setSelectedImage(getFullImageUrl(imageUrl));
         onOpen();
     };
 
     // Download image
     const handleDownloadImage = (imageUrl: string, fileName: string) => {
+        const fullUrl = getFullImageUrl(imageUrl);
         const link = document.createElement('a');
-        link.href = imageUrl;
+        link.href = fullUrl;
         link.download = fileName;
         document.body.appendChild(link);
         link.click();
@@ -383,11 +390,23 @@ const AIImageGenerator: React.FC = () => {
                                         position="relative"
                                     >
                                         <Image
-                                            src={image.url}
+                                            src={getFullImageUrl(image.url)}
                                             alt={image.prompt}
                                             width="100%"
                                             height="180px"
                                             objectFit="cover"
+                                            fallback={
+                                                <Box
+                                                    width="100%"
+                                                    height="180px"
+                                                    bg="gray.100"
+                                                    display="flex"
+                                                    alignItems="center"
+                                                    justifyContent="center"
+                                                >
+                                                    <Text color="gray.500">Image loading error</Text>
+                                                </Box>
+                                            }
                                         />
 
                                         {/* Image Actions */}
@@ -463,6 +482,18 @@ const AIImageGenerator: React.FC = () => {
                                 alt="AI Generated"
                                 width="100%"
                                 borderRadius="md"
+                                fallback={
+                                    <Box
+                                        width="100%"
+                                        height="300px"
+                                        bg="gray.100"
+                                        display="flex"
+                                        alignItems="center"
+                                        justifyContent="center"
+                                    >
+                                        <Text color="gray.500">Failed to load image</Text>
+                                    </Box>
+                                }
                             />
                         )}
                     </ModalBody>
