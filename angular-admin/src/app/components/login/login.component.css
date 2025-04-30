@@ -1,0 +1,76 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%);
+    padding: 2rem;
+}
+
+.login-card-container {
+    width: 100%;
+    max-width: 450px;
+}
+
+.login-card {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+
+    ::ng-deep .p-card-content {
+        padding-top: 0;
+    }
+}
+
+.logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+
+    img {
+        height: 60px;
+        width: auto;
+    }
+}
+
+h1 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin: 0.5rem 0 0.25rem;
+}
+
+h2 {
+    font-size: 1.25rem;
+    color: var(--text-color-secondary);
+    font-weight: 400;
+    margin: 0 0 0.5rem;
+}
+
+.field {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.p-input-icon-left {
+    width: 100%;
+
+    i {
+        color: var(--text-color-secondary);
+    }
+}
+
+.w-full {
+    width: 100%;
+}
+
+.p-error {
+    display: block;
+    margin-top: 0.25rem;
+}
+
+small {
+    font-size: 0.875rem;
+}

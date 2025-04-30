@@ -1,0 +1,50 @@
+.users-container {
+    padding: 1rem;
+}
+
+.card {
+    background-color: var(--surface-card);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.user-info {
+    text-align: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--surface-border);
+
+    h3 {
+        margin: 0 0 0.25rem;
+        font-size: 1.25rem;
+    }
+
+    p {
+        margin: 0;
+        color: var(--text-color-secondary);
+    }
+}
+
+small {
+    display: block;
+    color: var(--text-color-secondary);
+    margin-top: 0.25rem;
+}
+
+/* Responsive table adjustments */
+@media screen and (max-width: 768px) {
+    .p-datatable .p-datatable-tbody>tr>td {
+        padding: 0.5rem;
+    }
+
+    .p-datatable .p-datatable-thead>tr>th {
+        padding: 0.5rem;
+    }
+}

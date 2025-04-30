@@ -1,0 +1,90 @@
+TravelMemories-Admin (Angular)
+│
+├───src
+│   ├───app
+│   │   │   app.component.html
+│   │   │   app.component.css
+│   │   │   app.component.spec.ts
+│   │   │   app.component.ts
+│   │   │   app.config.ts
+│   │   │   app.routes.ts
+│   │   │
+│   │   ├───components
+│   │   │   ├───dashboard
+│   │   │   │       dashboard.component.html
+│   │   │   │       dashboard.component.css
+│   │   │   │       dashboard.component.ts
+│   │   │   │
+│   │   │   ├───layout
+│   │   │   │   ├───header
+│   │   │   │   │       header.component.html
+│   │   │   │   │       header.component.css
+│   │   │   │   │       header.component.ts
+│   │   │   │   │
+│   │   │   │   └───sidebar
+│   │   │   │           sidebar.component.html
+│   │   │   │           sidebar.component.css
+│   │   │   │           sidebar.component.ts
+│   │   │   │
+│   │   │   ├───login
+│   │   │   │       login.component.html
+│   │   │   │       login.component.css
+│   │   │   │       login.component.ts
+│   │   │   │
+│   │   │   ├───register
+│   │   │   │       register.component.html
+│   │   │   │       register.component.css
+│   │   │   │       register.component.ts
+│   │   │   │
+│   │   │   ├───statistics
+│   │   │   │       statistics.component.html
+│   │   │   │       statistics.component.css
+│   │   │   │       statistics.component.ts
+│   │   │   │
+│   │   │   └───user-management
+│   │   │           user-management.component.html
+│   │   │           user-management.component.css
+│   │   │           user-management.component.ts
+│   │   │
+│   │   ├───core
+│   │   │   ├───guards
+│   │   │   │       auth.guard.spec.ts
+│   │   │   │       auth.guard.ts
+│   │   │   │
+│   │   │   ├───interceptors
+│   │   │   │       auth.interceptor.ts
+│   │   │   │
+│   │   │   ├───models
+│   │   │   │       user.model.ts
+│   │   │   │
+│   │   │   └───services
+│   │   │           auth.service.spec.ts
+│   │   │           auth.service.ts
+│   │   │           stats.service.spec.ts
+│   │   │           stats.service.ts
+│   │   │           user.service.spec.ts
+│   │   │           user.service.ts
+│   │   │
+│   │   └───shared
+│   │           shared.module.ts
+│   │
+│   ├───assets
+│   │       logo.png
+│   │
+│   ├───environments
+│   │       environment.development.ts
+│   │       environment.ts
+│   │
+│   │   favicon.ico
+│   │   index.html
+│   │   main.ts
+│   │   styles.css
+│
+├───node_modules
+│
+├───angular.json
+├───package.json
+├───tsconfig.json
+├───tsconfig.app.json
+├───tsconfig.spec.json
+└───README.md

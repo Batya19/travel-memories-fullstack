@@ -50,6 +50,7 @@ namespace TravelMemories
             services.AddScoped<ITripService, TripService>();
             services.AddScoped<IImageService, ImageService>();
             services.AddScoped<IAIImageService, AIImageService>();
+            services.AddScoped<IAdminService, AdminService>();
 
             return services;
         }

@@ -1,0 +1,277 @@
+.register-page {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.register-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* Left section with background image */
+.left-section {
+    position: relative;
+    flex: 1;
+    min-width: 50%;
+    background-image: url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 40px;
+}
+
+.left-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(25, 103, 210, 0.85) 0%, rgba(48, 164, 230, 0.8) 100%);
+}
+
+.content-wrapper {
+    position: relative;
+    max-width: 600px;
+    z-index: 1;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    margin-bottom: 60px;
+}
+
+.logo {
+    height: 40px;
+    margin-right: 16px;
+}
+
+.brand-name {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.hero-content h1 {
+    font-size: 3.2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 24px;
+    color: white;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+.features-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+}
+
+.feature-item i {
+    font-size: 1.2rem;
+    margin-right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feature-item span {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Right section with form */
+.right-section {
+    flex: 1;
+    min-width: 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background-color: white;
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 500px;
+}
+
+.form-wrapper h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-color);
+    margin-bottom: 12px;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: var(--text-color-secondary);
+    margin-bottom: 40px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.form-field {
+    position: relative;
+}
+
+.form-field.full-width {
+    grid-column: span 2;
+}
+
+.error-message {
+    position: absolute;
+    font-size: 0.75rem;
+    color: var(--red-500);
+    margin-top: 4px;
+}
+
+.terms-checkbox {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+.terms-checkbox label {
+    margin-left: 8px;
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+    line-height: 1.4;
+}
+
+.terms-error {
+    margin-top: 8px;
+    display: block;
+    position: relative;
+}
+
+.link {
+    color: var(--primary-color);
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.link:hover {
+    color: var(--primary-600);
+    text-decoration: underline;
+}
+
+.sign-up-btn {
+    margin-top: 12px;
+}
+
+.login-link {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--text-color-secondary);
+}
+
+.copyright {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+}
+
+/* Custom Styling for PrimeNG Components */
+:host ::ng-deep {
+    .p-float-label {
+        display: block;
+    }
+
+    .p-float-label label {
+        font-weight: 500;
+    }
+
+    .p-component {
+        font-family: inherit;
+    }
+
+    .p-password {
+        width: 100%;
+    }
+
+    .p-password-panel {
+        transform: translateY(8px);
+    }
+
+    .p-button.sign-up-btn {
+        height: 50px;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .p-checkbox {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Responsive design */
+@media screen and (max-width: 1024px) {
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+
+    .features-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .register-container {
+        flex-direction: column;
+    }
+
+    .left-section {
+        min-height: 50vh;
+        padding: 30px 20px;
+    }
+
+    .right-section {
+        padding: 30px 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-field.full-width {
+        grid-column: span 1;
+    }
+
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+}
