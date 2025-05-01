@@ -1,54 +1,95 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from '../models/user.model';
+import { environment } from '../../../environments/environment';
+import { User, UserRole } from '../models/user.model';
+
+export interface UserQueryParams {
+  page?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  role?: UserRole;
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
+}
+
+export interface UserListResponse {
+  users: User[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface CreateUserRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  storageQuota: number;
+  aiQuota: number;
+}
+
+export interface UpdateUserRequest {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  role?: UserRole;
+  storageQuota?: number;
+  aiQuota?: number;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:7051/api/users'; // Replace with your actual API URL
-  
-  constructor(private http: HttpClient) {}
-  
-  getUsers(params: {
-    page?: number,
-    pageSize?: number,
-    search?: string,
-    sortBy?: string,
-    sortDirection?: 'asc' | 'desc'
-  } = {}): Observable<{ items: User[], totalCount: number }> {
-    let httpParams = new HttpParams();
-    
-    Object.keys(params).forEach(key => {
-      if (params[key as keyof typeof params] !== undefined) {
-        httpParams = httpParams.set(key, params[key as keyof typeof params]!.toString());
-      }
-    });
-    
-    return this.http.get<{ items: User[], totalCount: number }>(this.apiUrl, { params: httpParams });
+  private readonly API_URL = `${environment.apiUrl}/admin/users`;
+
+  constructor(private http: HttpClient) { }
+
+  getUsers(queryParams: UserQueryParams = {}): Observable<UserListResponse> {
+    let params = new HttpParams();
+
+    if (queryParams.page !== undefined) {
+      params = params.set('page', queryParams.page.toString());
+    }
+
+    if (queryParams.pageSize !== undefined) {
+      params = params.set('pageSize', queryParams.pageSize.toString());
+    }
+
+    if (queryParams.searchTerm) {
+      params = params.set('searchTerm', queryParams.searchTerm);
+    }
+
+    if (queryParams.role) {
+      params = params.set('role', queryParams.role);
+    }
+
+    if (queryParams.sortBy) {
+      params = params.set('sortBy', queryParams.sortBy);
+    }
+
+    if (queryParams.sortDirection) {
+      params = params.set('sortDirection', queryParams.sortDirection);
+    }
+
+    return this.http.get<UserListResponse>(this.API_URL, { params });
   }
-  
-  getUser(id: string): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${id}`);
+
+  getUserById(userId: string): Observable<User> {
+    return this.http.get<User>(`${this.API_URL}/${userId}`);
   }
-  
-  createUser(user: Partial<User>): Observable<User> {
-    return this.http.post<User>(this.apiUrl, user);
+
+  createUser(userData: CreateUserRequest): Observable<User> {
+    return this.http.post<User>(this.API_URL, userData);
   }
-  
-  updateUser(id: string, user: Partial<User>): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/${id}`, user);
+
+  updateUser(userId: string, userData: UpdateUserRequest): Observable<User> {
+    return this.http.put<User>(`${this.API_URL}/${userId}`, userData);
   }
-  
-  deleteUser(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
-  
-  updateUserQuotas(id: string, storageQuota: number, aiQuota: number): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/${id}/quotas`, { 
-      storageQuota,
-      aiQuota
-    });
+
+  deleteUser(userId: string): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/${userId}`);
   }
 }

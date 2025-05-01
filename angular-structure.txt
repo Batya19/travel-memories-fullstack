@@ -1,4 +1,4 @@
-TravelMemories-Admin (Angular)
+angular-admin
 │
 ├───src
 │   ├───app
@@ -14,6 +14,7 @@ TravelMemories-Admin (Angular)
 │   │   │   │       dashboard.component.html
 │   │   │   │       dashboard.component.css
 │   │   │   │       dashboard.component.ts
+│   │   │   │       dashboard.routes.ts
 │   │   │   │
 │   │   │   ├───layout
 │   │   │   │   ├───header
@@ -41,10 +42,15 @@ TravelMemories-Admin (Angular)
 │   │   │   │       statistics.component.css
 │   │   │   │       statistics.component.ts
 │   │   │   │
-│   │   │   └───user-management
-│   │   │           user-management.component.html
-│   │   │           user-management.component.css
-│   │   │           user-management.component.ts
+│   │   │   ├───user-management
+│   │   │   │       user-management.component.html
+│   │   │   │       user-management.component.css
+│   │   │   │       user-management.component.ts
+│   │   │   │
+│   │   │   └───system-settings
+│   │   │           system-settings.component.html
+│   │   │           system-settings.component.css
+│   │   │           system-settings.component.ts
 │   │   │
 │   │   ├───core
 │   │   │   ├───guards
@@ -56,6 +62,10 @@ TravelMemories-Admin (Angular)
 │   │   │   │
 │   │   │   ├───models
 │   │   │   │       user.model.ts
+│   │   │   │       statistics-response.model.ts
+│   │   │   │       user-activity-item.model.ts
+│   │   │   │       system-settings.model.ts
+│   │   │   │       user-management.model.ts
 │   │   │   │
 │   │   │   └───services
 │   │   │           auth.service.spec.ts
@@ -66,14 +76,19 @@ TravelMemories-Admin (Angular)
 │   │   │           user.service.ts
 │   │   │
 │   │   └───shared
-│   │           shared.module.ts
+│   │           directives/
+│   │           pipes/
+│   │           utils/
 │   │
 │   ├───assets
 │   │       logo.png
+│   │       icons/
+│   │       images/
 │   │
 │   ├───environments
 │   │       environment.development.ts
 │   │       environment.ts
+│   │       environment.production.ts
 │   │
 │   │   favicon.ico
 │   │   index.html

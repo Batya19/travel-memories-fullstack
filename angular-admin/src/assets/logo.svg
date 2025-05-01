@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <!-- Background elements -->
+  <rect x="0" y="0" width="200" height="60" fill="#f8f9fa" rx="5" ry="5" opacity="0" />
+  
+  <!-- Camera icon -->
+  <g transform="translate(15, 15) scale(0.06)">
+    <path d="M256,96c-86.4,0-157.252,70.361-157.252,156.752c0,86.4,70.852,157.344,157.252,157.344
+      s157.252-70.944,157.252-157.344C413.252,166.361,342.4,96,256,96z M352,280H160v-64h192V280z" fill="#3498db"/>
+    <path d="M440,96h-88l-32-32H192l-32,32H72c-22.092,0-40,17.908-40,40v272c0,22.092,17.908,40,40,40h368
+      c22.092,0,40-17.908,40-40V136C480,113.908,462.092,96,440,96z M256,388.096c-75.076,0-136-60.916-136-135.992
+      s60.924-136,136-136s136,60.924,136,136S331.076,388.096,256,388.096z" fill="#3498db"/>
+  </g>
+  
+  <!-- Text Travel -->
+  <text x="55" y="32" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#34495e">Travel</text>
+  
+  <!-- Text Memories -->
+  <text x="55" y="50" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#3498db">Memories</text>
+  
+  <!-- Decorative elements -->
+  <circle cx="170" cy="20" r="5" fill="#e74c3c" opacity="0.8" />
+  <circle cx="180" cy="20" r="5" fill="#f1c40f" opacity="0.8" />
+  <circle cx="190" cy="20" r="5" fill="#2ecc71" opacity="0.8" />
+</svg>

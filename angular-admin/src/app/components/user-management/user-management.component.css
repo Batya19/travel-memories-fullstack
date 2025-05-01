@@ -1,50 +1,75 @@
-.users-container {
+/* .user-management-container {
     padding: 1rem;
 }
 
-.card {
-    background-color: var(--surface-card);
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
 }
 
-h2 {
+.header h2 {
     margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-color);
 }
 
-.user-info {
-    text-align: center;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--surface-border);
-
-    h3 {
-        margin: 0 0 0.25rem;
-        font-size: 1.25rem;
-    }
-
-    p {
-        margin: 0;
-        color: var(--text-color-secondary);
-    }
+.header-actions {
+    display: flex;
+    align-items: center;
 }
 
-small {
-    display: block;
-    color: var(--text-color-secondary);
+.actions-cell {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.storage-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.storage-info small {
     margin-top: 0.25rem;
+    font-size: 0.75rem;
 }
 
-/* Responsive table adjustments */
+.empty-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    color: var(--text-color-secondary);
+}
+
+:host ::ng-deep .success-progress .p-progressbar-value {
+    background: #22c55e;
+}
+
+:host ::ng-deep .warning-progress .p-progressbar-value {
+    background: #f59e0b;
+}
+
+:host ::ng-deep .danger-progress .p-progressbar-value {
+    background: #ef4444;
+}
+
 @media screen and (max-width: 768px) {
-    .p-datatable .p-datatable-tbody>tr>td {
-        padding: 0.5rem;
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
-    .p-datatable .p-datatable-thead>tr>th {
-        padding: 0.5rem;
+    .header-actions {
+        margin-top: 1rem;
+        width: 100%;
     }
-}
+
+    .p-input-icon-left {
+        width: 100%;
+    }
+
+    .p-input-icon-left input {
+        width: 100%;
+    }
+} */

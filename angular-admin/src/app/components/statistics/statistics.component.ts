@@ -1,21 +1,193 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+// import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+// import { StatsService } from '../../core/services/stats.service';
+// import { StatisticsResponse } from '../../core/models/statistics-response.model';
+// import { MessageService } from 'primeng/api';
+// import * as CanvasJS from '@canvasjs/charts';
+
+// @Component({
+//   selector: 'app-statistics',
+//   templateUrl: './statistics.component.html',
+//   styleUrls: ['./statistics.component.css']
+// })
+// export class StatisticsComponent implements OnInit {
+//   @ViewChild('usersChart', { static: true }) usersChartRef!: ElementRef;
+//   @ViewChild('tripsChart', { static: true }) tripsChartRef!: ElementRef;
+//   @ViewChild('imagesChart', { static: true }) imagesChartRef!: ElementRef;
+
+//   stats: StatisticsResponse | null = null;
+//   loading = true;
+//   usersChart: any;
+//   tripsChart: any;
+//   imagesChart: any;
+
+//   constructor(
+//     private statsService: StatsService,
+//     private messageService: MessageService
+//   ) { }
+
+//   ngOnInit(): void {
+//     this.loadStatistics();
+//   }
+
+//   loadStatistics(): void {
+//     this.loading = true;
+//     this.statsService.getStatistics().subscribe({
+//       next: (data) => {
+//         this.stats = data;
+//         this.loading = false;
+        
+//         // Initialize charts after data is loaded
+//         setTimeout(() => {
+//           this.initializeCharts();
+//         }, 100);
+//       },
+//       error: (error) => {
+//         this.messageService.add({
+//           severity: 'error',
+//           summary: 'Error',
+//           detail: 'Failed to load statistics'
+//         });
+//         this.loading = false;
+//         console.error('Error fetching statistics:', error);
+//       }
+//     });
+//   }
+
+//   initializeCharts(): void {
+//     if (!this.stats) return;
+
+//     // Create users chart
+//     this.renderUsersChart();
+    
+//     // Create trips chart
+//     this.renderTripsChart();
+    
+//     // Create images chart
+//     this.renderImagesChart();
+//   }
+
+//   renderUsersChart(): void {
+//     if (!this.stats) return;
+
+//     const data = Object.keys(this.stats.usersByMonth).map(month => ({
+//       label: month,
+//       y: this.stats!.usersByMonth[month]
+//     }));
+
+//     this.usersChart = new CanvasJS.Chart(this.usersChartRef.nativeElement, {
+//       animationEnabled: true,
+//       exportEnabled: false,
+//       theme: "light2",
+//       title: {
+//         text: "New Users by Month"
+//       },
+//       axisX: {
+//         margin: 10,
+//         labelPlacement: "inside",
+//         tickPlacement: "inside"
+//       },
+//       axisY: {
+//         includeZero: true,
+//         title: "Number of Users",
+//         titleFontSize: 13
+//       },
+//       data: [{
+//         type: "column",
+//         dataPoints: data
+//       }]
+//     });
+
+//     this.usersChart.render();
+//   }
+
+//   renderTripsChart(): void {
+//     if (!this.stats) return;
+
+//     const data = Object.keys(this.stats.tripsByMonth).map(month => ({
+//       label: month,
+//       y: this.stats!.tripsByMonth[month]
+//     }));
+
+//     this.tripsChart = new CanvasJS.Chart(this.tripsChartRef.nativeElement, {
+//       animationEnabled: true,
+//       exportEnabled: false,
+//       theme: "light2",
+//       title: {
+//         text: "Trips Created by Month"
+//       },
+//       axisX: {
+//         margin: 10,
+//         labelPlacement: "inside",
+//         tickPlacement: "inside"
+//       },
+//       axisY: {
+//         includeZero: true,
+//         title: "Number of Trips",
+//         titleFontSize: 13
+//       },
+//       data: [{
+//         type: "line",
+//         dataPoints: data
+//       }]
+//     });
+
+//     this.tripsChart.render();
+//   }
+
+//   renderImagesChart(): void {
+//     if (!this.stats) return;
+
+//     const data = [
+//       { y: this.stats.totalImages - this.stats.totalAiImages, name: "Regular Images" },
+//       { y: this.stats.totalAiImages, name: "AI-Generated Images" }
+//     ];
+
+//     this.imagesChart = new CanvasJS.Chart(this.imagesChartRef.nativeElement, {
+//       animationEnabled: true,
+//       exportEnabled: false,
+//       theme: "light2",
+//       title: {
+//         text: "Image Distribution"
+//       },
+//       data: [{
+//         type: "pie",
+//         startAngle: 240,
+//         yValueFormatString: "##0",
+//         indexLabel: "{name}: {y}",
+//         dataPoints: data
+//       }]
+//     });
+
+//     this.imagesChart.render();
+//   }
+
+//   refreshStatistics(): void {
+//     this.loadStatistics();
+//   }
+// }
+
+
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-
-// Services
-import { StatsService } from '../../core/services/stats.service';
-
-// PrimeNG Components
 import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { CalendarModule } from 'primeng/calendar';
-import { SelectButtonModule } from 'primeng/selectbutton';
-import { ToastModule } from 'primeng/toast';
+import { ChartModule } from 'primeng/chart';
+import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
-import { TabViewModule } from 'primeng/tabview';
-import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { FormsModule } from '@angular/forms';
+import { StatsService } from '../../core/services/stats.service';
+import { StatisticsResponse } from '../../core/models/statistics-response.model';
+import { UserActivityItem } from '../../core/models/user-activity-item.model';
 
-declare const CanvasJS: any;
+interface PeriodOption {
+  label: string;
+  value: 'daily' | 'weekly' | 'monthly';
+}
+
+interface TimeRangeOption {
+  label: string;
+  value: number;
+}
 
 @Component({
   selector: 'app-statistics',
@@ -24,376 +196,380 @@ declare const CanvasJS: any;
     CommonModule,
     FormsModule,
     CardModule,
-    ButtonModule,
-    CalendarModule,
-    SelectButtonModule,
-    ToastModule,
+    ChartModule,
+    DropdownModule,
     TableModule,
-    TabViewModule
+    ButtonModule
   ],
-  templateUrl: './statistics.component.html',
-  styleUrl: './statistics.component.scss',
-  providers: [MessageService]
-})
-export class StatisticsComponent implements OnInit, AfterViewInit {
-  @ViewChild('userActivityChart') userActivityChartElement!: ElementRef;
-  @ViewChild('contentActivityChart') contentActivityChartElement!: ElementRef;
-  @ViewChild('aiUsageChart') aiUsageChartElement!: ElementRef;
-  @ViewChild('storageDistributionChart') storageDistributionChartElement!: ElementRef;
-  
-  loading = true;
-  
-  // Date range for filtering
-  startDate: Date = new Date();
-  endDate: Date = new Date();
-  
-  // Time frame options
-  timeFrameOptions = [
-    { label: 'Day', value: 'day' },
-    { label: 'Week', value: 'week' },
-    { label: 'Month', value: 'month' }
-  ];
-  selectedTimeFrame = 'day';
-  
-  // Stats data
-  systemStats: any = {};
-  userActivityStats: any = {};
-  contentStats: any = {};
-  aiUsageStats: any = {};
-  storageStats: any = {};
-  
-  // Top users data
-  topUsersByStorage: any[] = [];
-  topUsersByAiUsage: any[] = [];
-  
-  constructor(
-    private statsService: StatsService,
-    private messageService: MessageService
-  ) {
-    // Set default date range (last 30 days)
-    this.endDate = new Date();
-    this.startDate = new Date();
-    this.startDate.setDate(this.startDate.getDate() - 30);
-  }
-  
-  ngOnInit() {
-    this.loading = true;
-    this.loadStatisticsData();
-  }
-  
-  ngAfterViewInit() {
-    // Charts will be rendered after data is loaded
-  }
-  
-  loadStatisticsData() {
-    this.loading = true;
+  template: `
+    <div class="statistics-container">
+      <h1>System Statistics</h1>
+      
+      <div class="filter-row">
+        <div class="filter-item">
+          <label for="period">Time Period</label>
+          <p-dropdown 
+            id="period"
+            [options]="periodOptions" 
+            [(ngModel)]="selectedPeriod" 
+            (onChange)="loadStatistics()"
+            optionLabel="label"
+          ></p-dropdown>
+        </div>
+        
+        <div class="filter-item">
+          <label for="timeRange">Time Range</label>
+          <p-dropdown 
+            id="timeRange"
+            [options]="timeRangeOptions" 
+            [(ngModel)]="selectedTimeRange" 
+            (onChange)="loadStatistics()"
+            optionLabel="label"
+          ></p-dropdown>
+        </div>
+      </div>
+      
+      <div class="chart-row">
+        <p-card header="Users Growth" styleClass="chart-card">
+          <div class="chart-container">
+            <p-chart type="line" [data]="usersChartData" [options]="chartOptions"></p-chart>
+          </div>
+        </p-card>
+        
+        <p-card header="Trips Growth" styleClass="chart-card">
+          <div class="chart-container">
+            <p-chart type="line" [data]="tripsChartData" [options]="chartOptions"></p-chart>
+          </div>
+        </p-card>
+      </div>
+      
+      <div class="chart-row">
+        <p-card header="Images Growth" styleClass="chart-card">
+          <div class="chart-container">
+            <p-chart type="line" [data]="imagesChartData" [options]="chartOptions"></p-chart>
+          </div>
+        </p-card>
+        
+        <p-card header="Images Distribution" styleClass="chart-card">
+          <div class="chart-container">
+            <p-chart type="doughnut" [data]="imageDistributionChartData" [options]="pieChartOptions"></p-chart>
+          </div>
+        </p-card>
+      </div>
+      
+      <p-card header="User Activity Log" styleClass="activity-card">
+        <p-table
+          [value]="activityItems"
+          [paginator]="true"
+          [rows]="10"
+          [showCurrentPageReport]="true"
+          [rowsPerPageOptions]="[10, 25, 50]"
+          [responsive]="true"
+          styleClass="p-datatable-sm"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="timestamp">Time <p-sortIcon field="timestamp"></p-sortIcon></th>
+              <th pSortableColumn="userName">User <p-sortIcon field="userName"></p-sortIcon></th>
+              <th pSortableColumn="action">Action <p-sortIcon field="action"></p-sortIcon></th>
+              <th pSortableColumn="entityType">Entity Type <p-sortIcon field="entityType"></p-sortIcon></th>
+              <th>Entity</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr>
+              <td>{{ item.timestamp | date:'medium' }}</td>
+              <td>{{ item.userName }}</td>
+              <td>
+                <span [ngClass]="'activity-badge ' + getActionClass(item.action)">
+                  {{ item.action }}
+                </span>
+              </td>
+              <td>{{ item.entityType }}</td>
+              <td>{{ item.entityName }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center">No activity found</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
+  `,
+  styles: [`
+    .statistics-container {
+      padding: 1rem;
+    }
     
-    // Load system overview stats
-    this.statsService.getSystemStats().subscribe({
-      next: (data) => {
-        this.systemStats = data;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load system statistics'
-        });
-        console.error('Error loading system stats:', error);
-        this.loading = false;
+    .filter-row {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .chart-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .chart-container {
+      height: 300px;
+    }
+    
+    .activity-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .activity-badge.create {
+      background-color: #4caf50;
+      color: white;
+    }
+    
+    .activity-badge.update {
+      background-color: #2196f3;
+      color: white;
+    }
+    
+    .activity-badge.delete {
+      background-color: #f44336;
+      color: white;
+    }
+    
+    .activity-badge.login {
+      background-color: #9c27b0;
+      color: white;
+    }
+    
+    @media (max-width: 768px) {
+      .chart-row {
+        grid-template-columns: 1fr;
       }
-    });
-    
-    // Load chart data with filters
-    this.loadChartData();
-    
-    // Load top users data
-    this.loadTopUsersData();
+      
+      .filter-row {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+  `]
+})
+export class StatisticsComponent implements OnInit {
+  stats: StatisticsResponse | null = null;
+  activityItems: UserActivityItem[] = [];
+  
+  usersChartData: any;
+  tripsChartData: any;
+  imagesChartData: any;
+  imageDistributionChartData: any;
+  
+  chartOptions: any;
+  pieChartOptions: any;
+  
+  periodOptions: PeriodOption[] = [
+    { label: 'Daily', value: 'daily' },
+    { label: 'Weekly', value: 'weekly' },
+    { label: 'Monthly', value: 'monthly' }
+  ];
+  
+  timeRangeOptions: TimeRangeOption[] = [
+    { label: 'Last 3 Months', value: 3 },
+    { label: 'Last 6 Months', value: 6 },
+    { label: 'Last 12 Months', value: 12 }
+  ];
+  
+  selectedPeriod: PeriodOption = this.periodOptions[2]; // Monthly by default
+  selectedTimeRange: TimeRangeOption = this.timeRangeOptions[1]; // Last 6 months by default
+  
+  constructor(private statsService: StatsService) {}
+  
+  ngOnInit(): void {
+    this.initChartOptions();
+    this.loadStatistics();
+    this.loadUserActivity();
   }
   
-  loadChartData() {
-    const params = {
-      startDate: this.formatDate(this.startDate),
-      endDate: this.formatDate(this.endDate),
-      timeFrame: this.selectedTimeFrame as 'day' | 'week' | 'month'
+  loadStatistics(): void {
+    this.statsService.getGrowthStats(
+      this.selectedPeriod.value,
+      this.selectedTimeRange.value
+    ).subscribe(data => {
+      this.stats = data;
+      this.updateChartData();
+    });
+  }
+  
+  loadUserActivity(): void {
+    this.statsService.getUserActivity(50).subscribe(data => {
+      this.activityItems = data;
+    });
+  }
+  
+  initChartOptions(): void {
+    this.chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
     };
     
-    // Load user activity data
-    this.statsService.getUserActivityStats(params).subscribe({
-      next: (data) => {
-        this.userActivityStats = data;
-        this.renderUserActivityChart();
-      },
-      error: (error) => {
-        console.error('Error loading user activity stats:', error);
-      }
-    });
-    
-    // Load content stats
-    this.statsService.getContentStats(params).subscribe({
-      next: (data) => {
-        this.contentStats = data;
-        this.renderContentActivityChart();
-      },
-      error: (error) => {
-        console.error('Error loading content stats:', error);
-      }
-    });
-    
-    // Load AI usage stats
-    this.statsService.getAiUsageStats(params).subscribe({
-      next: (data) => {
-        this.aiUsageStats = data;
-        this.renderAiUsageChart();
-      },
-      error: (error) => {
-        console.error('Error loading AI usage stats:', error);
-      }
-    });
-    
-    // Load storage stats
-    this.statsService.getStorageStats().subscribe({
-      next: (data) => {
-        this.storageStats = data;
-        this.renderStorageDistributionChart();
-      },
-      error: (error) => {
-        console.error('Error loading storage stats:', error);
-      }
-    });
-  }
-  
-  loadTopUsersData() {
-    // Load top users by storage
-    this.statsService.getTopUsersByStorage(10).subscribe({
-      next: (data) => {
-        this.topUsersByStorage = data;
-      },
-      error: (error) => {
-        console.error('Error loading top storage users:', error);
-      }
-    });
-    
-    // Load top users by AI usage
-    this.statsService.getTopUsersByAiUsage(10).subscribe({
-      next: (data) => {
-        this.topUsersByAiUsage = data;
-      },
-      error: (error) => {
-        console.error('Error loading top AI users:', error);
-      }
-    });
-  }
-  
-  onDateChange() {
-    this.loadChartData();
-  }
-  
-  onTimeFrameChange() {
-    this.loadChartData();
-  }
-  
-  renderUserActivityChart() {
-    if (!this.userActivityChartElement || !this.userActivityStats.newUsersOverTime) return;
-    
-    const chart = new CanvasJS.Chart(this.userActivityChartElement.nativeElement, {
-      animationEnabled: true,
-      theme: "light2",
-      title: {
-        text: "User Activity"
-      },
-      axisX: {
-        valueFormatString: "DD MMM",
-        crosshair: {
-          enabled: true,
-          snapToDataPoint: true
+    this.pieChartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
         }
-      },
-      axisY: {
-        title: "Number of Users",
-        includeZero: true,
-        crosshair: {
-          enabled: true
-        }
-      },
-      toolTip: {
-        shared: true
-      },
-      legend: {
-        cursor: "pointer",
-        verticalAlign: "bottom",
-        horizontalAlign: "center"
-      },
-      data: [{
-        type: "spline",
-        showInLegend: true,
-        name: "New Users",
-        markerType: "square",
-        xValueFormatString: "DD MMM, YYYY",
-        color: "#4caf50",
-        dataPoints: this.userActivityStats.newUsersOverTime.map((item: any) => ({
-          x: new Date(item.date),
-          y: item.count
-        }))
-      },
-      {
-        type: "spline",
-        showInLegend: true,
-        name: "Active Users",
-        markerType: "circle",
-        color: "#2196f3",
-        dataPoints: this.userActivityStats.loginActivity.map((item: any) => ({
-          x: new Date(item.date),
-          y: item.count
-        }))
-      }]
-    });
+      }
+    };
     
-    chart.render();
+    // Initialize empty chart data
+    this.initEmptyChartData();
   }
   
-  renderContentActivityChart() {
-    if (!this.contentActivityChartElement || !this.contentStats.tripsCreatedOverTime) return;
-    
-    const chart = new CanvasJS.Chart(this.contentActivityChartElement.nativeElement, {
-      animationEnabled: true,
-      theme: "light2",
-      title: {
-        text: "Content Creation"
-      },
-      axisX: {
-        valueFormatString: "DD MMM",
-        crosshair: {
-          enabled: true,
-          snapToDataPoint: true
+  initEmptyChartData(): void {
+    this.usersChartData = {
+      labels: [],
+      datasets: [
+        {
+          label: 'Users',
+          data: [],
+          borderColor: '#3f51b5',
+          backgroundColor: 'rgba(63, 81, 181, 0.2)',
+          tension: 0.4
         }
-      },
-      axisY: {
-        title: "Count",
-        includeZero: true,
-        crosshair: {
-          enabled: true
-        }
-      },
-      toolTip: {
-        shared: true
-      },
-      legend: {
-        cursor: "pointer",
-        verticalAlign: "bottom",
-        horizontalAlign: "center"
-      },
-      data: [{
-        type: "stackedColumn",
-        showInLegend: true,
-        name: "Trips",
-        color: "#ff9800",
-        dataPoints: this.contentStats.tripsCreatedOverTime.map((item: any) => ({
-          x: new Date(item.date),
-          y: item.count
-        }))
-      },
-      {
-        type: "stackedColumn",
-        showInLegend: true,
-        name: "Images",
-        color: "#9c27b0",
-        dataPoints: this.contentStats.imagesUploadedOverTime.map((item: any) => ({
-          x: new Date(item.date),
-          y: item.count
-        }))
-      },
-      {
-        type: "stackedColumn",
-        showInLegend: true,
-        name: "AI Images",
-        color: "#673ab7",
-        dataPoints: this.contentStats.aiImagesGeneratedOverTime.map((item: any) => ({
-          x: new Date(item.date),
-          y: item.count
-        }))
-      }]
-    });
+      ]
+    };
     
-    chart.render();
+    this.tripsChartData = {
+      labels: [],
+      datasets: [
+        {
+          label: 'Trips',
+          data: [],
+          borderColor: '#009688',
+          backgroundColor: 'rgba(0, 150, 136, 0.2)',
+          tension: 0.4
+        }
+      ]
+    };
+    
+    this.imagesChartData = {
+      labels: [],
+      datasets: [
+        {
+          label: 'Images',
+          data: [],
+          borderColor: '#ff9800',
+          backgroundColor: 'rgba(255, 152, 0, 0.2)',
+          tension: 0.4
+        }
+      ]
+    };
+    
+    this.imageDistributionChartData = {
+      labels: ['Regular Images', 'AI Generated Images'],
+      datasets: [
+        {
+          data: [0, 0],
+          backgroundColor: ['#ff9800', '#e91e63']
+        }
+      ]
+    };
   }
   
-  renderAiUsageChart() {
-    if (!this.aiUsageChartElement || !this.aiUsageStats.imagesGeneratedOverTime) return;
+  updateChartData(): void {
+    if (!this.stats) return;
     
-    const chart = new CanvasJS.Chart(this.aiUsageChartElement.nativeElement, {
-      animationEnabled: true,
-      theme: "light2",
-      title: {
-        text: "AI Image Generation"
-      },
-      axisX: {
-        valueFormatString: "DD MMM",
-        crosshair: {
-          enabled: true,
-          snapToDataPoint: true
+    // Update users growth chart
+    this.usersChartData = {
+      labels: this.stats.usersGrowth.map(item => item.date),
+      datasets: [
+        {
+          label: 'Users',
+          data: this.stats.usersGrowth.map(item => item.value),
+          borderColor: '#3f51b5',
+          backgroundColor: 'rgba(63, 81, 181, 0.2)',
+          tension: 0.4
         }
-      },
-      axisY: {
-        title: "Images Generated",
-        includeZero: true,
-        crosshair: {
-          enabled: true
+      ]
+    };
+    
+    // Update trips growth chart
+    this.tripsChartData = {
+      labels: this.stats.tripsGrowth.map(item => item.date),
+      datasets: [
+        {
+          label: 'Trips',
+          data: this.stats.tripsGrowth.map(item => item.value),
+          borderColor: '#009688',
+          backgroundColor: 'rgba(0, 150, 136, 0.2)',
+          tension: 0.4
         }
-      },
-      data: [{
-        type: "area",
-        color: "#6f42c1",
-        xValueFormatString: "DD MMM, YYYY",
-        yValueFormatString: "#,### images",
-        dataPoints: this.aiUsageStats.imagesGeneratedOverTime.map((item: any) => ({
-          x: new Date(item.date),
-          y: item.count
-        }))
-      }]
-    });
+      ]
+    };
     
-    chart.render();
+    // Update images growth chart
+    this.imagesChartData = {
+      labels: this.stats.imagesGrowth.map(item => item.date),
+      datasets: [
+        {
+          label: 'Images',
+          data: this.stats.imagesGrowth.map(item => item.value),
+          borderColor: '#ff9800',
+          backgroundColor: 'rgba(255, 152, 0, 0.2)',
+          tension: 0.4
+        }
+      ]
+    };
+    
+    // Update image distribution chart
+    const regularImages = this.stats.totalImages - this.stats.aiGeneratedImages;
+    
+    this.imageDistributionChartData = {
+      labels: ['Regular Images', 'AI Generated Images'],
+      datasets: [
+        {
+          data: [regularImages, this.stats.aiGeneratedImages],
+          backgroundColor: ['#ff9800', '#e91e63']
+        }
+      ]
+    };
   }
   
-  renderStorageDistributionChart() {
-    if (!this.storageDistributionChartElement || !this.storageStats.storageByUserType) return;
-    
-    const chart = new CanvasJS.Chart(this.storageDistributionChartElement.nativeElement, {
-      animationEnabled: true,
-      theme: "light2",
-      title: {
-        text: "Storage Distribution by User Type"
-      },
-      data: [{
-        type: "pie",
-        showInLegend: true,
-        indexLabel: "{name}: {y}%",
-        legendText: "{name}: {absoluteY}",
-        toolTipContent: "<b>{name}</b>: {absoluteY} ({y}%)",
-        dataPoints: this.storageStats.storageByUserType.map((item: any) => ({
-          name: item.label,
-          y: Math.round((item.value / this.storageStats.totalCapacity) * 100),
-          absoluteY: this.formatBytes(item.value)
-        }))
-      }]
-    });
-    
-    chart.render();
-  }
-  
-  formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
-  }
-  
-  formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-    
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  getActionClass(action: string): string {
+    switch (action) {
+      case 'CREATE':
+        return 'create';
+      case 'UPDATE':
+        return 'update';
+      case 'DELETE':
+        return 'delete';
+      case 'LOGIN':
+        return 'login';
+      default:
+        return '';
+    }
   }
 }

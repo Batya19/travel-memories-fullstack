@@ -1,165 +1,119 @@
-<div class="statistics-container">
-    <p-toast></p-toast>
-    
-    <div class="loading-overlay" *ngIf="loading">
-      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-    </div>
-    
-    <div class="card mb-4">
-      <div class="flex justify-content-between align-items-center mb-3">
-        <h2>Statistics & Analytics</h2>
-        
-        <div class="filter-container">
-          <div class="date-filters">
-            <span class="p-float-label">
-              <p-calendar 
-                [(ngModel)]="startDate" 
-                [showIcon]="true" 
-                dateFormat="yy-mm-dd"
-                (onSelect)="onDateChange()"
-              ></p-calendar>
-              <label>Start Date</label>
-            </span>
-            
-            <span class="p-float-label">
-              <p-calendar 
-                [(ngModel)]="endDate" 
-                [showIcon]="true" 
-                dateFormat="yy-mm-dd"
-                (onSelect)="onDateChange()"
-              ></p-calendar>
-              <label>End Date</label>
-            </span>
-          </div>
-          
-          <p-selectButton 
-            [options]="timeFrameOptions" 
-            [(ngModel)]="selectedTimeFrame" 
-            (onChange)="onTimeFrameChange()"
-          ></p-selectButton>
+<!-- <div class="statistics-container">
+  <div class="header">
+    <h2>System Dashboard</h2>
+    <p-button icon="pi pi-refresh" (onClick)="refreshStatistics()" [disabled]="loading"></p-button>
+  </div>
+
+  <p-card styleClass="mb-4">
+    <ng-template pTemplate="header">
+      <div class="flex justify-content-between align-items-center p-3">
+        <h3>System Overview</h3>
+        <div class="loading-indicator" *ngIf="loading">
+          <p-progressSpinner [style]="{width: '30px', height: '30px'}" styleClass="custom-spinner" strokeWidth="4"></p-progressSpinner>
         </div>
       </div>
+    </ng-template>
+
+    <div class="grid" *ngIf="stats">
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="stats-card">
+          <div class="flex flex-column align-items-center">
+            <i class="pi pi-users text-4xl text-primary"></i>
+            <h4>Total Users</h4>
+            <span class="text-3xl font-bold">{{ stats.totalUsers }}</span>
+          </div>
+        </p-card>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="stats-card">
+          <div class="flex flex-column align-items-center">
+            <i class="pi pi-map text-4xl text-primary"></i>
+            <h4>Total Trips</h4>
+            <span class="text-3xl font-bold">{{ stats.totalTrips }}</span>
+          </div>
+        </p-card>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="stats-card">
+          <div class="flex flex-column align-items-center">
+            <i class="pi pi-images text-4xl text-primary"></i>
+            <h4>Total Images</h4>
+            <span class="text-3xl font-bold">{{ stats.totalImages }}</span>
+          </div>
+        </p-card>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="stats-card">
+          <div class="flex flex-column align-items-center">
+            <i class="pi pi-database text-4xl text-primary"></i>
+            <h4>Storage Used</h4>
+            <span class="text-3xl font-bold">{{ stats.totalStorageUsedMB | number:'1.0-1' }} MB</span>
+          </div>
+        </p-card>
+      </div>
     </div>
-    
-    <!-- Charts Section -->
-    <div class="grid" *ngIf="!loading">
-      <div class="col-12 lg:col-6">
-        <p-card styleClass="chart-card">
-          <ng-template pTemplate="title">User Activity</ng-template>
-          <ng-template pTemplate="content">
-            <div #userActivityChart class="chart-container"></div>
-          </ng-template>
-        </p-card>
-      </div>
-      
-      <div class="col-12 lg:col-6">
-        <p-card styleClass="chart-card">
-          <ng-template pTemplate="title">Content Creation</ng-template>
-          <ng-template pTemplate="content">
-            <div #contentActivityChart class="chart-container"></div>
-          </ng-template>
-        </p-card>
-      </div>
-      
-      <div class="col-12 lg:col-6">
-        <p-card styleClass="chart-card">
-          <ng-template pTemplate="title">AI Image Generation</ng-template>
-          <ng-template pTemplate="content">
-            <div #aiUsageChart class="chart-container"></div>
-          </ng-template>
-        </p-card>
-      </div>
-      
-      <div class="col-12 lg:col-6">
-        <p-card styleClass="chart-card">
-          <ng-template pTemplate="title">Storage Distribution</ng-template>
-          <ng-template pTemplate="content">
-            <div #storageDistributionChart class="chart-container"></div>
-          </ng-template>
-        </p-card>
-      </div>
+  </p-card>
+
+  <div class="grid">
+    <div class="col-12 md:col-6">
+      <p-card header="Users Growth">
+        <div #usersChart style="height: 300px; width: 100%;"></div>
+      </p-card>
     </div>
-    
-    <!-- Top Users Section -->
-    <div class="card mt-4" *ngIf="!loading">
-      <p-tabView>
-        <p-tabPanel header="Top Users by Storage Usage">
-          <p-table [value]="topUsersByStorage" styleClass="p-datatable-striped">
-            <ng-template pTemplate="header">
-              <tr>
-                <th>#</th>
-                <th>User</th>
-                <th>Email</th>
-                <th>Storage Used</th>
-                <th>Quota</th>
-                <th>Usage</th>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-user let-i="rowIndex">
-              <tr>
-                <td>{{ i + 1 }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ formatBytes(user.storageUsed) }}</td>
-                <td>{{ formatBytes(user.quota) }}</td>
-                <td>
-                  <div class="progress-container">
-                    <div class="progress-bar" [style.width.%]="user.percentUsed" [ngClass]="{
-                      'warning': user.percentUsed > 70 && user.percentUsed <= 90,
-                      'danger': user.percentUsed > 90
-                    }">
-                      {{ user.percentUsed }}%
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-              <tr>
-                <td colspan="6" class="text-center">No data available</td>
-              </tr>
-            </ng-template>
-          </p-table>
-        </p-tabPanel>
-        
-        <p-tabPanel header="Top Users by AI Usage">
-          <p-table [value]="topUsersByAiUsage" styleClass="p-datatable-striped">
-            <ng-template pTemplate="header">
-              <tr>
-                <th>#</th>
-                <th>User</th>
-                <th>Email</th>
-                <th>AI Images Generated</th>
-                <th>Quota</th>
-                <th>Usage</th>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-user let-i="rowIndex">
-              <tr>
-                <td>{{ i + 1 }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.aiImagesGenerated }} images</td>
-                <td>{{ user.quota }} images</td>
-                <td>
-                  <div class="progress-container">
-                    <div class="progress-bar" [style.width.%]="user.percentUsed" [ngClass]="{
-                      'warning': user.percentUsed > 70 && user.percentUsed <= 90,
-                      'danger': user.percentUsed > 90
-                    }">
-                      {{ user.percentUsed }}%
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-              <tr>
-                <td colspan="6" class="text-center">No data available</td>
-              </tr>
-            </ng-template>
-          </p-table>
-        </p-tabPanel>
-      </p-tabView>
+
+    <div class="col-12 md:col-6">
+      <p-card header="Trips Created">
+        <div #tripsChart style="height: 300px; width: 100%;"></div>
+      </p-card>
     </div>
   </div>
+
+  <div class="grid mt-3">
+    <div class="col-12 md:col-6">
+      <p-card header="Image Distribution">
+        <div #imagesChart style="height: 300px; width: 100%;"></div>
+      </p-card>
+    </div>
+
+    <div class="col-12 md:col-6">
+      <p-card header="Recent User Activity">
+        <p-table [value]="stats?.recentUserActivity || []" styleClass="p-datatable-sm" [paginator]="true" [rows]="5" 
+                 [showCurrentPageReport]="true" responsiveLayout="stack" [rowHover]="true">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>User</th>
+              <th>Activity</th>
+              <th>Time</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-activity>
+            <tr>
+              <td>
+                <span class="p-column-title">User</span>
+                {{ activity.userEmail }}
+              </td>
+              <td>
+                <span class="p-column-title">Activity</span>
+                <span [ngClass]="{'activity-trip': activity.activityType === 'Trip', 'activity-image': activity.activityType === 'Image'}">
+                  {{ activity.description }}
+                </span>
+              </td>
+              <td>
+                <span class="p-column-title">Time</span>
+                {{ activity.timestamp | date:'medium' }}
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="3" class="text-center">No recent activity found</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
+  </div>
+</div> -->

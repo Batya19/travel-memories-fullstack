@@ -1,115 +1,32 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { StatisticsResponse } from '../models/statistics-response.model';
+import { UserActivityItem } from '../models/user-activity-item.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StatsService {
-  private apiUrl = 'http://localhost:7051/api/admin/stats'; // Replace with your actual API URL
-  
-  constructor(private http: HttpClient) {}
-  
-  getSystemStats(): Observable<{
-    totalUsers: number;
-    activeUsers: number;
-    totalTrips: number;
-    totalImages: number;
-    totalAiImages: number;
-    totalStorageUsed: number;
-  }> {
-    return this.http.get<any>(`${this.apiUrl}/system`);
+  private readonly API_URL = `${environment.apiUrl}/admin`;
+
+  constructor(private http: HttpClient) { }
+
+  getSystemStats(): Observable<StatisticsResponse> {
+    return this.http.get<StatisticsResponse>(`${this.API_URL}/stats`);
   }
-  
-  getStorageStats(): Observable<{
-    totalCapacity: number;
-    usedStorage: number;
-    availableStorage: number;
-    storageByUserType: { label: string; value: number }[];
-  }> {
-    return this.http.get<any>(`${this.apiUrl}/storage`);
+
+  getUserActivity(limit: number = 10): Observable<UserActivityItem[]> {
+    const params = new HttpParams().set('limit', limit.toString());
+    return this.http.get<UserActivityItem[]>(`${this.API_URL}/user-activity`, { params });
   }
-  
-  getUserActivityStats(params: {
-    startDate?: string;
-    endDate?: string;
-    timeFrame?: 'day' | 'week' | 'month';
-  } = {}): Observable<{
-    newUsersOverTime: { date: string; count: number }[];
-    loginActivity: { date: string; count: number }[];
-  }> {
-    let httpParams = new HttpParams();
-    
-    Object.keys(params).forEach(key => {
-      if (params[key as keyof typeof params] !== undefined) {
-        httpParams = httpParams.set(key, params[key as keyof typeof params]!.toString());
-      }
-    });
-    
-    return this.http.get<any>(`${this.apiUrl}/user-activity`, { params: httpParams });
-  }
-  
-  getContentStats(params: {
-    startDate?: string;
-    endDate?: string;
-    timeFrame?: 'day' | 'week' | 'month';
-  } = {}): Observable<{
-    tripsCreatedOverTime: { date: string; count: number }[];
-    imagesUploadedOverTime: { date: string; count: number }[];
-    aiImagesGeneratedOverTime: { date: string; count: number }[];
-  }> {
-    let httpParams = new HttpParams();
-    
-    Object.keys(params).forEach(key => {
-      if (params[key as keyof typeof params] !== undefined) {
-        httpParams = httpParams.set(key, params[key as keyof typeof params]!.toString());
-      }
-    });
-    
-    return this.http.get<any>(`${this.apiUrl}/content`, { params: httpParams });
-  }
-  
-  getAiUsageStats(params: {
-    startDate?: string;
-    endDate?: string;
-    timeFrame?: 'day' | 'week' | 'month';
-  } = {}): Observable<{
-    imagesGeneratedOverTime: { date: string; count: number }[];
-  }> {
-    let httpParams = new HttpParams();
-    
-    Object.keys(params).forEach(key => {
-      if (params[key as keyof typeof params] !== undefined) {
-        httpParams = httpParams.set(key, params[key as keyof typeof params]!.toString());
-      }
-    });
-    
-    return this.http.get<any>(`${this.apiUrl}/ai-usage`, { params: httpParams });
-  }
-  
-  getTopUsersByStorage(limit: number = 5): Observable<{
-    userId: string;
-    username: string;
-    email: string;
-    storageUsed: number;
-    quota: number;
-    percentUsed: number;
-  }[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/top-users/storage`, {
-      params: { limit: limit.toString() }
-    });
-  }
-  
-  getTopUsersByAiUsage(limit: number = 5): Observable<{
-    userId: string;
-    username: string;
-    email: string;
-    aiImagesGenerated: number;
-    quota: number;
-    percentUsed: number;
-  }[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/top-users/ai`, {
-      params: { limit: limit.toString() }
-    });
+
+  getGrowthStats(period: 'daily' | 'weekly' | 'monthly' = 'monthly', months: number = 6): Observable<StatisticsResponse> {
+    const params = new HttpParams()
+      .set('period', period)
+      .set('months', months.toString());
+
+    return this.http.get<StatisticsResponse>(`${this.API_URL}/stats/growth`, { params });
   }
 }

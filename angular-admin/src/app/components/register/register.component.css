@@ -1,3 +1,4 @@
+/*
 .register-page {
     width: 100%;
     min-height: 100vh;
@@ -11,7 +12,6 @@
     width: 100%;
 }
 
-/* Left section with background image */
 .left-section {
     position: relative;
     flex: 1;
@@ -103,7 +103,6 @@
     font-weight: 500;
 }
 
-/* Right section with form */
 .right-section {
     flex: 1;
     min-width: 40%;
@@ -204,7 +203,6 @@
     color: var(--text-color-secondary);
 }
 
-/* Custom Styling for PrimeNG Components */
 :host ::ng-deep {
     .p-float-label {
         display: block;
@@ -238,7 +236,6 @@
     }
 }
 
-/* Responsive design */
 @media screen and (max-width: 1024px) {
     .hero-content h1 {
         font-size: 2.5rem;
@@ -275,3 +272,4 @@
         font-size: 2rem;
     }
 }
+*/
