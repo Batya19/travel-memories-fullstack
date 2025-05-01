@@ -1,22 +1,19 @@
-<!-- <div class="header">
-    <div class="header-left">
-        <button pButton icon="pi pi-bars" class="p-button-text p-button-rounded" (click)="toggleSidebar()"></button>
-        <h1 class="header-title">{{ pageTitle() }}</h1>
+<div class="header">
+    <div class="logo-container">
+        <img src="assets/logo.svg" alt="TravelMemories Logo" class="logo" />
+        <span class="app-name">Admin Panel</span>
     </div>
 
-    <div class="header-right">
-        <p-button icon="pi pi-user" styleClass="p-button-rounded p-button-text" (click)="op.toggle($event)"></p-button>
+    <div class="right-menu">
+        @if (user) {
+        <div class="user-info">
+            <p-avatar [label]="getUserInitials()" shape="circle"
+                [style]="{ 'background-color': '#4caf50', color: '#ffffff' }"
+                (click)="userMenu.toggle($event)"></p-avatar>
+            <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+        </div>
+        }
 
-        <p-overlayPanel #op>
-            <div class="user-panel">
-                <div class="user-info">
-                    <h3>{{ userName() }}</h3>
-                    <p>Admin</p>
-                </div>
-                <hr />
-                <p-button label="Logout" icon="pi pi-sign-out" styleClass="p-button-text p-button-danger w-full"
-                    (click)="logout()"></p-button>
-            </div>
-        </p-overlayPanel>
+        <p-menu #userMenu [popup]="true" [model]="userMenuItems"></p-menu>
     </div>
-</div> -->
+</div>

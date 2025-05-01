@@ -1,66 +1,73 @@
-<!-- <div class="user-management-container">
-  <div class="header">
-    <h2>User Management</h2>
-    <div class="header-actions">
-      <span class="p-input-icon-left mr-3">
-        <i class="pi pi-search"></i>
-        <input type="text" pInputText [(ngModel)]="searchTerm" placeholder="Search users" (keyup.enter)="onSearch()" />
-      </span>
-      <p-button label="Add User" icon="pi pi-plus" (onClick)="openNewUserDialog()"></p-button>
-    </div>
-  </div>
+<div class="user-management-container">
+  <h1>User Management</h1>
 
-  <p-table [value]="users" [paginator]="true" [rows]="10" [loading]="loading" [rowHover]="true" dataKey="id"
-    responsiveLayout="stack" styleClass="p-datatable-gridlines p-datatable-sm" [showCurrentPageReport]="true"
-    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users">
+  <p-card styleClass="mb-4">
+    <div class="flex justify-content-between align-items-center">
+      <div class="search-box">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input type="text" pInputText [(ngModel)]="searchTerm" placeholder="Search users..."
+            (keyup.enter)="onSearchTerm()" />
+        </span>
+      </div>
+
+      <div class="filter-options">
+        <p-dropdown [options]="roleFilterOptions" [(ngModel)]="roleFilter" placeholder="Filter by role"
+          [showClear]="true" (onChange)="onRoleFilterChange()"></p-dropdown>
+      </div>
+
+      <p-button icon="pi pi-plus" label="Add User" (onClick)="showAddUserDialog()"></p-button>
+    </div>
+  </p-card>
+
+  <p-table [value]="users" [lazy]="true" [paginator]="true" [rows]="pageSize" [totalRecords]="totalRecords"
+    [loading]="loading" [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true" [responsive]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users" (onLazyLoad)="loadUsers($event)">
     <ng-template pTemplate="header">
       <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Storage</th>
-        <th>AI Quota</th>
-        <th>Created</th>
-        <th>Actions</th>
+        <th pSortableColumn="firstName">Name <p-sortIcon field="firstName"></p-sortIcon></th>
+        <th pSortableColumn="email">Email <p-sortIcon field="email"></p-sortIcon></th>
+        <th pSortableColumn="role">Role <p-sortIcon field="role"></p-sortIcon></th>
+        <th>Storage Usage</th>
+        <th>AI Quota Usage</th>
+        <th pSortableColumn="createdAt">Created At <p-sortIcon field="createdAt"></p-sortIcon></th>
+        <th style="width: 120px">Actions</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-user>
       <tr>
+        <td>{{ user.firstName }} {{ user.lastName }}</td>
+        <td>{{ user.email }}</td>
         <td>
-          <span class="p-column-title">Name</span>
-          {{ user.firstName }} {{ user.lastName }}
+          <span [ngClass]="'role-badge ' + (user.role === 'SYSTEM_ADMIN' ? 'admin' : 'user')">
+            {{ user.role }}
+          </span>
         </td>
         <td>
-          <span class="p-column-title">Email</span>
-          {{ user.email }}
-        </td>
-        <td>
-          <span class="p-column-title">Role</span>
-          <p-tag [value]="user.role" [severity]="user.role === 'SYSTEM_ADMIN' ? 'danger' : 'success'"></p-tag>
-        </td>
-        <td>
-          <span class="p-column-title">Storage</span>
-          <div class="storage-info">
-            <p-progressBar [value]="getStorageUsagePercentage(user)"
-              [styleClass]="getProgressBarClass(getStorageUsagePercentage(user))"></p-progressBar>
-            <small>{{ user.storageUsed }} MB / {{ user.storageQuota }} MB</small>
+          <div class="quota-container">
+            <p-progressBar [value]="getStoragePercentage(user)" [showValue]="false"
+              [styleClass]="getQuotaClass(getStoragePercentage(user))"></p-progressBar>
+            <span class="quota-text">
+              {{ formatStorage(user.storageUsed || 0) }} / {{ formatStorage(user.storageQuota) }}
+            </span>
           </div>
         </td>
         <td>
-          <span class="p-column-title">AI Quota</span>
-          {{ user.aiQuota }}
+          <div class="quota-container">
+            <p-progressBar [value]="getAiQuotaPercentage(user)" [showValue]="false"
+              [styleClass]="getQuotaClass(getAiQuotaPercentage(user))"></p-progressBar>
+            <span class="quota-text">
+              {{ user.aiQuotaUsed || 0 }} / {{ user.aiQuota }}
+            </span>
+          </div>
         </td>
+        <td>{{ user.createdAt | date }}</td>
         <td>
-          <span class="p-column-title">Created</span>
-          {{ user.createdAt | date:'mediumDate' }}
-        </td>
-        <td>
-          <span class="p-column-title">Actions</span>
-          <div class="actions-cell">
-            <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success p-button-text mr-2"
-              (click)="openEditUserDialog(user)"></button>
-            <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text"
-              (click)="confirmDeleteUser(user)"></button>
+          <div class="action-buttons">
+            <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
+              (click)="editUser(user)"></button>
+            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm"
+              (click)="confirmDelete(user)"></button>
           </div>
         </td>
       </tr>
@@ -68,85 +75,84 @@
     <ng-template pTemplate="emptymessage">
       <tr>
         <td colspan="7" class="text-center">
-          <div class="empty-message">
-            <i class="pi pi-users" style="font-size: 3rem"></i>
-            <p>No users found</p>
-          </div>
+          No users found.
         </td>
       </tr>
     </ng-template>
   </p-table>
 
-  <p-dialog [(visible)]="userDialog" [style]="{width: '450px'}" header="{{ isNewUser ? 'Add New User' : 'Edit User' }}"
-    [modal]="true" styleClass="p-fluid" [draggable]="false" [resizable]="false">
-    <form [formGroup]="userForm" (ngSubmit)="saveUser()">
-      <div class="field">
-        <label for="email">Email</label>
-        <input type="email" pInputText id="email" formControlName="email" required autofocus />
-        <small class="p-error" *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched">
-          Valid email is required
-        </small>
-      </div>
-
-      <div class="field">
+  <p-dialog [(visible)]="userDialogVisible" [header]="editMode ? 'Edit User' : 'Add New User'" [modal]="true"
+    [style]="{ width: '450px' }" [draggable]="false" [resizable]="false">
+    <form [formGroup]="userForm" class="user-form">
+      <div class="form-field">
         <label for="firstName">First Name</label>
-        <input type="text" pInputText id="firstName" formControlName="firstName" required />
-        <small class="p-error" *ngIf="userForm.get('firstName')?.invalid && userForm.get('firstName')?.touched">
+        <input id="firstName" type="text" pInputText formControlName="firstName" class="w-full" />
+        @if (userForm.get('firstName')?.invalid && userForm.get('firstName')?.touched) {
+        <small class="p-error">
           First name is required
         </small>
+        }
       </div>
 
-      <div class="field">
+      <div class="form-field">
         <label for="lastName">Last Name</label>
-        <input type="text" pInputText id="lastName" formControlName="lastName" required />
-        <small class="p-error" *ngIf="userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched">
+        <input id="lastName" type="text" pInputText formControlName="lastName" class="w-full" />
+        @if (userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched) {
+        <small class="p-error">
           Last name is required
         </small>
+        }
       </div>
 
-      <div class="field">
-        <label for="role">Role</label>
-        <p-dropdown id="role" [options]="roles" formControlName="role" optionLabel="label"
-          optionValue="value"></p-dropdown>
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input id="email" type="email" pInputText formControlName="email" class="w-full" />
+        @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
+        <small class="p-error">
+          Valid email is required
+        </small>
+        }
       </div>
 
-      <div class="field">
-        <label for="storageQuota">Storage Quota (MB)</label>
-        <p-inputNumber id="storageQuota" formControlName="storageQuota" [min]="1" [showButtons]="true"
-          buttonLayout="horizontal" spinnerMode="horizontal" inputId="horizontal" [step]="1024"
-          decrementButtonClass="p-button-danger" incrementButtonClass="p-button-success"
-          incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
-      </div>
-
-      <div class="field">
-        <label for="aiQuota">AI Image Quota</label>
-        <p-inputNumber id="aiQuota" formControlName="aiQuota" [min]="0" [showButtons]="true" buttonLayout="horizontal"
-          spinnerMode="horizontal" inputId="horizontal" [step]="5" decrementButtonClass="p-button-danger"
-          incrementButtonClass="p-button-success" incrementButtonIcon="pi pi-plus"
-          decrementButtonIcon="pi pi-minus"></p-inputNumber>
-      </div>
-
-      <div class="field" *ngIf="showPassword || userForm.get('password')?.value">
-        <label for="password">{{ isNewUser ? 'Password' : 'New Password (leave blank to keep current)' }}</label>
-        <div class="p-inputgroup">
-          <input [type]="showPassword ? 'text' : 'password'" pInputText id="password" formControlName="password"
-            [required]="isNewUser" [minlength]="8" />
-          <button type="button" pButton icon="pi pi-eye" class="p-button-secondary"
-            (click)="showPassword = !showPassword"></button>
-        </div>
-        <small class="p-error"
-          *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched && isNewUser">
+      @if (!editMode) {
+      <div class="form-field">
+        <label for="password">Password</label>
+        <p-password id="password" formControlName="password" [toggleMask]="true" [feedback]="true" styleClass="w-full"
+          inputStyleClass="w-full"></p-password>
+        @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+        <small class="p-error">
           Password must be at least 8 characters
         </small>
+        }
+      </div>
+      }
+
+      <div class="form-field">
+        <label for="role">Role</label>
+        <p-dropdown id="role" [options]="roleOptions" formControlName="role" optionLabel="label" optionValue="value"
+          styleClass="w-full"></p-dropdown>
+      </div>
+
+      <div class="form-field">
+        <label for="storageQuota">Storage Quota (MB)</label>
+        <p-inputNumber id="storageQuota" formControlName="storageQuota" [min]="0" [max]="1000000"
+          styleClass="w-full"></p-inputNumber>
+      </div>
+
+      <div class="form-field">
+        <label for="aiQuota">AI Images Quota</label>
+        <p-inputNumber id="aiQuota" formControlName="aiQuota" [min]="0" [max]="1000"
+          styleClass="w-full"></p-inputNumber>
       </div>
     </form>
 
     <ng-template pTemplate="footer">
-      <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
-      <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" [disabled]="userForm.invalid"
-        (click)="saveUser()"></button>
+      <button pButton icon="pi pi-times" label="Cancel" class="p-button-text"
+        (click)="userDialogVisible = false"></button>
+      <button pButton icon="pi pi-check" label="Save" [disabled]="userForm.invalid" (click)="saveUser()"></button>
     </ng-template>
   </p-dialog>
 
-  <p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
-</div> -->
+  <p-confirmDialog></p-confirmDialog>
+  <p-toast></p-toast>
+</div>

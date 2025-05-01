@@ -1,0 +1,75 @@
+.settings-container {
+    padding: 1rem;
+}
+
+.loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+}
+
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.settings-card {
+    margin-bottom: 0;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-field:last-child {
+    margin-bottom: 0;
+}
+
+.help-text {
+    font-size: 0.75rem;
+    color: #666666;
+}
+
+.warning-text {
+    color: #f44336;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.checkbox-field {
+    margin-bottom: 1.5rem;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.w-full {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column-reverse;
+        gap: 0.5rem;
+    }
+
+    :host ::ng-deep .form-actions .p-button {
+        width: 100%;
+    }
+}

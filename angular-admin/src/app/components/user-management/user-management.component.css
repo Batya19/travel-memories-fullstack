@@ -1,75 +1,106 @@
-/* .user-management-container {
+.user-management-container {
     padding: 1rem;
 }
 
-.header {
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.flex {
     display: flex;
+}
+
+.justify-content-between {
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
 }
 
-.header h2 {
-    margin: 0;
-}
-
-.header-actions {
-    display: flex;
+.align-items-center {
     align-items: center;
 }
 
-.actions-cell {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-.storage-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.storage-info small {
-    margin-top: 0.25rem;
+.role-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
     font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
-.empty-message {
+.role-badge.admin {
+    background-color: #f44336;
+    color: white;
+}
+
+.role-badge.user {
+    background-color: #2196f3;
+    color: white;
+}
+
+.quota-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 2rem;
-    color: var(--text-color-secondary);
+    gap: 0.25rem;
 }
 
-:host ::ng-deep .success-progress .p-progressbar-value {
-    background: #22c55e;
+.quota-text {
+    font-size: 0.75rem;
+    color: #666666;
 }
 
-:host ::ng-deep .warning-progress .p-progressbar-value {
-    background: #f59e0b;
+.quota-critical {
+    background: #f44336;
 }
 
-:host ::ng-deep .danger-progress .p-progressbar-value {
-    background: #ef4444;
+.quota-warning {
+    background: #ff9800;
 }
 
-@media screen and (max-width: 768px) {
-    .header {
+.quota-normal {
+    background: #4caf50;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.user-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1rem 0;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.w-full {
+    width: 100%;
+}
+
+:host ::ng-deep .p-password input {
+    width: 100%;
+}
+
+:host ::ng-deep .p-dropdown {
+    width: 100%;
+}
+
+:host ::ng-deep .p-inputnumber {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .flex {
         flex-direction: column;
-        align-items: flex-start;
+        gap: 1rem;
     }
 
-    .header-actions {
-        margin-top: 1rem;
+    .search-box,
+    .filter-options {
         width: 100%;
     }
-
-    .p-input-icon-left {
-        width: 100%;
-    }
-
-    .p-input-icon-left input {
-        width: 100%;
-    }
-} */
+}

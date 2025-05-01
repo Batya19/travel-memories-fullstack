@@ -1,124 +1,112 @@
 <div class="dashboard-container">
-    <div class="dashboard-header">
-      <div>
-        <h1>Admin Dashboard</h1>
-        <p class="subtitle">Welcome to the TravelMemories admin dashboard. Here you can monitor system statistics and user activity.</p>
-      </div>
-      <button pButton icon="pi pi-refresh" label="Refresh" (click)="refreshDashboard()" [disabled]="loading"></button>
+  <div class="dashboard-header">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p class="subtitle">Welcome to the TravelMemories admin dashboard. Here you can monitor system statistics and user
+        activity.</p>
     </div>
-  
-    <!-- Loading indicator -->
-    <div *ngIf="loading" class="loading-overlay">
-      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-      <span>Loading dashboard data...</span>
+    <button pButton icon="pi pi-refresh" label="Refresh" (click)="refreshDashboard()" [disabled]="loading"></button>
+  </div>
+
+  @if (loading) {
+  <div class="loading-overlay">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <span>Loading dashboard data...</span>
+  </div>
+  } @else {
+  <div class="stats-grid">
+    <div class="stats-card">
+      <div class="stats-icon users-icon">
+        <i class="pi pi-users"></i>
+      </div>
+      <div class="stats-content">
+        <h3>Total Users</h3>
+        <div class="stats-value">{{ systemStats?.totalUsers || 0 }}</div>
+      </div>
     </div>
-  
-    <!-- Stats Cards -->
-    <div *ngIf="!loading" class="stats-grid">
-      <div class="stats-card">
-        <div class="stats-icon users-icon">
-          <i class="pi pi-users"></i>
-        </div>
-        <div class="stats-content">
-          <h3>Total Users</h3>
-          <div class="stats-value">{{ systemStats.totalUsers || 0 }}</div>
-        </div>
+
+    <div class="stats-card">
+      <div class="stats-icon trips-icon">
+        <i class="pi pi-map"></i>
       </div>
-  
-      <div class="stats-card">
-        <div class="stats-icon trips-icon">
-          <i class="pi pi-map"></i>
-        </div>
-        <div class="stats-content">
-          <h3>Total Trips</h3>
-          <div class="stats-value">{{ systemStats.totalTrips || 0 }}</div>
-        </div>
+      <div class="stats-content">
+        <h3>Total Trips</h3>
+        <div class="stats-value">{{ systemStats?.totalTrips || 0 }}</div>
       </div>
-  
-      <div class="stats-card">
-        <div class="stats-icon images-icon">
-          <i class="pi pi-images"></i>
-        </div>
-        <div class="stats-content">
-          <h3>Total Images</h3>
-          <div class="stats-value">{{ systemStats.totalImages || 0 }}</div>
-          <div class="stats-subtext">AI Generated: {{ systemStats.aiGeneratedImages || 0 }}</div>
-        </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-icon images-icon">
+        <i class="pi pi-images"></i>
       </div>
-  
-      <div class="stats-card">
-        <div class="stats-icon storage-icon">
-          <i class="pi pi-database"></i>
-        </div>
-        <div class="stats-content">
-          <h3>Storage Used</h3>
-          <div class="stats-value">{{ formatBytes(systemStats.storageUsed || 0) }}</div>
-          <div class="stats-subtext">
-            <div class="storage-progress">
-              <div class="progress-text">
-                <span>{{ getStoragePercentage() | number:'1.0-0' }}%</span>
-                <span>Total: {{ formatBytes(systemStats.totalStorageQuota || 0) }}</span>
-              </div>
-              <p-progressBar [value]="getStoragePercentage()" [styleClass]="'storage-progress-' + getStorageClass()"></p-progressBar>
+      <div class="stats-content">
+        <h3>Total Images</h3>
+        <div class="stats-value">{{ systemStats?.totalImages || 0 }}</div>
+        <div class="stats-subtext">AI Generated: {{ systemStats?.aiGeneratedImages || 0 }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-icon storage-icon">
+        <i class="pi pi-database"></i>
+      </div>
+      <div class="stats-content">
+        <h3>Storage Used</h3>
+        <div class="stats-value">{{ formatBytes(systemStats?.storageUsed || 0) }}</div>
+        <div class="stats-subtext">
+          <div class="storage-progress">
+            <div class="progress-text">
+              <span>{{ getStoragePercentage() | number:'1.0-0' }}%</span>
+              <span>Total: {{ formatBytes(systemStats?.totalStorageQuota || 0) }}</span>
             </div>
+            <p-progressBar [value]="getStoragePercentage()"
+              [styleClass]="'storage-progress-' + getStorageClass()"></p-progressBar>
           </div>
         </div>
       </div>
     </div>
-  
-    <!-- Recent Activity -->
-    <div *ngIf="!loading" class="activity-section">
-      <div class="section-header">
-        <h2>Recent User Activity</h2>
-      </div>
-      
-      <div class="activity-table">
-        <p-table [value]="recentActivity" styleClass="p-datatable-sm" [tableStyle]="{'min-width': '50rem'}">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>User</th>
-              <th>Action</th>
-              <th>Entity</th>
-              <th>Time</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-activity>
-            <tr>
-              <td>{{ activity.userName }}</td>
-              <td>
-                <span class="activity-badge" [ngClass]="'activity-' + getActivityClass(activity.action)">
-                  {{ activity.action || 'Unknown' }}
-                </span>
-              </td>
-              <td>{{ activity.entityType || 'N/A' }}: {{ activity.entityName || 'N/A' }}</td>
-              <td>{{ getTimeSince(activity.timestamp) }}</td>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="4" class="text-center">
-                <div class="empty-message">
-                  <i class="pi pi-history"></i>
-                  <span>No recent activity</span>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </div>
-    </div>
-  
-    <!-- Quick Links -->
-    <div *ngIf="!loading" class="quick-links">
-      <div class="link-card" (click)="viewAllUsers()">
-        <i class="pi pi-users"></i>
-        <span>Manage Users</span>
-      </div>
-      <div class="link-card" (click)="viewAllStats()">
-        <i class="pi pi-chart-bar"></i>
-        <span>View Statistics</span>
-      </div>
-    </div>
-  
-    <p-toast></p-toast>
   </div>
+
+  <div class="activity-section">
+    <div class="section-header">
+      <h2>Recent User Activity</h2>
+    </div>
+
+    <div class="activity-table">
+      <p-table [value]="recentActivity" styleClass="p-datatable-sm" [tableStyle]="{'min-width': '50rem'}">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>User</th>
+            <th>Action</th>
+            <th>Entity</th>
+            <th>Time</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-activity>
+          <tr>
+            <td>{{ activity.userName }}</td>
+            <td>
+              <span class="activity-badge" [ngClass]="'activity-' + getActivityClass(activity.action)">
+                {{ activity.action || 'Unknown' }}
+              </span>
+            </td>
+            <td>{{ activity.entityType || 'N/A' }}: {{ activity.entityName || 'N/A' }}</td>
+            <td>{{ getTimeSince(activity.timestamp) }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="4" class="text-center">
+              <div class="empty-message">
+                <i class="pi pi-history"></i>
+                <span>No recent activity</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+  }
+  <p-toast></p-toast>
+</div>

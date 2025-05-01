@@ -35,7 +35,7 @@ interface GrowthDataPoint {
     FormsModule,
     CardModule,
     ChartModule,
-    SelectModule, // Updated from DropdownModule to SelectModule
+    SelectModule,
     TableModule,
     ButtonModule,
     ToastModule

@@ -131,14 +131,6 @@ export class DashboardComponent implements OnInit {
     return match ? match[2] : description;
   }
 
-  viewAllUsers() {
-    this.router.navigate(['/admin/user-management']);
-  }
-
-  viewAllStats() {
-    this.router.navigate(['/admin/statistics']);
-  }
-
   refreshDashboard() {
     this.loading = true;
     this.loadDashboardData();

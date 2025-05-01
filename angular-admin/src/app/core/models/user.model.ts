@@ -1,22 +1,3 @@
-// export interface User {
-//     id: string;
-//     email: string;
-//     firstName: string;
-//     lastName: string;
-//     role: UserRole;
-//     storageQuota: number;
-//     aiQuota: number;
-//     createdAt: Date;
-//     updatedAt?: Date;
-//     storageUsed?: number;
-//     aiQuotaUsed?: number;
-// }
-
-// export enum UserRole {
-//     USER = 'USER',
-//     SYSTEM_ADMIN = 'SYSTEM_ADMIN'
-// }
-
 export enum UserRole {
     USER = 'USER',
     PREMIUM_USER = 'PREMIUM_USER',

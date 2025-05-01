@@ -18,75 +18,8 @@ import { MenuModule } from 'primeng/menu';
     AvatarModule,
     MenuModule
   ],
-  template: `
-    <div class="header">
-      <div class="logo-container">
-        <img src="assets/logo.svg" alt="TravelMemories Logo" class="logo" />
-        <span class="app-name">TravelMemories Admin</span>
-      </div>
-      
-      <div class="right-menu">
-        <div class="user-info" *ngIf="user">
-          <p-avatar 
-            [label]="getUserInitials()" 
-            shape="circle" 
-            [style]="{ 'background-color': '#4caf50', color: '#ffffff' }"
-            (click)="userMenu.toggle($event)"
-          ></p-avatar>
-          <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
-        </div>
-        
-        <p-menu #userMenu [popup]="true" [model]="userMenuItems"></p-menu>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.5rem 1.5rem;
-      background-color: #ffffff;
-      border-bottom: 1px solid #e0e0e0;
-    }
-    
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .logo {
-      height: 40px;
-    }
-    
-    .app-name {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #333333;
-    }
-    
-    .right-menu {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-    }
-    
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      cursor: pointer;
-    }
-    
-    .user-name {
-      font-weight: 500;
-      
-      @media (max-width: 768px) {
-        display: none;
-      }
-    }
-  `]
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.css'],
 })
 export class HeaderComponent {
   user: any;
