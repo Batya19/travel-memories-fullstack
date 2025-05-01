@@ -80,8 +80,6 @@ src/
 │   ├── app.config.ts
 │   └── app.routes.ts
 ├── assets/
-│   ├── scss/
-│   └── images/
 └── environments/
 ```
 

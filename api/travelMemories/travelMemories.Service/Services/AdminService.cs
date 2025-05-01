@@ -39,8 +39,8 @@ namespace TravelMemories.Service.Services
             var totalImages = await _context.Images.CountAsync();
             var totalAiImages = await _context.Images.CountAsync(i => i.IsAiGenerated);
 
-            // חישוב גודל האחסון הכולל (במגה-בייטים)
-            var totalStorageUsedMB = await _context.Images.SumAsync(i => i.FileSize) / (1024 * 1024);
+            var totalStorageUsedBytes = await _context.Images.SumAsync(i => i.FileSize);
+            var totalStorageUsedMB = (int)Math.Ceiling(totalStorageUsedBytes / (1024.0 * 1024.0));
 
             var recentActivity = await GetRecentUserActivityAsync(5);
 
@@ -116,10 +116,8 @@ namespace TravelMemories.Service.Services
 
             foreach (var user in users)
             {
-                // חישוב השימוש באחסון לפי גודל הקבצים במגה-בייטים
-                var storageUsed = await _context.Images
-                    .Where(i => i.UserId == user.Id)
-                    .SumAsync(i => i.FileSize) / (1024 * 1024);
+                var storageUsedBytes = await _userRepository.GetTotalStorageUsedAsync(user.Id);
+                var storageUsed = (int)Math.Ceiling(storageUsedBytes / (1024.0 * 1024.0));
 
                 var tripCount = await _context.Trips
                     .CountAsync(t => t.UserId == user.Id);
@@ -155,10 +153,8 @@ namespace TravelMemories.Service.Services
                 return null;
             }
 
-            // חישוב השימוש באחסון לפי גודל הקבצים במגה-בייטים
-            var storageUsed = await _context.Images
-                .Where(i => i.UserId == user.Id)
-                .SumAsync(i => i.FileSize) / (1024 * 1024);
+            var storageUsedBytes = await _userRepository.GetTotalStorageUsedAsync(user.Id);
+            var storageUsed = (int)Math.Ceiling(storageUsedBytes / (1024.0 * 1024.0));
 
             var tripCount = await _context.Trips
                 .CountAsync(t => t.UserId == user.Id);
@@ -205,7 +201,6 @@ namespace TravelMemories.Service.Services
 
             if (!string.IsNullOrWhiteSpace(request.Password))
             {
-                // פשוט נשתמש ב-SHA256 במקום BCrypt שדורש חבילה נוספת
                 user.PasswordHash = Convert.ToBase64String(
                     SHA256.Create().ComputeHash(
                         Encoding.UTF8.GetBytes(request.Password)
@@ -217,7 +212,6 @@ namespace TravelMemories.Service.Services
                 throw new InvalidOperationException("Password is required");
             }
 
-            // הוספת המשתמש למסד הנתונים
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
@@ -287,7 +281,6 @@ namespace TravelMemories.Service.Services
 
             if (!string.IsNullOrWhiteSpace(request.Password))
             {
-                // פשוט נשתמש ב-SHA256 במקום BCrypt שדורש חבילה נוספת
                 user.PasswordHash = Convert.ToBase64String(
                     SHA256.Create().ComputeHash(
                         Encoding.UTF8.GetBytes(request.Password)
@@ -295,17 +288,13 @@ namespace TravelMemories.Service.Services
                 );
             }
 
-            // עדכון תאריך העדכון
             user.UpdatedAt = DateTime.UtcNow;
 
-            // שמירת השינויים במסד הנתונים
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
-            // חישוב השימוש באחסון לפי גודל הקבצים במגה-בייטים
-            var storageUsed = await _context.Images
-                .Where(i => i.UserId == user.Id)
-                .SumAsync(i => i.FileSize) / (1024 * 1024);
+            var storageUsedBytes = await _userRepository.GetTotalStorageUsedAsync(user.Id);
+            var storageUsed = (int)Math.Ceiling(storageUsedBytes / (1024.0 * 1024.0));
 
             var tripCount = await _context.Trips
                 .CountAsync(t => t.UserId == user.Id);
@@ -357,9 +346,6 @@ namespace TravelMemories.Service.Services
 
         public async Task<SystemSettingsRequest> UpdateSystemSettingsAsync(SystemSettingsRequest request)
         {
-            // בפועל, ניתן לשמור הגדרות אלה בטבלה ייעודית או כמאפיינים בקובץ הגדרות
-            // לצורך הדוגמה, נניח שיש טבלת הגדרות יחידה או שיטה אחרת לשמירת הגדרות
-
             var settings = new SystemSettingsRequest
             {
                 DefaultStorageQuota = request.DefaultStorageQuota,
@@ -372,8 +358,6 @@ namespace TravelMemories.Service.Services
 
         public async Task<SystemSettingsRequest> GetSystemSettingsAsync()
         {
-            // בפועל, יש למשוך את ההגדרות ממסד הנתונים או מקובץ הגדרות
-            // לצורך הדוגמה, נחזיר ערכי ברירת מחדל
 
             return await Task.FromResult(new SystemSettingsRequest
             {
@@ -387,7 +371,6 @@ namespace TravelMemories.Service.Services
         {
             var result = new List<UserActivityItem>();
 
-            // פעילות טיולים אחרונים
             var recentTrips = await _context.Trips
                 .OrderByDescending(t => t.CreatedAt)
                 .Include(t => t.User)
@@ -404,7 +387,6 @@ namespace TravelMemories.Service.Services
 
             result.AddRange(recentTrips);
 
-            // פעילות העלאת תמונות אחרונות
             var recentImages = await _context.Images
                 .OrderByDescending(i => i.CreatedAt)
                 .Include(i => i.User)
@@ -421,7 +403,6 @@ namespace TravelMemories.Service.Services
 
             result.AddRange(recentImages);
 
-            // החזרת הפעילויות האחרונות ביותר, מוגבל לפי הפרמטר limit
             return result
                 .OrderByDescending(a => a.Timestamp)
                 .Take(limit);

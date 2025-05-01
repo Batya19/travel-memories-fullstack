@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-import { AuthResponse, LoginRequest, UserRole } from '../models/user.model';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
+import { LoginRequest, AuthResponse } from '../models/auth.model';
+import { UserRole } from '../models/user.model';
 
 interface DecodedToken {
   exp: number;
@@ -40,7 +41,9 @@ export class AuthService {
   login(loginData: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, loginData)
       .pipe(
-        tap(response => this.handleAuthentication(response)),
+        tap(response => {
+          this.handleAuthentication(response);
+        }),
         catchError(error => {
           return throwError(() => new Error(error.error?.message || 'Authentication failed'));
         })
@@ -112,15 +115,25 @@ export class AuthService {
 
   private handleAuthentication(response: AuthResponse): void {
     localStorage.setItem('token', response.token);
-    localStorage.setItem('userData', JSON.stringify(response.userDetails));
+    
+    // Create a user object with the correct structure for your app
+    const userData = {
+        userId: response.userId,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        email: response.email,
+        role: response.role as UserRole // Convert the string to your enum
+    };
+    
+    localStorage.setItem('userData', JSON.stringify(userData));
 
-    const decodedToken = jwtDecode<DecodedToken>(response.token);
-    const expirationDate = new Date(decodedToken.exp * 1000);
-
-    this.currentUserSubject.next(response.userDetails);
+    this.currentUserSubject.next(userData);
     this.isLoggedInSubject.next(true);
+    
+    // Handle token expiration
+    const expirationDate = new Date(response.expiresAt);
     this.autoLogout(expirationDate.getTime() - new Date().getTime());
-  }
+}
 
   get currentUserValue() {
     return this.currentUserSubject.value;

@@ -10,7 +10,7 @@ namespace TravelMemories.Core.Interfaces
         Task<User> UpdateUserAsync(Guid id, UpdateUserDto userDto);
         Task DeleteUserAsync(Guid id);
         Task<bool> ChangePasswordAsync(Guid id, ChangePasswordDto changePasswordDto);
-        Task<int> GetCurrentStorageUsageAsync(Guid userId);
+        Task<long> GetCurrentStorageUsageAsync(Guid userId);
         Task<int> GetCurrentAiQuotaUsageAsync(Guid userId);
         Task<bool> CheckStorageQuotaAsync(Guid userId, int fileSize);
         Task<bool> CheckAiQuotaAsync(Guid userId);

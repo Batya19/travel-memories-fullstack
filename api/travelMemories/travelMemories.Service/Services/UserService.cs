@@ -109,7 +109,7 @@ namespace TravelMemories.Service.Services
             return await _userRepository.SaveChangesAsync();
         }
 
-        public async Task<int> GetCurrentStorageUsageAsync(Guid userId)
+        public async Task<long> GetCurrentStorageUsageAsync(Guid userId)
         {
             return await _userRepository.GetTotalStorageUsedAsync(userId);
         }
@@ -130,9 +130,10 @@ namespace TravelMemories.Service.Services
             }
 
             var currentUsage = await _userRepository.GetTotalStorageUsedAsync(userId);
-            var newFileSizeMB = fileSize / (1024 * 1024);
+            var currentUsageMB = currentUsage / (1024.0 * 1024.0);
+            var newFileSizeMB = fileSize / (1024.0 * 1024.0);
 
-            return (currentUsage + newFileSizeMB) <= user.StorageQuota;
+            return (currentUsageMB + newFileSizeMB) <= user.StorageQuota;
         }
 
         public async Task<bool> CheckAiQuotaAsync(Guid userId)

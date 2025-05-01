@@ -1,11 +1,8 @@
 export interface UserActivityItem {
-  id: string;
   userId: string;
-  userName: string;
-  action: ActivityAction;
-  entityType: EntityType;
-  entityId: string;
-  entityName: string;
+  userEmail: string;
+  activityType: string;
+  description: string;
   timestamp: Date;
 }
 

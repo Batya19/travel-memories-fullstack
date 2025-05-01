@@ -31,11 +31,11 @@ namespace TravelMemories.Data.Repositories
                 .SingleOrDefaultAsync(u => u.Id == id);
         }
 
-        public async Task<int> GetTotalStorageUsedAsync(Guid userId)
+        public async Task<long> GetTotalStorageUsedAsync(Guid userId)
         {
             return await _context.Images
-                .Where(i => i.UserId == userId)
-                .SumAsync(i => i.FileSize) / (1024 * 1024); // Convert to MB
+               .Where(i => i.UserId == userId)
+               .SumAsync(i => i.FileSize);
         }
 
         public async Task<int> GetAiImageCountAsync(Guid userId, DateTime monthStart)

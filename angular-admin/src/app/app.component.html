@@ -1,19 +1,9 @@
-<div class="layout-wrapper">
-  @if (!isLoggedIn) {
-  <router-outlet></router-outlet>
-  } @else {
-  <app-sidebar></app-sidebar>
-
-  <div class="layout-main">
-    <app-header></app-header>
-
-    <div class="layout-content">
+<div class="app-container">
+  <app-header class="app-header"></app-header>
+  <div class="main-container">
+    <app-sidebar class="app-sidebar"></app-sidebar>
+    <main class="app-content">
       <router-outlet></router-outlet>
-    </div>
+    </main>
   </div>
-  }
-
-  <p-toast position="top-right"></p-toast>
-
-  <p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>
 </div>

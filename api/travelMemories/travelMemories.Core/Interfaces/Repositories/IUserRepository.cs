@@ -7,7 +7,7 @@ namespace TravelMemories.Core.Interfaces.Repositories
         Task<User> GetByEmailAsync(string email);
         Task<bool> EmailExistsAsync(string email);
         Task<User> GetWithDetailsByIdAsync(Guid id);
-        Task<int> GetTotalStorageUsedAsync(Guid userId);
+        Task<long> GetTotalStorageUsedAsync(Guid userId);
         Task<int> GetAiImageCountAsync(Guid userId, DateTime monthStart);
     }
 }

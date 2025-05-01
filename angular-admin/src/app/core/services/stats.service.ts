@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { StatisticsResponse } from '../models/statistics-response.model';
@@ -9,24 +9,19 @@ import { UserActivityItem } from '../models/user-activity-item.model';
   providedIn: 'root'
 })
 export class StatsService {
-  private readonly API_URL = `${environment.apiUrl}/admin`;
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
   getSystemStats(): Observable<StatisticsResponse> {
-    return this.http.get<StatisticsResponse>(`${this.API_URL}/stats`);
+    return this.http.get<StatisticsResponse>(`${this.apiUrl}/admin/stats`);
   }
 
-  getUserActivity(limit: number = 10): Observable<UserActivityItem[]> {
-    const params = new HttpParams().set('limit', limit.toString());
-    return this.http.get<UserActivityItem[]>(`${this.API_URL}/user-activity`, { params });
+  getUserActivity(limit: number): Observable<UserActivityItem[]> {
+    return this.http.get<UserActivityItem[]>(`${this.apiUrl}/admin/user-activity?limit=${limit}`);
   }
 
-  getGrowthStats(period: 'daily' | 'weekly' | 'monthly' = 'monthly', months: number = 6): Observable<StatisticsResponse> {
-    const params = new HttpParams()
-      .set('period', period)
-      .set('months', months.toString());
-
-    return this.http.get<StatisticsResponse>(`${this.API_URL}/stats/growth`, { params });
+  getGrowthStats(period: string, months: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/admin/stats/growth?period=${period}&months=${months}`);
   }
 }

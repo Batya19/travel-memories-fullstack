@@ -1,119 +1,79 @@
-<!-- <div class="statistics-container">
-  <div class="header">
-    <h2>System Dashboard</h2>
-    <p-button icon="pi pi-refresh" (onClick)="refreshStatistics()" [disabled]="loading"></p-button>
+<div class="statistics-container">
+  <h1>System Statistics</h1>
+
+  <div class="filter-row">
+    <div class="filter-item">
+      <label for="period">Time Period</label>
+      <p-select id="period" [options]="periodOptions" [(ngModel)]="selectedPeriod" (onChange)="loadStatistics()"
+        optionLabel="label"></p-select>
+    </div>
+
+    <div class="filter-item">
+      <label for="timeRange">Time Range</label>
+      <p-select id="timeRange" [options]="timeRangeOptions" [(ngModel)]="selectedTimeRange"
+        (onChange)="loadStatistics()" optionLabel="label"></p-select>
+    </div>
   </div>
 
-  <p-card styleClass="mb-4">
-    <ng-template pTemplate="header">
-      <div class="flex justify-content-between align-items-center p-3">
-        <h3>System Overview</h3>
-        <div class="loading-indicator" *ngIf="loading">
-          <p-progressSpinner [style]="{width: '30px', height: '30px'}" styleClass="custom-spinner" strokeWidth="4"></p-progressSpinner>
-        </div>
+  <div class="chart-row">
+    <p-card header="Users Growth" styleClass="chart-card">
+      <div class="chart-container">
+        <p-chart type="line" [data]="usersChartData" [options]="chartOptions"></p-chart>
       </div>
-    </ng-template>
+    </p-card>
 
-    <div class="grid" *ngIf="stats">
-      <div class="col-12 md:col-6 lg:col-3">
-        <p-card styleClass="stats-card">
-          <div class="flex flex-column align-items-center">
-            <i class="pi pi-users text-4xl text-primary"></i>
-            <h4>Total Users</h4>
-            <span class="text-3xl font-bold">{{ stats.totalUsers }}</span>
-          </div>
-        </p-card>
+    <p-card header="Trips Growth" styleClass="chart-card">
+      <div class="chart-container">
+        <p-chart type="line" [data]="tripsChartData" [options]="chartOptions"></p-chart>
       </div>
+    </p-card>
+  </div>
 
-      <div class="col-12 md:col-6 lg:col-3">
-        <p-card styleClass="stats-card">
-          <div class="flex flex-column align-items-center">
-            <i class="pi pi-map text-4xl text-primary"></i>
-            <h4>Total Trips</h4>
-            <span class="text-3xl font-bold">{{ stats.totalTrips }}</span>
-          </div>
-        </p-card>
+  <div class="chart-row">
+    <p-card header="Images Growth" styleClass="chart-card">
+      <div class="chart-container">
+        <p-chart type="line" [data]="imagesChartData" [options]="chartOptions"></p-chart>
       </div>
+    </p-card>
 
-      <div class="col-12 md:col-6 lg:col-3">
-        <p-card styleClass="stats-card">
-          <div class="flex flex-column align-items-center">
-            <i class="pi pi-images text-4xl text-primary"></i>
-            <h4>Total Images</h4>
-            <span class="text-3xl font-bold">{{ stats.totalImages }}</span>
-          </div>
-        </p-card>
+    <p-card header="Images Distribution" styleClass="chart-card">
+      <div class="chart-container">
+        <p-chart type="doughnut" [data]="imageDistributionChartData" [options]="pieChartOptions"></p-chart>
       </div>
+    </p-card>
+  </div>
 
-      <div class="col-12 md:col-6 lg:col-3">
-        <p-card styleClass="stats-card">
-          <div class="flex flex-column align-items-center">
-            <i class="pi pi-database text-4xl text-primary"></i>
-            <h4>Storage Used</h4>
-            <span class="text-3xl font-bold">{{ stats.totalStorageUsedMB | number:'1.0-1' }} MB</span>
-          </div>
-        </p-card>
-      </div>
-    </div>
+  <p-card header="User Activity Log" styleClass="activity-card">
+    <p-table [value]="activityItems" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 25, 50]" styleClass="p-datatable-sm"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="timestamp">Time <p-sortIcon field="timestamp"></p-sortIcon></th>
+          <th pSortableColumn="userEmail">User <p-sortIcon field="userEmail"></p-sortIcon></th>
+          <th pSortableColumn="activityType">Action <p-sortIcon field="activityType"></p-sortIcon></th>
+          <th>Description</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.timestamp | date:'medium' }}</td>
+          <td>{{ item.userEmail }}</td>
+          <td>
+            <span [ngClass]="'activity-badge ' + getActionClass(item.activityType)">
+              {{ item.activityType || 'UNKNOWN' }}
+            </span>
+          </td>
+          <td>{{ item.description || 'N/A' }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center">No activity found</td>
+        </tr>
+      </ng-template>
+    </p-table>
   </p-card>
 
-  <div class="grid">
-    <div class="col-12 md:col-6">
-      <p-card header="Users Growth">
-        <div #usersChart style="height: 300px; width: 100%;"></div>
-      </p-card>
-    </div>
-
-    <div class="col-12 md:col-6">
-      <p-card header="Trips Created">
-        <div #tripsChart style="height: 300px; width: 100%;"></div>
-      </p-card>
-    </div>
-  </div>
-
-  <div class="grid mt-3">
-    <div class="col-12 md:col-6">
-      <p-card header="Image Distribution">
-        <div #imagesChart style="height: 300px; width: 100%;"></div>
-      </p-card>
-    </div>
-
-    <div class="col-12 md:col-6">
-      <p-card header="Recent User Activity">
-        <p-table [value]="stats?.recentUserActivity || []" styleClass="p-datatable-sm" [paginator]="true" [rows]="5" 
-                 [showCurrentPageReport]="true" responsiveLayout="stack" [rowHover]="true">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>User</th>
-              <th>Activity</th>
-              <th>Time</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-activity>
-            <tr>
-              <td>
-                <span class="p-column-title">User</span>
-                {{ activity.userEmail }}
-              </td>
-              <td>
-                <span class="p-column-title">Activity</span>
-                <span [ngClass]="{'activity-trip': activity.activityType === 'Trip', 'activity-image': activity.activityType === 'Image'}">
-                  {{ activity.description }}
-                </span>
-              </td>
-              <td>
-                <span class="p-column-title">Time</span>
-                {{ activity.timestamp | date:'medium' }}
-              </td>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="3" class="text-center">No recent activity found</td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </p-card>
-    </div>
-  </div>
-</div> -->
+  <p-toast></p-toast>
+</div>

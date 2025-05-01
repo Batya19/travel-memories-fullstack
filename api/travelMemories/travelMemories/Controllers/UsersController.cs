@@ -86,8 +86,8 @@ namespace TravelMemories.Controllers
             var quotaDto = new UserQuotaDto
             {
                 StorageQuotaMB = user.StorageQuota,
-                StorageUsedMB = storageUsed,
-                StorageRemainingMB = user.StorageQuota - storageUsed,
+                StorageUsedMB = (int)(storageUsed / (1024 * 1024.0)),
+                StorageRemainingMB = user.StorageQuota - (int)(storageUsed / (1024 * 1024.0)),
                 AiQuotaTotal = user.AiQuota,
                 AiQuotaUsed = aiQuotaUsed,
                 AiQuotaRemaining = user.AiQuota - aiQuotaUsed
