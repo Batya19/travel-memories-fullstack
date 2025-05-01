@@ -68,6 +68,12 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader()
                .AllowAnyMethod();
     });
+    options.AddPolicy("AllowAngularApp", builder =>
+    {
+        builder.WithOrigins("https://travel-memories-angular.onrender.com") // Angular app URL
+               .AllowAnyHeader()
+               .AllowAnyMethod();
+    });
 });
 
 // Configure Swagger/OpenAPI for API documentation
