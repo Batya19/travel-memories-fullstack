@@ -1,4 +1,4 @@
 export const environment = {
     production: false,
-    apiUrl: 'https://localhost:7051/api'
+    apiUrl: 'https://travel-memories-api.onrender.com/api'
 };
