@@ -76,6 +76,7 @@ const TripDetailPage: React.FC = () => {
         sortBy: 'newest',
         filterType: 'all',
     });
+    console.log(setShareUrl);
 
     const navigate = useNavigate();
     const toast = useToast();
@@ -92,6 +93,7 @@ const TripDetailPage: React.FC = () => {
         onOpen: onShareOpen,
         onClose: onShareClose
     } = useDisclosure();
+    console.log(onShareOpen);
 
     // Delete confirmation dialog
     const {
