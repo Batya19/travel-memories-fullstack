@@ -16,17 +16,8 @@ import { SystemSettings } from '../../core/models/system-settings.model';
   selector: 'app-system-settings',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    CardModule,
-    InputTextModule,
-    InputNumberModule,
-    ButtonModule,
-    CheckboxModule,
-    ToastModule,
-    ChipsModule
-  ],
+    CommonModule, FormsModule, ReactiveFormsModule, CardModule, InputTextModule,
+    InputNumberModule, ButtonModule, CheckboxModule, ToastModule, ChipsModule],
   providers: [MessageService],
   templateUrl: './system-settings.component.html',
   styleUrl: './system-settings.component.css'

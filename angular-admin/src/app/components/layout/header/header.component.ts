@@ -11,30 +11,14 @@ import { MenuModule } from 'primeng/menu';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    MenubarModule,
-    ButtonModule,
-    AvatarModule,
-    MenuModule
-  ],
+  imports: [CommonModule, MenubarModule, ButtonModule, AvatarModule, MenuModule],
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css'],
+  styleUrl: './header.component.css',
 })
 export class HeaderComponent {
   user: any;
-  
+
   userMenuItems: MenuItem[] = [
-    {
-      label: 'Profile',
-      icon: 'pi pi-user',
-      command: () => {
-        // Profile page logic (if needed)
-      }
-    },
-    {
-      separator: true
-    },
     {
       label: 'Logout',
       icon: 'pi pi-sign-out',
@@ -43,18 +27,22 @@ export class HeaderComponent {
       }
     }
   ];
-  
+
   constructor(
     private authService: AuthService,
     private router: Router
   ) {
     this.user = this.authService.currentUserValue;
   }
-  
+
   getUserInitials(): string {
     if (this.user) {
       return `${this.user.firstName.charAt(0)}${this.user.lastName.charAt(0)}`;
     }
     return '';
+  }
+
+  navigateToHome() {
+    this.router.navigate(['/dashboard']);
   }
 }

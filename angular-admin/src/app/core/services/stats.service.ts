@@ -20,8 +20,4 @@ export class StatsService {
   getUserActivity(limit: number): Observable<UserActivityItem[]> {
     return this.http.get<UserActivityItem[]>(`${this.apiUrl}/admin/user-activity?limit=${limit}`);
   }
-
-  getGrowthStats(period: string, months: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/admin/stats/growth?period=${period}&months=${months}`);
-  }
 }

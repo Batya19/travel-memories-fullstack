@@ -13,34 +13,11 @@ export interface User {
     storageQuota: number;
     aiQuota: number;
     storageUsed: number;
-    aiQuotaUsed: number; // Added this field
+    aiQuotaUsed: number;
     tripCount: number;
     imageCount: number;
     createdAt: Date;
     updatedAt?: Date;
-    lastLoginDate?: Date; // Added this field if needed
-    isActive?: boolean; // Added this field if needed
-}
-
-export interface LoginRequest {
-    email: string;
-    password: string;
-}
-
-export interface AuthResponse {
-    token: string;
-    userDetails: {
-        userId: string;
-        firstName: string;
-        lastName: string;
-        email: string;
-        role: UserRole;
-    };
-}
-
-export interface RegisterRequest {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
+    lastLoginDate?: Date;
+    isActive?: boolean;
 }

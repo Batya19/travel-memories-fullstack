@@ -1,0 +1,263 @@
+.login-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(135deg, #4c7aaf 0%, #5e91b4 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.login-container {
+    display: flex;
+    width: 100%;
+    max-width: 1200px;
+    height: 100%;
+    max-height: 800px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-card {
+    flex: 1;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    animation: slideInLeft 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.login-header {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.logo {
+    height: 100px;
+    margin-bottom: 20px;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-10px);
+    }
+
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.login-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.highlight {
+    color: #4c7aaf;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-label i {
+    color: #4c7aaf;
+    font-size: 16px;
+}
+
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-password .p-password-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+:host ::ng-deep .p-inputtext:focus,
+:host ::ng-deep .p-password .p-password-input:focus {
+    outline: none;
+    border-color: #4c7aaf;
+    box-shadow: 0 0 0 3px rgba(76, 122, 175, 0.1);
+    background-color: #ffffff;
+}
+
+:host ::ng-deep .p-password {
+    width: 100%;
+}
+
+:host ::ng-deep .p-password .p-password-strength-meter {
+    display: none;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: -4px;
+}
+
+:host ::ng-deep .login-button {
+    width: 100%;
+    padding: 12px 24px;
+    background: linear-gradient(45deg, #4c7aaf 0%, #5e91b4 100%);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+:host ::ng-deep .login-button:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(76, 122, 175, 0.3);
+}
+
+:host ::ng-deep .login-button:not(:disabled):active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+:host ::ng-deep .login-button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.login-background {
+    flex: 1;
+    background: linear-gradient(45deg, #4c7aaf 0%, #5e91b4 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+    background-size: cover;
+    background-position: left;
+    opacity: 0.6;
+    animation: zoomIn 20s ease-in-out infinite alternate;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.1);
+    }
+}
+
+@media (max-width: 992px) {
+    .login-container {
+        flex-direction: column;
+    }
+
+    .login-background {
+        height: 40%;
+    }
+
+    .login-card {
+        padding: 40px;
+    }
+}
+
+@media (max-width: 576px) {
+    .login-page {
+        padding: 10px;
+    }
+
+    .login-card {
+        padding: 30px 20px;
+    }
+
+    .login-header h1 {
+        font-size: 28px;
+    }
+
+    .logo {
+        height: 80px;
+    }
+}
+
+:host ::ng-deep .p-toast {
+    z-index: 2000;
+}

@@ -5,19 +5,9 @@ import { environment } from '../../../environments/environment';
 import { User, UserRole } from '../models/user.model';
 
 export interface UserQueryParams {
-  page?: number;
-  pageSize?: number;
+  limit?: number;
+  offset?: number;
   searchTerm?: string;
-  role?: UserRole;
-  sortBy?: string;
-  sortDirection?: 'asc' | 'desc';
-}
-
-export interface UserListResponse {
-  users: User[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
 }
 
 export interface CreateUserRequest {
@@ -37,6 +27,7 @@ export interface UpdateUserRequest {
   role?: UserRole;
   storageQuota?: number;
   aiQuota?: number;
+  password?: string;
 }
 
 @Injectable({
@@ -47,34 +38,22 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
-  getUsers(queryParams: UserQueryParams = {}): Observable<UserListResponse> {
+  getUsers(queryParams: UserQueryParams = {}): Observable<User[]> {
     let params = new HttpParams();
 
-    if (queryParams.page !== undefined) {
-      params = params.set('page', queryParams.page.toString());
+    if (queryParams.limit !== undefined) {
+      params = params.set('limit', queryParams.limit.toString());
     }
 
-    if (queryParams.pageSize !== undefined) {
-      params = params.set('pageSize', queryParams.pageSize.toString());
+    if (queryParams.offset !== undefined) {
+      params = params.set('offset', queryParams.offset.toString());
     }
 
     if (queryParams.searchTerm) {
       params = params.set('searchTerm', queryParams.searchTerm);
     }
 
-    if (queryParams.role) {
-      params = params.set('role', queryParams.role);
-    }
-
-    if (queryParams.sortBy) {
-      params = params.set('sortBy', queryParams.sortBy);
-    }
-
-    if (queryParams.sortDirection) {
-      params = params.set('sortDirection', queryParams.sortDirection);
-    }
-
-    return this.http.get<UserListResponse>(this.API_URL, { params });
+    return this.http.get<User[]>(this.API_URL, { params });
   }
 
   getUserById(userId: string): Observable<User> {
@@ -82,6 +61,9 @@ export class UserService {
   }
 
   createUser(userData: CreateUserRequest): Observable<User> {
+    if (!userData.password) {
+      throw new Error('Password is required when creating a user');
+    }
     return this.http.post<User>(this.API_URL, userData);
   }
 

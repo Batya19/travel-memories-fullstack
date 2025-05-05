@@ -20,21 +20,9 @@ import { User, UserRole } from '../../core/models/user.model';
   selector: 'app-user-management',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    TableModule,
-    ButtonModule,
-    DialogModule,
-    InputTextModule,
-    DropdownModule,
-    ProgressBarModule,
-    ConfirmDialogModule,
-    ToastModule,
-    InputNumberModule,
-    PasswordModule,
-    CardModule
-  ],
+    CommonModule, FormsModule, ReactiveFormsModule, TableModule, ButtonModule, DialogModule,
+    InputTextModule, DropdownModule, ProgressBarModule, ConfirmDialogModule, ToastModule,
+    InputNumberModule, PasswordModule, CardModule],
   providers: [ConfirmationService, MessageService],
   templateUrl: './user-management.component.html',
   styleUrl: './user-management.component.css'
@@ -43,20 +31,9 @@ export class UserManagementComponent implements OnInit {
   users: User[] = [];
   totalRecords = 0;
   loading = true;
-
-  // Pagination
   page = 0;
   pageSize = 10;
-
-  // Sorting
-  sortField = 'createdAt';
-  sortOrder = -1;
-
-  // Filtering
   searchTerm = '';
-  roleFilter: UserRole | null = null;
-
-  // Dialog
   userDialogVisible = false;
   editMode = false;
   userForm: FormGroup;
@@ -65,11 +42,6 @@ export class UserManagementComponent implements OnInit {
   roleOptions = [
     { label: 'Regular User', value: UserRole.USER },
     { label: 'System Admin', value: UserRole.SYSTEM_ADMIN }
-  ];
-
-  roleFilterOptions = [
-    { label: 'Regular Users', value: UserRole.USER },
-    { label: 'System Admins', value: UserRole.SYSTEM_ADMIN }
   ];
 
   constructor(
@@ -103,32 +75,21 @@ export class UserManagementComponent implements OnInit {
     if (event) {
       this.page = event.first / event.rows;
       this.pageSize = event.rows;
-
-      if (event.sortField) {
-        this.sortField = event.sortField;
-        this.sortOrder = event.sortOrder;
-      }
     }
 
+    const offset = this.page * this.pageSize;
     const params: UserQueryParams = {
-      page: this.page,
-      pageSize: this.pageSize,
-      sortBy: this.sortField,
-      sortDirection: this.sortOrder === 1 ? 'asc' : 'desc'
+      limit: this.pageSize,
+      offset: offset
     };
 
     if (this.searchTerm) {
       params.searchTerm = this.searchTerm;
     }
 
-    if (this.roleFilter) {
-      params.role = this.roleFilter;
-    }
-
     this.userService.getUsers(params).subscribe({
-      next: (response) => {
-        this.users = response.users;
-        this.totalRecords = response.totalCount;
+      next: (users) => {
+        this.users = users;
         this.loading = false;
       },
       error: (error) => {
@@ -143,11 +104,6 @@ export class UserManagementComponent implements OnInit {
   }
 
   onSearchTerm(): void {
-    this.page = 0;
-    this.loadUsers();
-  }
-
-  onRoleFilterChange(): void {
     this.page = 0;
     this.loadUsers();
   }

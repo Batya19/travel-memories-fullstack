@@ -11,26 +11,21 @@
         </span>
       </div>
 
-      <div class="filter-options">
-        <p-dropdown [options]="roleFilterOptions" [(ngModel)]="roleFilter" placeholder="Filter by role"
-          [showClear]="true" (onChange)="onRoleFilterChange()"></p-dropdown>
-      </div>
-
       <p-button icon="pi pi-plus" label="Add User" (onClick)="showAddUserDialog()"></p-button>
     </div>
   </p-card>
 
-  <p-table [value]="users" [lazy]="true" [paginator]="true" [rows]="pageSize" [totalRecords]="totalRecords"
+  <p-table [value]="users" [lazy]="true" [paginator]="true" [rows]="pageSize" 
     [loading]="loading" [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true" [responsive]="true"
-    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users" (onLazyLoad)="loadUsers($event)">
+    currentPageReportTemplate="Showing {first} to {last} of {rows} users" (onLazyLoad)="loadUsers($event)">
     <ng-template pTemplate="header">
       <tr>
-        <th pSortableColumn="firstName">Name <p-sortIcon field="firstName"></p-sortIcon></th>
-        <th pSortableColumn="email">Email <p-sortIcon field="email"></p-sortIcon></th>
-        <th pSortableColumn="role">Role <p-sortIcon field="role"></p-sortIcon></th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
         <th>Storage Usage</th>
         <th>AI Quota Usage</th>
-        <th pSortableColumn="createdAt">Created At <p-sortIcon field="createdAt"></p-sortIcon></th>
+        <th>Created At</th>
         <th style="width: 120px">Actions</th>
       </tr>
     </ng-template>

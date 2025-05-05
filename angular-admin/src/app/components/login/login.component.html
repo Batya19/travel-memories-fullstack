@@ -1,0 +1,56 @@
+<div class="login-page">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="assets/logo.svg" alt="TravelMemories Logo" class="logo" />
+                <h1>Admin<span class="highlight">Panel</span></h1>
+                <p class="subtitle">Welcome back! Please login to continue</p>
+            </div>
+
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <i class="pi pi-envelope"></i>
+                        Email
+                    </label>
+                    <input id="email" type="email" pInputText formControlName="email" placeholder="Enter your email"
+                        [class.ng-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                        [class.ng-dirty]="loginForm.get('email')?.dirty" />
+                    @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+                    <small class="error-message">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        Please enter a valid email
+                    </small>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="pi pi-lock"></i>
+                        Password
+                    </label>
+                    <p-password id="password" formControlName="password" [toggleMask]="true" [feedback]="false"
+                        placeholder="Enter your password" styleClass="w-full" inputStyleClass="w-full"
+                        [class.ng-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                        [class.ng-dirty]="loginForm.get('password')?.dirty"></p-password>
+                    @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+                    <small class="error-message">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        Password is required
+                    </small>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <p-button type="submit" label="Login" [disabled]="loginForm.invalid || isLoading"
+                        [loading]="isLoading" styleClass="login-button" icon="pi pi-sign-in"></p-button>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="login-background"></div>
+    </div>
+
+    <p-toast></p-toast>
+</div>

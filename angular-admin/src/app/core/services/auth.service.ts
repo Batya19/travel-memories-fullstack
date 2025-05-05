@@ -28,7 +28,6 @@ export class AuthService {
     role: UserRole;
   } | null>(null);
 
-  // Added isLoggedIn$ observable
   private isLoggedInSubject = new BehaviorSubject<boolean>(false);
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
 
@@ -63,7 +62,6 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  // Added checkAuthState method
   checkAuthState(): void {
     const token = this.getToken();
     const isAuthenticated = !!token && !this.isTokenExpired(token);
@@ -115,25 +113,23 @@ export class AuthService {
 
   private handleAuthentication(response: AuthResponse): void {
     localStorage.setItem('token', response.token);
-    
-    // Create a user object with the correct structure for your app
+
     const userData = {
-        userId: response.userId,
-        firstName: response.firstName,
-        lastName: response.lastName,
-        email: response.email,
-        role: response.role as UserRole // Convert the string to your enum
+      userId: response.userId,
+      firstName: response.firstName,
+      lastName: response.lastName,
+      email: response.email,
+      role: response.role as UserRole
     };
-    
+
     localStorage.setItem('userData', JSON.stringify(userData));
 
     this.currentUserSubject.next(userData);
     this.isLoggedInSubject.next(true);
-    
-    // Handle token expiration
+
     const expirationDate = new Date(response.expiresAt);
     this.autoLogout(expirationDate.getTime() - new Date().getTime());
-}
+  }
 
   get currentUserValue() {
     return this.currentUserSubject.value;

@@ -15,14 +15,7 @@ import { GrowthDataPoint } from '../../core/models/statistics-response.model';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,
-    CardModule,
-    ButtonModule,
-    TableModule,
-    ProgressBarModule,
-    ToastModule
-  ],
+  imports: [CommonModule, CardModule, ButtonModule, TableModule, ProgressBarModule, ToastModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   providers: [MessageService]
@@ -120,15 +113,11 @@ export class DashboardComponent implements OnInit {
   }
 
   private extractEntityType(description: string | undefined): string {
-    if (!description) return 'N/A';
-    const match = description.match(/^(Created|Updated|Deleted|Viewed) ([A-Za-z]+):/);
-    return match ? match[2] : 'N/A';
+    return description || 'N/A';
   }
 
   private extractEntityName(description: string | undefined): string {
-    if (!description) return 'N/A';
-    const match = description.match(/^(Created|Updated|Deleted|Viewed) [A-Za-z]+: (.*)/);
-    return match ? match[2] : description;
+    return description || 'N/A';
   }
 
   refreshDashboard() {
