@@ -1,70 +1,64 @@
-// Updated HomePage.tsx
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box } from '@chakra-ui/react';
-import { Trip, Image } from '../types';
-import tripService from '../services/tripService';
-import imageService from '../services/imageService';
 import { useAuth } from '../contexts/AuthContext';
 import HeroSection from '../components/features/home/HeroSection';
 import RecentTripsSection from '../components/features/home/RecentTripsSection';
 import FeaturesSection from '../components/features/home/FeaturesSection';
 import CTASection from '../components/features/home/CTASection';
 import MapDashboardSection from '../components/features/home/MapDashboardSection';
+import { useQuery } from '@tanstack/react-query';
+import tripService from '../services/tripService';
+import imageService from '../services/imageService';
 
 const HomePage: React.FC = () => {
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [images, setImages] = useState<Image[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const { currentUser } = useAuth();
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (!currentUser) {
-        setLoading(false);
-        return;
-      }
+  // Fetch trips if user is logged in
+  const { 
+    data: trips = [], 
+    isLoading: tripsLoading, 
+    error: tripsError 
+  } = useQuery({
+    queryKey: ['homeTrips'],
+    queryFn: tripService.getTrips,
+    enabled: !!currentUser,
+    select: (data) => data.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
+  });
 
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch trips
-        const tripsData = await tripService.getTrips();
-        const sortedTrips = tripsData.sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setTrips(sortedTrips);
-        
-        // Fetch images for the recent trips
-        // Limit to 5 trips to avoid too many API calls
-        const recentTripsForImages = sortedTrips.slice(0, 5);
-        
-        // Create an array of promises for fetching images
-        const imagePromises = recentTripsForImages.map(trip => 
-          imageService.getImages(trip.id).catch(err => {
-            console.error(`Error fetching images for trip ${trip.id}:`, err);
-            return []; // Return empty array if error occurs
-          })
-        );
-        
-        // Wait for all image fetch operations to complete
-        const imageResults = await Promise.all(imagePromises);
-        
-        // Flatten the array of image arrays into a single array
-        const allImages = imageResults.flat();
-        setImages(allImages);
-        
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load your travel data. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Fetch images for the recent trips
+  const { 
+    data: images = [], 
+    isLoading: imagesLoading,
+    error: imagesError 
+  } = useQuery({
+    queryKey: ['homeImages', trips],
+    queryFn: async () => {
+      // Limit to 5 trips to avoid too many API calls
+      const recentTripsForImages = trips.slice(0, 5);
+      
+      // Create an array of promises for fetching images
+      const imagePromises = recentTripsForImages.map(trip => 
+        imageService.getImages(trip.id).catch(err => {
+          console.error(`Error fetching images for trip ${trip.id}:`, err);
+          return []; // Return empty array if error occurs
+        })
+      );
+      
+      // Wait for all image fetch operations to complete
+      const imageResults = await Promise.all(imagePromises);
+      
+      // Flatten the array of image arrays into a single array
+      return imageResults.flat();
+    },
+    enabled: !!currentUser && trips.length > 0,
+  });
 
-    fetchUserData();
-  }, [currentUser]);
+  const isLoading = tripsLoading || imagesLoading;
+  const error = tripsError || imagesError ? 
+    (tripsError as Error)?.message || (imagesError as Error)?.message : 
+    null;
 
   return (
     <Box>
@@ -74,7 +68,7 @@ const HomePage: React.FC = () => {
         <MapDashboardSection 
           trips={trips} 
           images={images}
-          loading={loading}
+          loading={isLoading}
           error={error}
           user={{
             firstName: currentUser.firstName,
@@ -90,7 +84,7 @@ const HomePage: React.FC = () => {
       {currentUser && (
         <RecentTripsSection
           trips={trips.slice(0, 4)} // Show only 4 trips in this section
-          loading={loading}
+          loading={isLoading}
           error={error}
         />
       )}

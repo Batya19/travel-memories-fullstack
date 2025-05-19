@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Box,
@@ -19,51 +19,31 @@ import {
     useColorModeValue,
 } from '@chakra-ui/react';
 import { FaCalendarAlt, FaMapMarkerAlt, FaImages, FaArrowLeft } from 'react-icons/fa';
-import tripService from '../../services/tripService';
-import { Trip, Image } from '../../types';
-import TripMap from '../../components/features/trips/map/TripMap';
 import { format } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import tripService from '../../services/tripService';
+import TripMap from '../../components/features/trips/map/TripMap';
 import Gallery from '../../components/features/images/gallery/Gallery';
 
 const SharedTripPage: React.FC = () => {
     const { shareId } = useParams<{ shareId: string }>();
-    const [trip, setTrip] = useState<Trip | null>(null);
-    const [images, setImages] = useState<Image[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
-
     const bgColor = useColorModeValue('white', 'gray.800');
 
-    useEffect(() => {
-        const fetchSharedTrip = async () => {
-            if (!shareId) return;
+    const { 
+        data: trip, 
+        isLoading, 
+        error 
+    } = useQuery({
+        queryKey: ['sharedTrip', shareId],
+        queryFn: () => tripService.getSharedTrip(shareId!),
+        enabled: !!shareId,
+    });
 
-            setLoading(true);
-            setError(null);
+    // Compute images from trip data (in shared trip response, images are included)
+    const images = trip?.images || [];
 
-            try {
-                console.log(`Fetching shared trip with shareId: ${shareId}`);
-                const tripData = await tripService.getSharedTrip(shareId);
-                console.log(`Received shared trip data:`, tripData);
-                setTrip(tripData);
-
-                if (tripData.images && tripData.images.length > 0) {
-                    setImages(tripData.images);
-                    console.log(`Loaded ${tripData.images.length} images from trip data`);
-                }
-            } catch (error) {
-                console.error('Error fetching shared trip:', error);
-                setError("The trip you're looking for doesn't exist or is no longer shared.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchSharedTrip();
-    }, [shareId]);
-
-    if (loading) {
+    if (isLoading) {
         return (
             <Flex justify="center" align="center" minH="50vh">
                 <Spinner size="xl" color="brand.500" />
@@ -82,7 +62,11 @@ const SharedTripPage: React.FC = () => {
                     textAlign="center"
                 >
                     <Heading as="h1" size="xl" mb={4}>Trip Not Found</Heading>
-                    <Text mb={6}>{error || "The trip you're looking for doesn't exist or is no longer shared."}</Text>
+                    <Text mb={6}>
+                        {error ? 
+                            `Error: ${(error as Error).message}` : 
+                            "The trip you're looking for doesn't exist or is no longer shared."}
+                    </Text>
                     <Button
                         leftIcon={<FaArrowLeft />}
                         colorScheme="brand"

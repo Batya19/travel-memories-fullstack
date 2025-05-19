@@ -39,16 +39,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const toast = useToast();
-
-  // Keep track of which file is currently being uploaded
   const currentFileRef = useRef<number>(0);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    // Filter out files that would exceed the maxFiles limit
     const availableSlots = maxFiles - files.length;
     const newFiles = acceptedFiles.slice(0, availableSlots);
 
-    // Create preview URLs for the files
     const filesWithPreview = newFiles.map(file =>
       Object.assign(file, {
         preview: URL.createObjectURL(file),
@@ -59,7 +55,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
     setFiles(current => [...current, ...filesWithPreview]);
 
-    // Show a warning if some files were skipped
     if (acceptedFiles.length > availableSlots) {
       toast({
         title: 'Some files skipped',
@@ -82,7 +77,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const removeFile = (index: number) => {
     setFiles(current => {
       const newFiles = [...current];
-      // Revoke the object URL to avoid memory leaks
       if (newFiles[index].preview) {
         URL.revokeObjectURL(newFiles[index].preview!);
       }
@@ -99,17 +93,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     let successCount = 0;
 
     try {
-      // Check if token exists before attempting upload
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication token not found. Please log in again.');
       }
 
-      // Upload files one by one for better tracking and error handling
       for (let i = 0; i < files.length; i++) {
         currentFileRef.current = i;
 
-        // Update file status to uploading
         setFiles(current => {
           const newFiles = [...current];
           newFiles[i].status = 'uploading';
@@ -117,23 +108,20 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         });
 
         try {
-          const tags = ['vacation', 'family', '2025'];  // מגדיר את התגים, ודא שאתה שולח את הערכים הנכונים
+          const tags = ['vacation', 'family', '2025'];
 
-          // Upload the current file
           await imageService.uploadImages([files[i]], tripId, tags, (progress) => {
-            // Update progress for this file
             setFiles(current => {
               const newFiles = [...current];
               newFiles[i].progress = progress;
               return newFiles;
             });
 
-            // Calculate overall progress
             const totalProgress = files.reduce((sum, _, index) => {
               if (index < i) {
-                sum += 100;  // אם הקובץ כבר הועלה, נחשב אותו כשלם
+                sum += 100;
               } else if (index === i) {
-                sum += progress;  // הוסף את ההתקדמות הנוכחית של הקובץ
+                sum += progress;
               }
               return sum;
             }, 0);
@@ -141,7 +129,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             setUploadProgress(Math.floor(totalProgress / files.length));
           });
 
-          // Mark this file as successfully uploaded
           setFiles(current => {
             const newFiles = [...current];
             newFiles[i].status = 'success';
@@ -151,7 +138,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           successCount++;
         } catch (error) {
           console.error(`Error uploading file ${files[i].name}:`, error);
-          // Mark this file as failed
           setFiles(current => {
             const newFiles = [...current];
             newFiles[i].status = 'error';
@@ -160,7 +146,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         }
       }
 
-      // Show success toast
       if (successCount > 0) {
         toast({
           title: 'Upload complete',
@@ -170,13 +155,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           isClosable: true,
         });
 
-        // Call the completion callback
         if (onUploadComplete) {
           onUploadComplete();
         }
       }
 
-      // Show warning if some files failed
       if (successCount < files.length) {
         toast({
           title: 'Some uploads failed',
@@ -198,8 +181,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
-
-      // Remove successfully uploaded files from the list
       setFiles(current => current.filter(file => file.status !== 'success'));
     }
   };
@@ -207,7 +188,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   return (
     <Box width="100%">
       <VStack spacing={4} align="stretch">
-        {/* Dropzone */}
         <Box
           {...getRootProps()}
           borderWidth={2}
@@ -243,7 +223,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           </VStack>
         </Box>
 
-        {/* Upload progress */}
         {isUploading && (
           <Box>
             <Text mb={1}>Uploading: {uploadProgress}%</Text>
@@ -251,7 +230,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           </Box>
         )}
 
-        {/* File previews */}
         {files.length > 0 && (
           <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} spacing={4}>
             {files.map((file, index) => (
@@ -275,7 +253,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     opacity={file.status === 'uploading' ? 0.7 : 1}
                   />
 
-                  {/* Status indicators */}
                   {file.status === 'uploading' && (
                     <Box position="absolute" bottom={0} left={0} right={0} bg="rgba(0,0,0,0.5)" p={1}>
                       <Progress size="xs" value={file.progress} colorScheme="brand" />
@@ -340,7 +317,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           </SimpleGrid>
         )}
 
-        {/* Upload button */}
         <Button
           leftIcon={<FaUpload />}
           colorScheme="brand"

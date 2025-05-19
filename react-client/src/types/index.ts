@@ -45,6 +45,7 @@ export interface Trip {
 
 // Image types
 export interface Image {
+  url: string;
   id: string;
   fileName: string;
   filePath: string;

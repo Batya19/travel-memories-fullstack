@@ -1,94 +1,81 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Input,
   Button,
   VStack,
 } from '@chakra-ui/react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { LoginFormData, FormErrors } from '../../../types';
+import { LoginFormData } from '../../../types';
+import { useForm } from '../../../hooks/useForm';
+import FormInput from '../../common/forms/FormInput';
 
 interface LoginFormProps {
   onSuccess?: () => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: '',
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
   const { login, loading } = useAuth();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  // Validation function
+  const validateForm = (values: LoginFormData) => {
+    const errors: Record<string, string> = {};
 
-    // Clear errors when user starts typing
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
+    if (!values.email) {
+      errors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
+      errors.email = 'Email is invalid';
     }
+
+    if (!values.password) {
+      errors.password = 'Password is required';
+    }
+
+    return errors;
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
+  // Form submission handler
+  const handleSubmit = async (values: LoginFormData) => {
     try {
-      await login(formData.email, formData.password);
+      await login(values.email, values.password);
       if (onSuccess) onSuccess();
     } catch (error) {
       // Error is handled by the AuthContext's toast notifications
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <VStack spacing={5} align="stretch">
-        <FormControl isInvalid={!!errors.email}>
-          <FormLabel htmlFor="email">Email Address</FormLabel>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Enter your email address"
-            size="lg"
-          />
-          <FormErrorMessage>{errors.email}</FormErrorMessage>
-        </FormControl>
+  // Use our custom form hook
+  const { values, errors, handleChange, handleSubmit: submitForm } = useForm({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validate: validateForm,
+    onSubmit: handleSubmit,
+  });
 
-        <FormControl isInvalid={!!errors.password}>
-          <FormLabel htmlFor="password">Password</FormLabel>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Enter your password"
-            size="lg"
-          />
-          <FormErrorMessage>{errors.password}</FormErrorMessage>
-        </FormControl>
+  return (
+    <form onSubmit={submitForm}>
+      <VStack spacing={5} align="stretch">
+        <FormInput
+          name="email"
+          label="Email Address"
+          type="email"
+          value={values.email}
+          onChange={handleChange}
+          placeholder="Enter your email address"
+          size="lg"
+          error={errors.email}
+        />
+
+        <FormInput
+          name="password"
+          label="Password"
+          type="password"
+          value={values.password}
+          onChange={handleChange}
+          placeholder="Enter your password"
+          size="lg"
+          error={errors.password}
+        />
 
         <Button
           type="submit"

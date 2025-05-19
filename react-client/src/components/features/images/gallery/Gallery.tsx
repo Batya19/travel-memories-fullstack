@@ -1,20 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Box, useDisclosure, useToast, useBreakpointValue } from '@chakra-ui/react';
+import { Box, useDisclosure } from '@chakra-ui/react';
 import { Image as ImageType } from '../../../../types';
-import imageService from '../../../../services/imageService';
-
-// Import sub-components
+import GridLayout from './layouts/GridLayout';
 import { ViewModeToggle, ViewMode } from './components/ViewModeToggle';
-import ImageGridView from './views/ImageGridView';
-import ImageListView from './views/ImageListView';
-import ImageViewerModal from './modal/ImageViewerModal';
 import { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';
-import RegularPhotoGrid from './views/RegularPhotoGrid';
-import HighlightedPhotoGrid from './views/HighlightedPhotoGrid';
-import MasonryGrid from './views/MasonryGrid';
-import ShowMoreButton from './views/ShowMoreButton';
+import ImageViewer from './viewer/ImageViewer';
+import ListLayout from './layouts/ListLayout';
+import MasonryLayout from './layouts/MasonryLayout';
+import HighlightedLayout from './layouts/HighlightedLayout';
+import ShowMoreButton from './components/ShowMoreButton';
 
-export type GalleryLayout = 'grid' | 'list' | 'regular' | 'highlighted' | 'masonry';
+export type GalleryLayout = 'grid' | 'list' | 'masonry' | 'highlighted';
 
 interface GalleryProps {
     images: ImageType[];
@@ -26,7 +22,6 @@ interface GalleryProps {
     columns?: { base: number; sm: number; md: number; lg: number };
     spacing?: number;
     initialViewMode?: ViewMode;
-    highlightFirst?: boolean;
 }
 
 const Gallery: React.FC<GalleryProps> = ({
@@ -40,28 +35,20 @@ const Gallery: React.FC<GalleryProps> = ({
     spacing = 4,
     initialViewMode = 'grid',
 }) => {
-    // State
     const [currentImageIndex, setCurrentImageIndex] = useState<number | null>(null);
     const [imageToDelete, setImageToDelete] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<ViewMode>(
         layout === 'list' ? 'list' : initialViewMode
     );
-    const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
     const [visibleImages, setVisibleImages] = useState<ImageType[]>(
         maxImages && images.length > maxImages ? images.slice(0, maxImages) : images
     );
     const [showingAll, setShowingAll] = useState<boolean>(!maxImages || images.length <= maxImages);
 
-    // Responsive columns
-    const actualColumns = useBreakpointValue(columns) || columns.base;
-
-    // Hooks
     const { isOpen: isViewerOpen, onOpen: openViewer, onClose: closeViewer } = useDisclosure();
     const { isOpen: isDeleteOpen, onOpen: openDelete, onClose: closeDelete } = useDisclosure();
     const cancelRef = useRef<HTMLButtonElement>(null!);
-    const toast = useToast();
 
-    // Effect to update visible images when images, maxImages, or showingAll changes
     useEffect(() => {
         if (maxImages && images.length > maxImages && !showingAll) {
             setVisibleImages(images.slice(0, maxImages));
@@ -70,36 +57,9 @@ const Gallery: React.FC<GalleryProps> = ({
         }
     }, [images, maxImages, showingAll]);
 
-    // Separate effect to initialize loading state for new images
-    useEffect(() => {
-        // Only initialize loaded state for new images
-        const newLoadedState = { ...loadedImages };
-        let hasNewImages = false;
-        
-        images.forEach(img => {
-            if (newLoadedState[img.id] === undefined) {
-                newLoadedState[img.id] = false;
-                hasNewImages = true;
-            }
-        });
-        
-        // Only update state if we have new images
-        if (hasNewImages) {
-            setLoadedImages(newLoadedState);
-        }
-    }, [images]);
-
-    // Event handlers
-    const handleImageLoad = (imageId: string) => {
-        setLoadedImages(prev => ({
-            ...prev,
-            [imageId]: true
-        }));
-    };
-
     const handleImageClick = (index: number) => {
         setCurrentImageIndex(index);
-        
+
         if (onImageClick && index < images.length) {
             onImageClick(images[index], index);
         } else {
@@ -131,108 +91,64 @@ const Gallery: React.FC<GalleryProps> = ({
     };
 
     const handleDelete = async () => {
-        if (!imageToDelete) return;
+        if (!imageToDelete || !onDelete) return;
 
-        try {
-            await imageService.deleteImage(imageToDelete);
-
-            toast({
-                title: 'Image deleted',
-                description: 'The image has been deleted successfully.',
-                status: 'success',
-                duration: 3000,
-                isClosable: true,
-            });
-
-            if (onDelete) {
-                onDelete(imageToDelete);
-            }
-        } catch (error) {
-            console.error('Error deleting image:', error);
-            toast({
-                title: 'Error',
-                description: 'Failed to delete the image. Please try again.',
-                status: 'error',
-                duration: 5000,
-                isClosable: true,
-            });
-        } finally {
-            closeDelete();
-            setImageToDelete(null);
-        }
+        onDelete(imageToDelete);
+        closeDelete();
+        setImageToDelete(null);
     };
 
-    // Current image for viewer
     const currentImage = currentImageIndex !== null ? images[currentImageIndex] : null;
 
-    // אם אין תמונות, אין מה להציג
     if (images.length === 0) {
         return null;
     }
 
-    // פונקציה לרינדור תצוגת הגלריה הנבחרת
-    const renderGalleryView = () => {
-        // אם layout הוא grid או list, נשתמש ב-viewMode שנבחר
+    const renderLayout = () => {
         if (layout === 'grid' || layout === 'list') {
             return viewMode === 'grid' ? (
-                <ImageGridView
+                <GridLayout
                     images={visibleImages}
-                    loadedImages={loadedImages}
-                    onImageLoad={handleImageLoad}
+                    columns={columns}
+                    spacing={spacing}
                     onImageClick={handleImageClick}
-                    onDeleteClick={confirmDelete}
-                    readonly={readonly}
                 />
             ) : (
-                <ImageListView
+                <ListLayout
                     images={visibleImages}
-                    loadedImages={loadedImages}
-                    onImageLoad={handleImageLoad}
+                    spacing={spacing}
                     onImageClick={handleImageClick}
-                    onDeleteClick={confirmDelete}
-                    readonly={readonly}
+                    onDeleteClick={!readonly ? confirmDelete : undefined}
                 />
             );
         }
 
-        // אחרת, נבחר לפי הלייאאוט הספציפי
         switch (layout) {
-            case 'regular':
-                return (
-                    <RegularPhotoGrid
-                        images={visibleImages}
-                        columns={actualColumns}
-                        spacing={spacing}
-                        onImageClick={handleImageClick}
-                    />
-                );
-            case 'highlighted':
-                return (
-                    <HighlightedPhotoGrid
-                        images={visibleImages}
-                        columns={actualColumns}
-                        spacing={spacing}
-                        onImageClick={handleImageClick}
-                    />
-                );
             case 'masonry':
                 return (
-                    <MasonryGrid
+                    <MasonryLayout
                         images={visibleImages}
                         columns={columns}
                         spacing={spacing}
                         onImageClick={handleImageClick}
                     />
                 );
+            case 'highlighted':
+                return (
+                    <HighlightedLayout
+                        images={visibleImages}
+                        columns={columns.base}
+                        spacing={spacing}
+                        onImageClick={handleImageClick}
+                    />
+                );
             default:
                 return (
-                    <ImageGridView
+                    <GridLayout
                         images={visibleImages}
-                        loadedImages={loadedImages}
-                        onImageLoad={handleImageLoad}
+                        columns={columns}
+                        spacing={spacing}
                         onImageClick={handleImageClick}
-                        onDeleteClick={confirmDelete}
-                        readonly={readonly}
                     />
                 );
         }
@@ -240,7 +156,6 @@ const Gallery: React.FC<GalleryProps> = ({
 
     return (
         <Box>
-            {/* View toggle - מוצג רק אם layout הוא grid או list */}
             {(layout === 'grid' || layout === 'list') && (
                 <ViewModeToggle
                     viewMode={viewMode}
@@ -248,10 +163,8 @@ const Gallery: React.FC<GalleryProps> = ({
                 />
             )}
 
-            {/* Gallery content based on layout */}
-            {renderGalleryView()}
+            {renderLayout()}
 
-            {/* Show more button if there are more images to display */}
             {maxImages && images.length > maxImages && !showingAll && (
                 <ShowMoreButton
                     onClick={loadMoreImages}
@@ -259,8 +172,7 @@ const Gallery: React.FC<GalleryProps> = ({
                 />
             )}
 
-            {/* Full-size image viewer modal */}
-            <ImageViewerModal
+            <ImageViewer
                 isOpen={isViewerOpen}
                 onClose={closeViewer}
                 currentImage={currentImage}
@@ -268,7 +180,6 @@ const Gallery: React.FC<GalleryProps> = ({
                 onNext={() => navigateImages('next')}
             />
 
-            {/* Delete confirmation dialog */}
             <DeleteConfirmationDialog
                 isOpen={isDeleteOpen}
                 onClose={closeDelete}

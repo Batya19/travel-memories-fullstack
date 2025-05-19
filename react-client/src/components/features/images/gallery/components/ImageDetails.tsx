@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Flex, Text } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { Image as ImageType } from '../../../../../types';
-import { ImageBadge } from './ImageBadge';
+import ImageBadge from '../../../../common/media/ImageBadge';
 
 interface ImageDetailsProps {
     image: ImageType;
@@ -23,7 +23,11 @@ export const ImageDetails: React.FC<ImageDetailsProps> = ({ image }) => {
                 </Text>
 
                 {image.isAiGenerated && (
-                    <ImageBadge isAiGenerated={true} position="inline" />
+                    <ImageBadge
+                        badgePosition="inline"
+                        label="AI Generated"
+                        show={true}
+                    />
                 )}
             </Flex>
 
@@ -38,6 +42,10 @@ export const ImageDetails: React.FC<ImageDetailsProps> = ({ image }) => {
                     <strong>Prompt:</strong> {image.aiPrompt}
                 </Text>
             )}
+
+            <Text fontSize="sm" mt={1}>
+                <strong>Size:</strong> {Math.round(image.fileSize / 1024)} KB
+            </Text>
         </Box>
     );
 };

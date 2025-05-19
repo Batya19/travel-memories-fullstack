@@ -7,7 +7,7 @@ interface ShowMoreButtonProps {
     totalCount: number;
 }
 
-export const ShowMoreButton: React.FC<ShowMoreButtonProps> = ({
+const ShowMoreButton: React.FC<ShowMoreButtonProps> = ({
     onClick,
     totalCount,
 }) => {

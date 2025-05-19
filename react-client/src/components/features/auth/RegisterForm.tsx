@@ -1,84 +1,69 @@
 import React, { useState } from 'react';
 import {
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Input,
   Button,
   VStack,
   HStack,
   Checkbox,
   Link,
+  Text,
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
-import { RegisterFormData, FormErrors } from '../../../types';
+import { RegisterFormData } from '../../../types';
+import { useForm } from '../../../hooks/useForm';
+import FormInput from '../../common/forms/FormInput';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
-  const [formData, setFormData] = useState<RegisterFormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
   const { register, loading } = useAuth();
+  const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  // Validation function
+  const validateForm = (values: RegisterFormData) => {
+    const errors: Record<string, string> = {};
 
-    // Clear errors when user starts typing
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
+    if (!values.firstName) {
+      errors.firstName = 'First name is required';
     }
-  };
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-    if (!formData.firstName) {
-      newErrors.firstName = 'First name is required';
+    if (!values.lastName) {
+      errors.lastName = 'Last name is required';
     }
-    if (!formData.lastName) {
-      newErrors.lastName = 'Last name is required';
+
+    if (!values.email) {
+      errors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
+      errors.email = 'Email is invalid';
     }
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+
+    if (!values.password) {
+      errors.password = 'Password is required';
+    } else if (values.password.length < 6) {
+      errors.password = 'Password must be at least 8 characters';
     }
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 8 characters';
+
+    if (values.password !== values.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
     }
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
+
     if (!termsAccepted) {
-      newErrors.terms = 'You must agree to the terms and conditions';
+      errors.terms = 'You must agree to the terms and conditions';
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return errors;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
+  // Form submission handler
+  const handleSubmit = async (values: RegisterFormData) => {
     try {
       await register(
-        formData.email,
-        formData.password,
-        formData.firstName,
-        formData.lastName
+        values.email,
+        values.password,
+        values.firstName,
+        values.lastName
       );
       if (onSuccess) onSuccess();
     } catch (error) {
@@ -86,80 +71,85 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
     }
   };
 
+  // Use our custom form hook
+  const { values, errors, handleChange, handleSubmit: submitForm } = useForm({
+    initialValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+    validate: validateForm,
+    onSubmit: handleSubmit,
+  });
+
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={submitForm}>
       <VStack spacing={4} align="stretch">
         <HStack spacing={4} w="full">
-          <FormControl isInvalid={!!errors.firstName}>
-            <FormLabel htmlFor="firstName">First Name</FormLabel>
-            <Input
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              placeholder="First name"
-              size="lg"
-            />
-            <FormErrorMessage>{errors.firstName}</FormErrorMessage>
-          </FormControl>
+          <FormInput
+            name="firstName"
+            label="First Name"
+            value={values.firstName}
+            onChange={handleChange}
+            placeholder="First name"
+            size="lg"
+            error={errors.firstName}
+            isRequired
+            formControlProps={{ flex: 1 }}
+          />
 
-          <FormControl isInvalid={!!errors.lastName}>
-            <FormLabel htmlFor="lastName">Last Name</FormLabel>
-            <Input
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              placeholder="Last name"
-              size="lg"
-            />
-            <FormErrorMessage>{errors.lastName}</FormErrorMessage>
-          </FormControl>
+          <FormInput
+            name="lastName"
+            label="Last Name"
+            value={values.lastName}
+            onChange={handleChange}
+            placeholder="Last name"
+            size="lg"
+            error={errors.lastName}
+            isRequired
+            formControlProps={{ flex: 1 }}
+          />
         </HStack>
 
-        <FormControl isInvalid={!!errors.email}>
-          <FormLabel htmlFor="email">Email Address</FormLabel>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Enter your email address"
-            size="lg"
-          />
-          <FormErrorMessage>{errors.email}</FormErrorMessage>
-        </FormControl>
+        <FormInput
+          name="email"
+          label="Email Address"
+          type="email"
+          value={values.email}
+          onChange={handleChange}
+          placeholder="Enter your email address"
+          size="lg"
+          error={errors.email}
+          isRequired
+        />
 
-        <FormControl isInvalid={!!errors.password}>
-          <FormLabel htmlFor="password">Password</FormLabel>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Create a password (at least 8 characters)"
-            size="lg"
-          />
-          <FormErrorMessage>{errors.password}</FormErrorMessage>
-        </FormControl>
+        <FormInput
+          name="password"
+          label="Password"
+          type="password"
+          value={values.password}
+          onChange={handleChange}
+          placeholder="Create a password (at least 8 characters)"
+          size="lg"
+          error={errors.password}
+          isRequired
+        />
 
-        <FormControl isInvalid={!!errors.confirmPassword}>
-          <FormLabel htmlFor="confirmPassword">Confirm Password</FormLabel>
-          <Input
-            id="confirmPassword"
-            name="confirmPassword"
-            type="password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            placeholder="Confirm your password"
-            size="lg"
-          />
-          <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
-        </FormControl>
+        <FormInput
+          name="confirmPassword"
+          label="Confirm Password"
+          type="password"
+          value={values.confirmPassword}
+          onChange={handleChange}
+          placeholder="Confirm your password"
+          size="lg"
+          error={errors.confirmPassword}
+          isRequired
+        />
 
-        <FormControl isInvalid={!!errors.terms}>
+        <VStack align="start" spacing={1}>
           <Checkbox
             colorScheme="brand"
             isChecked={termsAccepted}
@@ -174,8 +164,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
               Privacy Policy
             </Link>
           </Checkbox>
-          <FormErrorMessage>{errors.terms}</FormErrorMessage>
-        </FormControl>
+          {errors.terms && <Text color="red.500" fontSize="sm">{errors.terms}</Text>}
+        </VStack>
 
         <Button
           type="submit"

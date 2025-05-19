@@ -1,3 +1,4 @@
+// components/features/trips/form/TripForm.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -11,17 +12,17 @@ import {
     Heading,
     Textarea,
     Flex,
-    useToast,
     Text,
     HStack,
     IconButton,
+    useToast,
 } from '@chakra-ui/react';
 import { Trip } from '../../../../types';
-import tripService from '../../../../services/tripService';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import MapLocationPicker from '../map/MapLocationPicker';
+import { useCreateTrip, useUpdateTrip } from '../../../../hooks/useQueryHooks';
 
 interface TripFormProps {
     initialData?: Partial<Trip>;
@@ -44,11 +45,14 @@ const TripForm: React.FC<TripFormProps> = ({ initialData, isEditing = false }) =
     });
 
     const [errors, setErrors] = useState<FormErrors>({});
-    const [loading, setLoading] = useState(false);
     const [showMap, setShowMap] = useState(false);
 
     const navigate = useNavigate();
     const toast = useToast();
+    
+    // React Query mutations
+    const createTrip = useCreateTrip();
+    const updateTrip = useUpdateTrip();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -123,53 +127,69 @@ const TripForm: React.FC<TripFormProps> = ({ initialData, isEditing = false }) =
         e.preventDefault();
         if (!validateForm()) return;
 
-        setLoading(true);
+        const tripData = {
+            name: formData.name,
+            description: formData.description,
+            startDate: formData.startDate.toISOString(),
+            endDate: formData.endDate.toISOString(),
+            locationName: formData.locationName,
+            latitude: formData.latitude,
+            longitude: formData.longitude,
+        };
 
-        try {
-            const tripData = {
-                name: formData.name,
-                description: formData.description,
-                startDate: formData.startDate.toISOString(),
-                endDate: formData.endDate.toISOString(),
-                locationName: formData.locationName,
-                latitude: formData.latitude,
-                longitude: formData.longitude,
-            };
-
-            if (isEditing && initialData?.id) {
-                await tripService.updateTrip(initialData.id, tripData);
-                toast({
-                    title: 'Trip updated',
-                    description: `${formData.name} has been updated successfully.`,
-                    status: 'success',
-                    duration: 5000,
-                    isClosable: true,
-                });
-                navigate(`/trips/${initialData.id}`);
-            } else {
-                const newTrip = await tripService.createTrip(tripData);
-                toast({
-                    title: 'Trip created',
-                    description: `${formData.name} has been created successfully.`,
-                    status: 'success',
-                    duration: 5000,
-                    isClosable: true,
-                });
-                navigate(`/trips/${newTrip.id}`);
-            }
-        } catch (error) {
-            console.error('Error saving trip:', error);
-            toast({
-                title: 'Error',
-                description: 'There was an error saving your trip. Please try again.',
-                status: 'error',
-                duration: 5000,
-                isClosable: true,
+        if (isEditing && initialData?.id) {
+            updateTrip.mutate(
+                { id: initialData.id, data: tripData },
+                {
+                    onSuccess: (updatedTrip) => {
+                        toast({
+                            title: 'Trip updated',
+                            description: `${formData.name} has been updated successfully.`,
+                            status: 'success',
+                            duration: 5000,
+                            isClosable: true,
+                        });
+                        navigate(`/trips/${updatedTrip.id}`);
+                    },
+                    onError: (error) => {
+                        toast({
+                            title: 'Error',
+                            description: 'Failed to update trip. Please try again.',
+                            status: 'error',
+                            duration: 5000,
+                            isClosable: true,
+                        });
+                        console.error('Error updating trip:', error);
+                    }
+                }
+            );
+        } else {
+            createTrip.mutate(tripData, {
+                onSuccess: (newTrip) => {
+                    toast({
+                        title: 'Trip created',
+                        description: `${formData.name} has been created successfully.`,
+                        status: 'success',
+                        duration: 5000,
+                        isClosable: true,
+                    });
+                    navigate(`/trips/${newTrip.id}`);
+                },
+                onError: (error) => {
+                    toast({
+                        title: 'Error',
+                        description: 'Failed to create trip. Please try again.',
+                        status: 'error',
+                        duration: 5000,
+                        isClosable: true,
+                    });
+                    console.error('Error creating trip:', error);
+                }
             });
-        } finally {
-            setLoading(false);
         }
     };
+
+    const isSubmitting = createTrip.isPending || updateTrip.isPending;
 
     return (
         <Box maxW="800px" mx="auto" py={8} px={4}>
@@ -280,13 +300,14 @@ const TripForm: React.FC<TripFormProps> = ({ initialData, isEditing = false }) =
                         <Button
                             variant="outline"
                             onClick={() => navigate(-1)}
+                            isDisabled={isSubmitting}
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
                             colorScheme="brand"
-                            isLoading={loading}
+                            isLoading={isSubmitting}
                             loadingText={isEditing ? "Updating" : "Creating"}
                         >
                             {isEditing ? 'Update Trip' : 'Create Trip'}
