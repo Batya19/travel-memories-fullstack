@@ -11,6 +11,8 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { GrowthDataPoint } from '../../core/models/statistics-response.model';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-dashboard',
@@ -193,5 +195,62 @@ export class DashboardComponent implements OnInit {
 
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays} days ago`;
+  }
+
+  exportActivityToExcel(): void {
+    if (!this.recentActivity || this.recentActivity.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'No Data',
+        detail: 'No activity data to export'
+      });
+      return;
+    }
+
+    const dataToExport = this.recentActivity.map(activity => ({
+      'Time': this.getTimeSince(activity.timestamp),
+      'User': activity.userName,
+      'Action': activity.action || 'Unknown',
+      'Entity Type': activity.entityType || 'N/A',
+      'Entity Name': activity.entityName || 'N/A',
+      'Full Timestamp': new Date(activity.timestamp).toLocaleString()
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+
+    const columnWidths = [
+      { wch: 15 },
+      { wch: 25 },
+      { wch: 12 },
+      { wch: 15 },
+      { wch: 25 },
+      { wch: 20 }
+    ];
+    worksheet['!cols'] = columnWidths;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'User Activity');
+
+    const summaryData = [
+      { 'Report Type': 'User Activity Log' },
+      { 'Generated Date': new Date().toLocaleString() },
+      { 'Total Activities': this.recentActivity.length },
+      { 'Period': 'Recent Activities' }
+    ];
+    const summarySheet = XLSX.utils.json_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+
+    saveAs(data, `user_activity_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Export Successful',
+      detail: `Exported ${this.recentActivity.length} activity records`
+    });
   }
 }

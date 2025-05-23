@@ -1,0 +1,3503 @@
+// Author: Batya-Zilberberg
+
+// Source: index.html
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>TravelMemories Admin Panel</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="https://unpkg.com/primeflex@latest/primeflex.css">
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@6.0.1/primeicons.css">
+</head>
+
+<body>
+  <app-root></app-root>
+</body>
+
+</html>
+
+// Source: main.ts
+import { bootstrapApplication } from '@angular/platform-browser';
+import { appConfig } from './app/app.config';
+import { AppComponent } from './app/app.component';
+
+bootstrapApplication(AppComponent, appConfig)
+  .catch((err) => console.error(err));
+
+// Source: styles.css
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    font-family: var(--font-family);
+    color: #333333;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-image: url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+h1 {
+    font-size: 1.75rem;
+}
+
+h2 {
+    font-size: 1.5rem;
+}
+
+h3 {
+    font-size: 1.25rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-3 {
+    margin-bottom: 1rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.mb-5 {
+    margin-bottom: 2rem;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.p-card .p-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.p-card .p-card-subtitle {
+    font-size: 0.875rem;
+    color: #666666;
+}
+
+.p-card .p-card-content {
+    padding: 1rem 0;
+}
+
+.p-dialog .p-dialog-header {
+    padding: 1.25rem 1.5rem;
+}
+
+.p-dialog .p-dialog-content {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.p-dialog .p-dialog-footer {
+    padding: 1rem 1.5rem;
+}
+
+.p-datatable .p-datatable-header {
+    background-color: #ffffff;
+    border: none;
+    padding: 1rem;
+}
+
+.p-paginator {
+    background-color: #ffffff;
+    border: none;
+}
+
+.p-datatable .p-datatable-thead>tr>th {
+    background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+    .p-dialog {
+        width: 90vw !important;
+    }
+}
+
+// Source: app\app.component.css
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.app-header {
+    height: 64px;
+    z-index: 1000;
+}
+
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.app-sidebar {
+    width: 250px;
+    height: 100%;
+    overflow-y: auto;
+    z-index: 900;
+}
+
+.app-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+// Source: app\app.component.html
+<ng-container *ngIf="(authService.currentUser$ | async) && isAdminRoute(); else publicRoute">
+  <div class="app-container">
+    <app-header class="app-header"></app-header>
+    <div class="main-container">
+      <app-sidebar class="app-sidebar"></app-sidebar>
+      <main class="app-content">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #publicRoute>
+  <router-outlet></router-outlet>
+</ng-template>
+
+// Source: app\app.component.spec.ts
+import { TestBed } from '@angular/core/testing';
+import { AppComponent } from './app.component';
+
+describe('AppComponent', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [AppComponent],
+    }).compileComponents();
+  });
+
+  it('should create the app', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    expect(app).toBeTruthy();
+  });
+
+  it(`should have the 'angular-admin' title`, () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    expect(app.title).toEqual('angular-admin');
+  });
+
+  it('should render title', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, angular-admin');
+  });
+});
+
+
+// Source: app\app.component.ts
+import { Component } from '@angular/core';
+import { RouterOutlet, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { HeaderComponent } from './components/layout/header/header.component';
+import { SidebarComponent } from './components/layout/sidebar/sidebar.component';
+import { MessageService, ConfirmationService } from 'primeng/api';
+import { AuthService } from './core/services/auth.service';
+import { RouterModule } from '@angular/router';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, HeaderComponent, SidebarComponent, RouterModule, CommonModule],
+  providers: [
+    MessageService,
+    ConfirmationService
+  ],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+  constructor(
+    public authService: AuthService,
+    private router: Router
+  ) { }
+
+  isAdminRoute(): boolean {
+    return this.router.url.startsWith('/admin');
+  }
+}
+
+// Source: app\app.config.ts
+import { provideRouter, withHashLocation } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { MessageService, ConfirmationService } from 'primeng/api';
+
+import { routes } from './app.routes';
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+
+import { ApplicationConfig } from '@angular/core';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeng/themes/aura';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes, withHashLocation()),
+    provideHttpClient(
+      withInterceptors([AuthInterceptor])
+    ),
+    provideAnimations(),
+    MessageService,
+    ConfirmationService,
+    provideAnimationsAsync(),
+    providePrimeNG({
+      theme: {
+        preset: Aura
+      }
+    })
+  ]
+};
+
+// Source: app\app.routes.ts
+import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
+
+export const routes: Routes = [
+  {
+    path: 'login',
+    loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent)
+  },
+  {
+    path: 'admin',
+    canMatch: [authGuard, adminGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent)
+      },
+      {
+        path: 'statistics',
+        loadComponent: () => import('./components/statistics/statistics.component').then(m => m.StatisticsComponent)
+      },
+      {
+        path: 'users',
+        loadComponent: () => import('./components/user-management/user-management.component').then(m => m.UserManagementComponent)
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./components/system-settings/system-settings.component').then(m => m.SystemSettingsComponent)
+      }
+    ]
+  },
+  {
+    path: '',
+    redirectTo: 'admin/dashboard',
+    pathMatch: 'full'
+  },
+  {
+    path: '**',
+    redirectTo: 'admin/dashboard'
+  }
+];
+
+// Source: environments\environment.ts
+export const environment = {
+    production: false,
+    apiUrl: 'https://travel-memories-api.onrender.com/api'
+};
+
+// Source: app\components\dashboard\dashboard.component.css
+.dashboard-container {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.subtitle {
+  color: #6c757d;
+  margin: 0;
+}
+
+.loading-overlay {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  gap: 1rem;
+  color: #6c757d;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stats-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stats-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+}
+
+.stats-icon i {
+  font-size: 2rem;
+  color: white;
+}
+
+.users-icon {
+  background-color: #3949ab;
+}
+
+.trips-icon {
+  background-color: #43a047;
+}
+
+.images-icon {
+  background-color: #fb8c00;
+}
+
+.storage-icon {
+  background-color: #8e24aa;
+}
+
+.stats-content {
+  flex: 1;
+}
+
+.stats-content h3 {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+}
+
+.stats-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.stats-subtext {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+.storage-progress {
+  margin-top: 0.5rem;
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+:host ::ng-deep .storage-progress-success .p-progressbar-value {
+  background-color: #4caf50;
+}
+
+:host ::ng-deep .storage-progress-warning .p-progressbar-value {
+  background-color: #ff9800;
+}
+
+:host ::ng-deep .storage-progress-danger .p-progressbar-value {
+  background-color: #f44336;
+}
+
+.activity-section {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 1.25rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.section-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.activity-table {
+  padding: 0 1px;
+}
+
+.activity-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.activity-create {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.activity-update {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.activity-delete {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.activity-login {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.activity-default {
+  background-color: #f5f5f5;
+  color: #616161;
+}
+
+.empty-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  color: #9e9e9e;
+}
+
+.empty-message i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .dashboard-header button {
+    align-self: flex-end;
+  }
+
+  .stats-card {
+    padding: 1.25rem;
+  }
+
+  .stats-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .stats-icon i {
+    font-size: 1.5rem;
+  }
+
+  .stats-value {
+    font-size: 1.5rem;
+  }
+}
+
+// Source: app\components\dashboard\dashboard.component.html
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p class="subtitle">Welcome to the TravelMemories admin dashboard. Here you can monitor system statistics and user
+        activity.</p>
+    </div>
+    <button pButton icon="pi pi-refresh" label="Refresh" (click)="refreshDashboard()" [disabled]="loading"></button>
+  </div>
+
+  @if (loading) {
+  <div class="loading-overlay">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <span>Loading dashboard data...</span>
+  </div>
+  } @else {
+  <div class="stats-grid">
+    <div class="stats-card">
+      <div class="stats-icon users-icon">
+        <i class="pi pi-users"></i>
+      </div>
+      <div class="stats-content">
+        <h3>Total Users</h3>
+        <div class="stats-value">{{ systemStats?.totalUsers || 0 }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-icon trips-icon">
+        <i class="pi pi-map"></i>
+      </div>
+      <div class="stats-content">
+        <h3>Total Trips</h3>
+        <div class="stats-value">{{ systemStats?.totalTrips || 0 }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-icon images-icon">
+        <i class="pi pi-images"></i>
+      </div>
+      <div class="stats-content">
+        <h3>Total Images</h3>
+        <div class="stats-value">{{ systemStats?.totalImages || 0 }}</div>
+        <div class="stats-subtext">AI Generated: {{ systemStats?.aiGeneratedImages || 0 }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-icon storage-icon">
+        <i class="pi pi-database"></i>
+      </div>
+      <div class="stats-content">
+        <h3>Storage Used</h3>
+        <div class="stats-value">{{ formatBytes(systemStats?.storageUsed || 0) }}</div>
+        <div class="stats-subtext">
+          <div class="storage-progress">
+            <div class="progress-text">
+              <span>{{ getStoragePercentage() | number:'1.0-0' }}%</span>
+              <span>Total: {{ formatBytes(systemStats?.totalStorageQuota || 0) }}</span>
+            </div>
+            <p-progressBar [value]="getStoragePercentage()"
+              [styleClass]="'storage-progress-' + getStorageClass()"></p-progressBar>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="activity-section">
+    <div class="section-header">
+      <h2>Recent User Activity</h2>
+    </div>
+
+    <div class="activity-table">
+      <p-table [value]="recentActivity" styleClass="p-datatable-sm" [tableStyle]="{'min-width': '50rem'}">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>User</th>
+            <th>Action</th>
+            <th>Entity</th>
+            <th>Time</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-activity>
+          <tr>
+            <td>{{ activity.userName }}</td>
+            <td>
+              <span class="activity-badge" [ngClass]="'activity-' + getActivityClass(activity.action)">
+                {{ activity.action || 'Unknown' }}
+              </span>
+            </td>
+            <td>{{ activity.entityType || 'N/A' }}: {{ activity.entityName || 'N/A' }}</td>
+            <td>{{ getTimeSince(activity.timestamp) }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="4" class="text-center">
+              <div class="empty-message">
+                <i class="pi pi-history"></i>
+                <span>No recent activity</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+  }
+  <p-toast></p-toast>
+</div>
+
+// Source: app\components\dashboard\dashboard.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { DashboardComponent } from './dashboard.component';
+
+describe('DashboardComponent', () => {
+  let component: DashboardComponent;
+  let fixture: ComponentFixture<DashboardComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [DashboardComponent]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(DashboardComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+// Source: app\components\dashboard\dashboard.component.ts
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { catchError, map } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { StatsService } from '../../core/services/stats.service';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { GrowthDataPoint } from '../../core/models/statistics-response.model';
+
+@Component({
+  selector: 'app-dashboard',
+  standalone: true,
+  imports: [CommonModule, CardModule, ButtonModule, TableModule, ProgressBarModule, ToastModule],
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css'],
+  providers: [MessageService]
+})
+export class DashboardComponent implements OnInit {
+  loading = true;
+  systemStats: any = {
+    totalUsers: 0,
+    totalTrips: 0,
+    totalImages: 0,
+    aiGeneratedImages: 0,
+    storageUsed: 0,
+    totalStorageQuota: 0,
+    usersGrowth: [],
+    tripsGrowth: [],
+    imagesGrowth: []
+  };
+
+  recentActivity: any[] = [];
+
+  constructor(
+    private statsService: StatsService,
+    private router: Router,
+    private messageService: MessageService
+  ) { }
+
+  ngOnInit() {
+    this.loading = true;
+    this.loadDashboardData();
+  }
+
+  loadDashboardData() {
+    this.statsService.getSystemStats().pipe(
+      map(response => {
+        return {
+          totalUsers: response.totalUsers || 0,
+          totalTrips: response.totalTrips || 0,
+          totalImages: response.totalImages || 0,
+          aiGeneratedImages: response.totalAiImages || 0,
+          storageUsed: (response.totalStorageUsedMB || 0) * 1024 * 1024,
+          totalStorageQuota: 10240 * 1024 * 1024,
+          usersGrowth: this.convertDictionaryToGrowthData(response.usersByMonth),
+          tripsGrowth: this.convertDictionaryToGrowthData(response.tripsByMonth),
+          imagesGrowth: this.convertDictionaryToGrowthData(response.imagesByMonth)
+        };
+      }),
+      catchError(error => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load system statistics'
+        });
+        return of({
+          totalUsers: 0,
+          totalTrips: 0,
+          totalImages: 0,
+          aiGeneratedImages: 0,
+          storageUsed: 0,
+          totalStorageQuota: 10240,
+          usersGrowth: [],
+          tripsGrowth: [],
+          imagesGrowth: []
+        });
+      })
+    ).subscribe(data => {
+      this.systemStats = data;
+      this.loading = false;
+    });
+
+    this.statsService.getUserActivity(5).pipe(
+      map(activities => {
+        return activities.map(activity => ({
+          userName: activity.userEmail || 'Unknown',
+          action: activity.activityType || 'UNKNOWN',
+          entityType: this.extractEntityType(activity.description),
+          entityName: this.extractEntityName(activity.description),
+          timestamp: activity.timestamp
+        }));
+      }),
+      catchError(error => {
+        console.error('Error loading user activity:', error);
+        return of([]);
+      })
+    ).subscribe(data => {
+      this.recentActivity = data;
+    });
+  }
+
+  private convertDictionaryToGrowthData(dict: { [key: string]: number } | undefined): GrowthDataPoint[] {
+    if (!dict) return [];
+    return Object.entries(dict).map(([date, value]) => ({
+      date,
+      value
+    }));
+  }
+
+  private extractEntityType(description: string | undefined): string {
+    return description || 'N/A';
+  }
+
+  private extractEntityName(description: string | undefined): string {
+    return description || 'N/A';
+  }
+
+  refreshDashboard() {
+    this.loading = true;
+    this.loadDashboardData();
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Refreshing',
+      detail: 'Dashboard data has been refreshed'
+    });
+  }
+
+  formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  getStoragePercentage(): number {
+    if (!this.systemStats.totalStorageQuota) return 0;
+    return Math.min(100, (this.systemStats.storageUsed / this.systemStats.totalStorageQuota) * 100);
+  }
+
+  getStorageClass(): string {
+    const percentage = this.getStoragePercentage();
+    if (percentage >= 90) return 'danger';
+    if (percentage >= 70) return 'warning';
+    return 'success';
+  }
+
+  getActivityClass(action: string | undefined): string {
+    if (!action) return 'default';
+
+    switch (action.toUpperCase()) {
+      case 'CREATE':
+      case 'CREATED':
+        return 'create';
+      case 'UPDATE':
+      case 'UPDATED':
+        return 'update';
+      case 'DELETE':
+      case 'DELETED':
+        return 'delete';
+      case 'LOGIN':
+        return 'login';
+      default:
+        return 'default';
+    }
+  }
+
+  getTimeSince(date: Date): string {
+    const now = new Date();
+    const then = new Date(date);
+    const diffInSeconds = Math.floor((now.getTime() - then.getTime()) / 1000);
+
+    if (diffInSeconds < 60) {
+      return `${diffInSeconds} seconds ago`;
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} minutes ago`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours} hours ago`;
+    }
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} days ago`;
+  }
+}
+
+// Source: app\components\login\login.component.css
+.login-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(135deg, #4c7aaf 0%, #5e91b4 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.login-container {
+    display: flex;
+    width: 100%;
+    max-width: 1200px;
+    height: 100%;
+    max-height: 800px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-card {
+    flex: 1;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    animation: slideInLeft 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.login-header {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.logo {
+    height: 100px;
+    margin-bottom: 20px;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-10px);
+    }
+
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.login-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.highlight {
+    color: #4c7aaf;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-label i {
+    color: #4c7aaf;
+    font-size: 16px;
+}
+
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-password .p-password-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+:host ::ng-deep .p-inputtext:focus,
+:host ::ng-deep .p-password .p-password-input:focus {
+    outline: none;
+    border-color: #4c7aaf;
+    box-shadow: 0 0 0 3px rgba(76, 122, 175, 0.1);
+    background-color: #ffffff;
+}
+
+:host ::ng-deep .p-password {
+    width: 100%;
+}
+
+:host ::ng-deep .p-password .p-password-strength-meter {
+    display: none;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: -4px;
+}
+
+:host ::ng-deep .login-button {
+    width: 100%;
+    padding: 12px 24px;
+    background: linear-gradient(45deg, #4c7aaf 0%, #5e91b4 100%);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+:host ::ng-deep .login-button:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(76, 122, 175, 0.3);
+}
+
+:host ::ng-deep .login-button:not(:disabled):active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+:host ::ng-deep .login-button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.login-background {
+    flex: 1;
+    background: linear-gradient(45deg, #4c7aaf 0%, #5e91b4 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+    background-size: cover;
+    background-position: left;
+    opacity: 0.6;
+    animation: zoomIn 20s ease-in-out infinite alternate;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.1);
+    }
+}
+
+@media (max-width: 992px) {
+    .login-container {
+        flex-direction: column;
+    }
+
+    .login-background {
+        height: 40%;
+    }
+
+    .login-card {
+        padding: 40px;
+    }
+}
+
+@media (max-width: 576px) {
+    .login-page {
+        padding: 10px;
+    }
+
+    .login-card {
+        padding: 30px 20px;
+    }
+
+    .login-header h1 {
+        font-size: 28px;
+    }
+
+    .logo {
+        height: 80px;
+    }
+}
+
+:host ::ng-deep .p-toast {
+    z-index: 2000;
+}
+
+// Source: app\components\login\login.component.html
+<div class="login-page">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="assets/logo.svg" alt="TravelMemories Logo" class="logo" />
+                <h1>Admin<span class="highlight">Panel</span></h1>
+                <p class="subtitle">Welcome back! Please login to continue</p>
+            </div>
+
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <i class="pi pi-envelope"></i>
+                        Email
+                    </label>
+                    <input id="email" type="email" pInputText formControlName="email" placeholder="Enter your email"
+                        [class.ng-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                        [class.ng-dirty]="loginForm.get('email')?.dirty" />
+                    @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+                    <small class="error-message">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        Please enter a valid email
+                    </small>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="pi pi-lock"></i>
+                        Password
+                    </label>
+                    <p-password id="password" formControlName="password" [toggleMask]="true" [feedback]="false"
+                        placeholder="Enter your password" styleClass="w-full" inputStyleClass="w-full"
+                        [class.ng-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                        [class.ng-dirty]="loginForm.get('password')?.dirty"></p-password>
+                    @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+                    <small class="error-message">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        Password is required
+                    </small>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <p-button type="submit" label="Login" [disabled]="loginForm.invalid || isLoading"
+                        [loading]="isLoading" styleClass="login-button" icon="pi pi-sign-in"></p-button>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="login-background"></div>
+    </div>
+
+    <p-toast></p-toast>
+</div>
+
+// Source: app\components\login\login.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { LoginComponent } from './login.component';
+
+describe('LoginComponent', () => {
+  let component: LoginComponent;
+  let fixture: ComponentFixture<LoginComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [LoginComponent]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(LoginComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+// Source: app\components\login\login.component.ts
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { PasswordModule } from 'primeng/password';
+import { CardModule } from 'primeng/card';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule,
+    PasswordModule, CardModule, ToastModule,],
+  providers: [MessageService],
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.css'
+})
+export class LoginComponent {
+  loginForm: FormGroup;
+  isLoading = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private messageService: MessageService
+  ) {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required]
+    });
+
+    if (this.authService.isAuthenticated) {
+      this.router.navigate(['/admin/dashboard']);
+    }
+  }
+
+  onSubmit(): void {
+    if (this.loginForm.invalid) {
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.authService.login({
+      email: this.loginForm.value.email,
+      password: this.loginForm.value.password
+    }).subscribe({
+      next: () => {
+        this.isLoading = false;
+
+        if (this.authService.isAdmin) {
+          this.router.navigate(['/admin/dashboard']);
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Access Denied',
+            detail: 'You do not have admin privileges'
+          });
+          this.authService.logout();
+        }
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Login Failed',
+          detail: error.message || 'Invalid credentials'
+        });
+      }
+    });
+  }
+}
+
+// Source: app\components\statistics\statistics.component.css
+.statistics-container {
+    padding: 1rem;
+}
+
+.filter-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.chart-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-container {
+    height: 300px;
+}
+
+.activity-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.activity-badge.create {
+    background-color: #4caf50;
+    color: white;
+}
+
+.activity-badge.update {
+    background-color: #2196f3;
+    color: white;
+}
+
+.activity-badge.delete {
+    background-color: #f44336;
+    color: white;
+}
+
+.activity-badge.login {
+    background-color: #9c27b0;
+    color: white;
+}
+
+.activity-badge.unknown {
+    background-color: #9e9e9e;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .chart-row {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+// Source: app\components\statistics\statistics.component.html
+<div class="statistics-container">
+  <h1>System Statistics</h1>
+
+  <div class="filter-row">
+    <div class="filter-item">
+      <label for="period">Time Period</label>
+      <p-select id="period" [options]="periodOptions" [(ngModel)]="selectedPeriod" (onChange)="loadStatistics()"
+        optionLabel="label"></p-select>
+    </div>
+
+    <div class="filter-item">
+      <label for="timeRange">Time Range</label>
+      <p-select id="timeRange" [options]="timeRangeOptions" [(ngModel)]="selectedTimeRange"
+        (onChange)="loadStatistics()" optionLabel="label"></p-select>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <p-card header="Users Growth" styleClass="chart-card">
+      <div class="chart-container">
+        <p-chart type="line" [data]="usersChartData" [options]="chartOptions"></p-chart>
+      </div>
+    </p-card>
+
+    <p-card header="Trips Growth" styleClass="chart-card">
+      <div class="chart-container">
+        <p-chart type="line" [data]="tripsChartData" [options]="chartOptions"></p-chart>
+      </div>
+    </p-card>
+  </div>
+
+  <div class="chart-row">
+    <p-card header="Images Growth" styleClass="chart-card">
+      <div class="chart-container">
+        <p-chart type="line" [data]="imagesChartData" [options]="chartOptions"></p-chart>
+      </div>
+    </p-card>
+
+    <p-card header="Images Distribution" styleClass="chart-card">
+      <div class="chart-container">
+        <p-chart type="doughnut" [data]="imageDistributionChartData" [options]="pieChartOptions"></p-chart>
+      </div>
+    </p-card>
+  </div>
+
+  <p-card header="User Activity Log" styleClass="activity-card">
+    <p-table [value]="activityItems" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 25, 50]" styleClass="p-datatable-sm"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="timestamp">Time <p-sortIcon field="timestamp"></p-sortIcon></th>
+          <th pSortableColumn="userEmail">User <p-sortIcon field="userEmail"></p-sortIcon></th>
+          <th pSortableColumn="activityType">Action <p-sortIcon field="activityType"></p-sortIcon></th>
+          <th>Description</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.timestamp | date:'medium' }}</td>
+          <td>{{ item.userEmail }}</td>
+          <td>
+            <span [ngClass]="'activity-badge ' + getActionClass(item.activityType)">
+              {{ item.activityType || 'UNKNOWN' }}
+            </span>
+          </td>
+          <td>{{ item.description || 'N/A' }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center">No activity found</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-toast></p-toast>
+</div>
+
+// Source: app\components\statistics\statistics.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { StatisticsComponent } from './statistics.component';
+
+describe('StatisticsComponent', () => {
+  let component: StatisticsComponent;
+  let fixture: ComponentFixture<StatisticsComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [StatisticsComponent]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(StatisticsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+// Source: app\components\statistics\statistics.component.ts
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { CardModule } from 'primeng/card';
+import { ChartModule } from 'primeng/chart';
+import { SelectModule } from 'primeng/select';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { FormsModule } from '@angular/forms';
+import { StatsService } from '../../core/services/stats.service';
+import { catchError, map } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+
+interface PeriodOption {
+  label: string;
+  value: 'daily' | 'weekly' | 'monthly';
+}
+
+interface TimeRangeOption {
+  label: string;
+  value: number;
+}
+
+interface GrowthDataPoint {
+  date: string;
+  value: number;
+}
+
+@Component({
+  selector: 'app-statistics',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    CardModule,
+    ChartModule,
+    SelectModule,
+    TableModule,
+    ButtonModule,
+    ToastModule
+  ],
+  providers: [MessageService],
+  templateUrl: './statistics.component.html',
+  styleUrl: './statistics.component.css'
+})
+export class StatisticsComponent implements OnInit {
+  stats: any = null;
+  activityItems: any[] = [];
+
+  usersChartData: any;
+  tripsChartData: any;
+  imagesChartData: any;
+  imageDistributionChartData: any;
+
+  chartOptions: any;
+  pieChartOptions: any;
+
+  periodOptions: PeriodOption[] = [
+    { label: 'Daily', value: 'daily' },
+    { label: 'Weekly', value: 'weekly' },
+    { label: 'Monthly', value: 'monthly' }
+  ];
+
+  timeRangeOptions: TimeRangeOption[] = [
+    { label: 'Last 3 Months', value: 3 },
+    { label: 'Last 6 Months', value: 6 },
+    { label: 'Last 12 Months', value: 12 }
+  ];
+
+  selectedPeriod: PeriodOption = this.periodOptions[2]; // Monthly by default
+  selectedTimeRange: TimeRangeOption = this.timeRangeOptions[1]; // Last 6 months by default
+
+  constructor(
+    private statsService: StatsService,
+    private messageService: MessageService
+  ) { }
+
+  ngOnInit(): void {
+    this.initChartOptions();
+    this.loadStatistics();
+    this.loadUserActivity();
+  }
+
+  loadStatistics(): void {
+    this.statsService.getSystemStats().pipe(
+      map(response => {
+        const mappedData = {
+          totalUsers: response.totalUsers || 0,
+          totalTrips: response.totalTrips || 0,
+          totalImages: response.totalImages || 0,
+          aiGeneratedImages: response.totalAiImages || 0,
+          usersByMonth: response.usersByMonth || {},
+          tripsByMonth: response.tripsByMonth || {},
+          imagesByMonth: response.imagesByMonth || {}
+        };
+
+        return mappedData;
+      }),
+      catchError(error => {
+        console.error('Error loading statistics:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load statistics'
+        });
+
+        return of({
+          totalUsers: 0,
+          totalTrips: 0,
+          totalImages: 0,
+          aiGeneratedImages: 0,
+          usersByMonth: {},
+          tripsByMonth: {},
+          imagesByMonth: {}
+        });
+      })
+    ).subscribe(data => {
+      this.stats = data;
+      this.updateChartData();
+    });
+  }
+
+  loadUserActivity(): void {
+    this.statsService.getUserActivity(50).pipe(
+      catchError(error => {
+        console.error('Error loading user activity:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load user activity'
+        });
+        return of([]);
+      })
+    ).subscribe(data => {
+      this.activityItems = data;
+    });
+  }
+
+  initChartOptions(): void {
+    this.chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    };
+
+    this.pieChartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+        }
+      }
+    };
+
+    this.initEmptyChartData();
+  }
+
+  initEmptyChartData(): void {
+    this.usersChartData = {
+      labels: [],
+      datasets: [
+        {
+          label: 'Users',
+          data: [],
+          borderColor: '#3f51b5',
+          backgroundColor: 'rgba(63, 81, 181, 0.2)',
+          tension: 0.4
+        }
+      ]
+    };
+
+    this.tripsChartData = {
+      labels: [],
+      datasets: [
+        {
+          label: 'Trips',
+          data: [],
+          borderColor: '#009688',
+          backgroundColor: 'rgba(0, 150, 136, 0.2)',
+          tension: 0.4
+        }
+      ]
+    };
+
+    this.imagesChartData = {
+      labels: [],
+      datasets: [
+        {
+          label: 'Images',
+          data: [],
+          borderColor: '#ff9800',
+          backgroundColor: 'rgba(255, 152, 0, 0.2)',
+          tension: 0.4
+        }
+      ]
+    };
+
+    this.imageDistributionChartData = {
+      labels: ['Regular Images', 'AI Generated Images'],
+      datasets: [
+        {
+          data: [0, 0],
+          backgroundColor: ['#ff9800', '#e91e63']
+        }
+      ]
+    };
+  }
+
+  updateChartData(): void {
+    if (!this.stats) return;
+
+    const usersGrowthData = this.convertDictionaryToGrowthData(this.stats.usersByMonth || {});
+    const tripsGrowthData = this.convertDictionaryToGrowthData(this.stats.tripsByMonth || {});
+    const imagesGrowthData = this.convertDictionaryToGrowthData(this.stats.imagesByMonth || {});
+
+    this.usersChartData = {
+      labels: usersGrowthData.map((item: GrowthDataPoint) => item.date),
+      datasets: [
+        {
+          label: 'Users',
+          data: usersGrowthData.map((item: GrowthDataPoint) => item.value),
+          borderColor: '#3f51b5',
+          backgroundColor: 'rgba(63, 81, 181, 0.2)',
+          tension: 0.4
+        }
+      ]
+    };
+
+    this.tripsChartData = {
+      labels: tripsGrowthData.map((item: GrowthDataPoint) => item.date),
+      datasets: [
+        {
+          label: 'Trips',
+          data: tripsGrowthData.map((item: GrowthDataPoint) => item.value),
+          borderColor: '#009688',
+          backgroundColor: 'rgba(0, 150, 136, 0.2)',
+          tension: 0.4
+        }
+      ]
+    };
+
+    this.imagesChartData = {
+      labels: imagesGrowthData.map((item: GrowthDataPoint) => item.date),
+      datasets: [
+        {
+          label: 'Images',
+          data: imagesGrowthData.map((item: GrowthDataPoint) => item.value),
+          borderColor: '#ff9800',
+          backgroundColor: 'rgba(255, 152, 0, 0.2)',
+          tension: 0.4
+        }
+      ]
+    };
+
+    const regularImages = this.stats.totalImages - this.stats.aiGeneratedImages;
+
+    this.imageDistributionChartData = {
+      labels: ['Regular Images', 'AI Generated Images'],
+      datasets: [
+        {
+          data: [regularImages, this.stats.aiGeneratedImages],
+          backgroundColor: ['#ff9800', '#e91e63']
+        }
+      ]
+    };
+  }
+
+  private convertDictionaryToGrowthData(dict: { [key: string]: number }): GrowthDataPoint[] {
+    return Object.entries(dict).map(([date, value]) => ({
+      date,
+      value
+    }));
+  }
+
+  getActionClass(action: string | undefined): string {
+    if (!action) return 'unknown';
+
+    switch (action.toUpperCase()) {
+      case 'CREATE':
+      case 'CREATED':
+        return 'create';
+      case 'UPDATE':
+      case 'UPDATED':
+        return 'update';
+      case 'DELETE':
+      case 'DELETED':
+        return 'delete';
+      case 'LOGIN':
+        return 'login';
+      default:
+        return 'unknown';
+    }
+  }
+}
+
+// Source: app\components\system-settings\system-settings.component.css
+.settings-container {
+    padding: 1rem;
+}
+
+.loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+}
+
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.settings-card {
+    margin-bottom: 0;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-field:last-child {
+    margin-bottom: 0;
+}
+
+.help-text {
+    font-size: 0.75rem;
+    color: #666666;
+}
+
+.warning-text {
+    color: #f44336;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.checkbox-field {
+    margin-bottom: 1.5rem;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.w-full {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column-reverse;
+        gap: 0.5rem;
+    }
+
+    :host ::ng-deep .form-actions .p-button {
+        width: 100%;
+    }
+}
+
+// Source: app\components\system-settings\system-settings.component.html
+<div class="settings-container">
+    <h1>System Settings</h1>
+
+    @if (loading) {
+    <div class="loading-indicator">
+        <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+        <span>Loading settings...</span>
+    </div>
+    } @else {
+    <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="settings-form">
+        <p-card header="Default User Quotas" styleClass="settings-card">
+            <div class="form-field">
+                <label for="defaultUserStorageQuota">Default Storage Quota (MB)</label>
+                <p-inputNumber id="defaultUserStorageQuota" formControlName="defaultUserStorageQuota" [min]="0"
+                    [max]="1000000" styleClass="w-full"></p-inputNumber>
+                <small class="help-text">
+                    Storage quota assigned to new users by default. Existing users are not affected.
+                </small>
+            </div>
+
+            <div class="form-field">
+                <label for="defaultUserAiQuota">Default AI Images Quota</label>
+                <p-inputNumber id="defaultUserAiQuota" formControlName="defaultUserAiQuota" [min]="0" [max]="1000"
+                    styleClass="w-full"></p-inputNumber>
+                <small class="help-text">
+                    Monthly AI image generation quota assigned to new users by default.
+                </small>
+            </div>
+        </p-card>
+
+        <p-card header="File Upload Settings" styleClass="settings-card">
+            <div class="form-field">
+                <label for="maxUploadFileSizeMB">Maximum Upload File Size (MB)</label>
+                <p-inputNumber id="maxUploadFileSizeMB" formControlName="maxUploadFileSizeMB" [min]="1" [max]="100"
+                    styleClass="w-full"></p-inputNumber>
+                <small class="help-text">
+                    Maximum allowed size for uploaded files. Larger files will be rejected.
+                </small>
+            </div>
+
+            <div class="form-field">
+                <label for="allowedFileTypes">Allowed File Types</label>
+                <p-chips id="allowedFileTypes" formControlName="allowedFileTypes"
+                    placeholder="Add file extension (e.g., jpg)" styleClass="w-full"></p-chips>
+                <small class="help-text">
+                    File types allowed for upload. Enter file extensions without dots (e.g., jpg, png).
+                </small>
+            </div>
+        </p-card>
+
+        <p-card header="System Access" styleClass="settings-card">
+            <div class="form-field checkbox-field">
+                <div class="checkbox-container">
+                    <p-checkbox id="registrationEnabled" formControlName="registrationEnabled"
+                        [binary]="true"></p-checkbox>
+                    <label for="registrationEnabled">Enable User Registration</label>
+                </div>
+                <small class="help-text">
+                    When disabled, new users cannot register. Existing users can still log in.
+                </small>
+            </div>
+
+            <div class="form-field checkbox-field">
+                <div class="checkbox-container">
+                    <p-checkbox id="maintenanceMode" formControlName="maintenanceMode" [binary]="true"></p-checkbox>
+                    <label for="maintenanceMode">Enable Maintenance Mode</label>
+                </div>
+                <small class="help-text warning-text">
+                    <i class="pi pi-exclamation-triangle"></i> When enabled, only administrators can access the system.
+                    Regular
+                    users will see a maintenance message.
+                </small>
+            </div>
+        </p-card>
+
+        <div class="form-actions">
+            <p-button type="button" label="Reset" icon="pi pi-refresh" styleClass="p-button-outlined p-button-secondary"
+                (onClick)="resetForm()"></p-button>
+
+            <p-button type="submit" label="Save Settings" icon="pi pi-save"
+                [disabled]="settingsForm.invalid || settingsForm.pristine"></p-button>
+        </div>
+    </form>
+    }
+
+    <p-toast></p-toast>
+</div>
+
+// Source: app\components\system-settings\system-settings.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { SystemSettingsComponent } from './system-settings.component';
+
+describe('SystemSettingsComponent', () => {
+  let component: SystemSettingsComponent;
+  let fixture: ComponentFixture<SystemSettingsComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [SystemSettingsComponent]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(SystemSettingsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+// Source: app\components\system-settings\system-settings.component.ts
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
+import { ToastModule } from 'primeng/toast';
+import { ChipsModule } from 'primeng/chips';
+import { MessageService } from 'primeng/api';
+import { SettingsService } from '../../core/services/settings.service';
+import { SystemSettings } from '../../core/models/system-settings.model';
+
+@Component({
+  selector: 'app-system-settings',
+  standalone: true,
+  imports: [
+    CommonModule, FormsModule, ReactiveFormsModule, CardModule, InputTextModule,
+    InputNumberModule, ButtonModule, CheckboxModule, ToastModule, ChipsModule],
+  providers: [MessageService],
+  templateUrl: './system-settings.component.html',
+  styleUrl: './system-settings.component.css'
+})
+export class SystemSettingsComponent implements OnInit {
+  settingsForm: FormGroup;
+  originalSettings: SystemSettings | null = null;
+  loading = true;
+
+  constructor(
+    private settingsService: SettingsService,
+    private fb: FormBuilder,
+    private messageService: MessageService
+  ) {
+    this.settingsForm = this.createSettingsForm();
+  }
+
+  ngOnInit(): void {
+    this.loadSettings();
+  }
+
+  createSettingsForm(): FormGroup {
+    return this.fb.group({
+      defaultUserStorageQuota: [10240, [Validators.required, Validators.min(0)]],
+      defaultUserAiQuota: [50, [Validators.required, Validators.min(0)]],
+      registrationEnabled: [true],
+      maxUploadFileSizeMB: [10, [Validators.required, Validators.min(1), Validators.max(100)]],
+      allowedFileTypes: [['jpg', 'jpeg', 'png', 'gif'], Validators.required],
+      maintenanceMode: [false]
+    });
+  }
+
+  loadSettings(): void {
+    this.loading = true;
+
+    this.settingsService.getSystemSettings().subscribe({
+      next: (settings) => {
+        this.originalSettings = settings;
+        this.settingsForm.patchValue(settings);
+        this.settingsForm.markAsPristine();
+        this.loading = false;
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load system settings'
+        });
+        this.loading = false;
+      }
+    });
+  }
+
+  saveSettings(): void {
+    if (this.settingsForm.invalid || this.settingsForm.pristine) {
+      return;
+    }
+
+    const settings: SystemSettings = this.settingsForm.value;
+
+    this.settingsService.updateSystemSettings(settings).subscribe({
+      next: (updatedSettings) => {
+        this.originalSettings = updatedSettings;
+        this.settingsForm.markAsPristine();
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'System settings updated successfully'
+        });
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: error.error?.message || 'Failed to update system settings'
+        });
+      }
+    });
+  }
+
+  resetForm(): void {
+    if (this.originalSettings) {
+      this.settingsForm.patchValue(this.originalSettings);
+      this.settingsForm.markAsPristine();
+    } else {
+      this.settingsForm.reset();
+      this.settingsForm = this.createSettingsForm();
+    }
+  }
+}
+
+// Source: app\components\user-management\user-management.component.css
+.user-management-container {
+    padding: 1rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.flex {
+    display: flex;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.role-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.role-badge.admin {
+    background-color: #f44336;
+    color: white;
+}
+
+.role-badge.user {
+    background-color: #2196f3;
+    color: white;
+}
+
+.quota-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.quota-text {
+    font-size: 0.75rem;
+    color: #666666;
+}
+
+.quota-critical {
+    background: #f44336;
+}
+
+.quota-warning {
+    background: #ff9800;
+}
+
+.quota-normal {
+    background: #4caf50;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.user-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1rem 0;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.w-full {
+    width: 100%;
+}
+
+:host ::ng-deep .p-password input {
+    width: 100%;
+}
+
+:host ::ng-deep .p-dropdown {
+    width: 100%;
+}
+
+:host ::ng-deep .p-inputnumber {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .search-box,
+    .filter-options {
+        width: 100%;
+    }
+}
+
+// Source: app\components\user-management\user-management.component.html
+<div class="user-management-container">
+  <h1>User Management</h1>
+
+  <p-card styleClass="mb-4">
+    <div class="flex justify-content-between align-items-center">
+      <div class="search-box">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input type="text" pInputText [(ngModel)]="searchTerm" placeholder="Search users..."
+            (keyup.enter)="onSearchTerm()" />
+        </span>
+      </div>
+
+      <p-button icon="pi pi-plus" label="Add User" (onClick)="showAddUserDialog()"></p-button>
+    </div>
+  </p-card>
+
+  <p-table [value]="users" [lazy]="true" [paginator]="true" [rows]="pageSize" 
+    [loading]="loading" [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true" [responsive]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {rows} users" (onLazyLoad)="loadUsers($event)">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Storage Usage</th>
+        <th>AI Quota Usage</th>
+        <th>Created At</th>
+        <th style="width: 120px">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-user>
+      <tr>
+        <td>{{ user.firstName }} {{ user.lastName }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+          <span [ngClass]="'role-badge ' + (user.role === 'SYSTEM_ADMIN' ? 'admin' : 'user')">
+            {{ user.role }}
+          </span>
+        </td>
+        <td>
+          <div class="quota-container">
+            <p-progressBar [value]="getStoragePercentage(user)" [showValue]="false"
+              [styleClass]="getQuotaClass(getStoragePercentage(user))"></p-progressBar>
+            <span class="quota-text">
+              {{ formatStorage(user.storageUsed || 0) }} / {{ formatStorage(user.storageQuota) }}
+            </span>
+          </div>
+        </td>
+        <td>
+          <div class="quota-container">
+            <p-progressBar [value]="getAiQuotaPercentage(user)" [showValue]="false"
+              [styleClass]="getQuotaClass(getAiQuotaPercentage(user))"></p-progressBar>
+            <span class="quota-text">
+              {{ user.aiQuotaUsed || 0 }} / {{ user.aiQuota }}
+            </span>
+          </div>
+        </td>
+        <td>{{ user.createdAt | date }}</td>
+        <td>
+          <div class="action-buttons">
+            <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
+              (click)="editUser(user)"></button>
+            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm"
+              (click)="confirmDelete(user)"></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center">
+          No users found.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog [(visible)]="userDialogVisible" [header]="editMode ? 'Edit User' : 'Add New User'" [modal]="true"
+    [style]="{ width: '450px' }" [draggable]="false" [resizable]="false">
+    <form [formGroup]="userForm" class="user-form">
+      <div class="form-field">
+        <label for="firstName">First Name</label>
+        <input id="firstName" type="text" pInputText formControlName="firstName" class="w-full" />
+        @if (userForm.get('firstName')?.invalid && userForm.get('firstName')?.touched) {
+        <small class="p-error">
+          First name is required
+        </small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="lastName">Last Name</label>
+        <input id="lastName" type="text" pInputText formControlName="lastName" class="w-full" />
+        @if (userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched) {
+        <small class="p-error">
+          Last name is required
+        </small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input id="email" type="email" pInputText formControlName="email" class="w-full" />
+        @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
+        <small class="p-error">
+          Valid email is required
+        </small>
+        }
+      </div>
+
+      @if (!editMode) {
+      <div class="form-field">
+        <label for="password">Password</label>
+        <p-password id="password" formControlName="password" [toggleMask]="true" [feedback]="true" styleClass="w-full"
+          inputStyleClass="w-full"></p-password>
+        @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+        <small class="p-error">
+          Password must be at least 8 characters
+        </small>
+        }
+      </div>
+      }
+
+      <div class="form-field">
+        <label for="role">Role</label>
+        <p-dropdown id="role" [options]="roleOptions" formControlName="role" optionLabel="label" optionValue="value"
+          styleClass="w-full"></p-dropdown>
+      </div>
+
+      <div class="form-field">
+        <label for="storageQuota">Storage Quota (MB)</label>
+        <p-inputNumber id="storageQuota" formControlName="storageQuota" [min]="0" [max]="1000000"
+          styleClass="w-full"></p-inputNumber>
+      </div>
+
+      <div class="form-field">
+        <label for="aiQuota">AI Images Quota</label>
+        <p-inputNumber id="aiQuota" formControlName="aiQuota" [min]="0" [max]="1000"
+          styleClass="w-full"></p-inputNumber>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <button pButton icon="pi pi-times" label="Cancel" class="p-button-text"
+        (click)="userDialogVisible = false"></button>
+      <button pButton icon="pi pi-check" label="Save" [disabled]="userForm.invalid" (click)="saveUser()"></button>
+    </ng-template>
+  </p-dialog>
+
+  <p-confirmDialog></p-confirmDialog>
+  <p-toast></p-toast>
+</div>
+
+// Source: app\components\user-management\user-management.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { UserManagementComponent } from './user-management.component';
+
+describe('UserManagementComponent', () => {
+  let component: UserManagementComponent;
+  let fixture: ComponentFixture<UserManagementComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [UserManagementComponent]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(UserManagementComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+// Source: app\components\user-management\user-management.component.ts
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { PasswordModule } from 'primeng/password';
+import { CardModule } from 'primeng/card';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { UserService, UserQueryParams, CreateUserRequest, UpdateUserRequest } from '../../core/services/user.service';
+import { User, UserRole } from '../../core/models/user.model';
+
+@Component({
+  selector: 'app-user-management',
+  standalone: true,
+  imports: [
+    CommonModule, FormsModule, ReactiveFormsModule, TableModule, ButtonModule, DialogModule,
+    InputTextModule, DropdownModule, ProgressBarModule, ConfirmDialogModule, ToastModule,
+    InputNumberModule, PasswordModule, CardModule],
+  providers: [ConfirmationService, MessageService],
+  templateUrl: './user-management.component.html',
+  styleUrl: './user-management.component.css'
+})
+export class UserManagementComponent implements OnInit {
+  users: User[] = [];
+  totalRecords = 0;
+  loading = true;
+  page = 0;
+  pageSize = 10;
+  searchTerm = '';
+  userDialogVisible = false;
+  editMode = false;
+  userForm: FormGroup;
+  selectedUser: User | null = null;
+
+  roleOptions = [
+    { label: 'Regular User', value: UserRole.USER },
+    { label: 'System Admin', value: UserRole.SYSTEM_ADMIN }
+  ];
+
+  constructor(
+    private userService: UserService,
+    private fb: FormBuilder,
+    private confirmationService: ConfirmationService,
+    private messageService: MessageService
+  ) {
+    this.userForm = this.createUserForm();
+  }
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
+
+  createUserForm(): FormGroup {
+    return this.fb.group({
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      role: [UserRole.USER, Validators.required],
+      storageQuota: [10240, [Validators.required, Validators.min(0)]],
+      aiQuota: [50, [Validators.required, Validators.min(0)]]
+    });
+  }
+
+  loadUsers(event?: any): void {
+    this.loading = true;
+
+    if (event) {
+      this.page = event.first / event.rows;
+      this.pageSize = event.rows;
+    }
+
+    const offset = this.page * this.pageSize;
+    const params: UserQueryParams = {
+      limit: this.pageSize,
+      offset: offset
+    };
+
+    if (this.searchTerm) {
+      params.searchTerm = this.searchTerm;
+    }
+
+    this.userService.getUsers(params).subscribe({
+      next: (users) => {
+        this.users = users;
+        this.loading = false;
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load users'
+        });
+        this.loading = false;
+      }
+    });
+  }
+
+  onSearchTerm(): void {
+    this.page = 0;
+    this.loadUsers();
+  }
+
+  showAddUserDialog(): void {
+    this.editMode = false;
+    this.selectedUser = null;
+    this.userForm = this.createUserForm();
+    this.userDialogVisible = true;
+  }
+
+  editUser(user: User): void {
+    this.editMode = true;
+    this.selectedUser = { ...user };
+
+    this.userForm = this.fb.group({
+      firstName: [user.firstName, Validators.required],
+      lastName: [user.lastName, Validators.required],
+      email: [user.email, [Validators.required, Validators.email]],
+      role: [user.role, Validators.required],
+      storageQuota: [user.storageQuota, [Validators.required, Validators.min(0)]],
+      aiQuota: [user.aiQuota, [Validators.required, Validators.min(0)]]
+    });
+
+    this.userDialogVisible = true;
+  }
+
+  saveUser(): void {
+    if (this.userForm.invalid) {
+      return;
+    }
+
+    if (this.editMode && this.selectedUser) {
+      const updateData: UpdateUserRequest = {
+        firstName: this.userForm.value.firstName,
+        lastName: this.userForm.value.lastName,
+        email: this.userForm.value.email,
+        role: this.userForm.value.role,
+        storageQuota: this.userForm.value.storageQuota,
+        aiQuota: this.userForm.value.aiQuota
+      };
+
+      this.userService.updateUser(this.selectedUser.id, updateData)
+        .subscribe({
+          next: (updatedUser) => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'User updated successfully'
+            });
+            this.userDialogVisible = false;
+            this.loadUsers();
+          },
+          error: (error) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: error.error?.message || 'Failed to update user'
+            });
+          }
+        });
+    } else {
+      const createData: CreateUserRequest = {
+        firstName: this.userForm.value.firstName,
+        lastName: this.userForm.value.lastName,
+        email: this.userForm.value.email,
+        password: this.userForm.value.password,
+        role: this.userForm.value.role,
+        storageQuota: this.userForm.value.storageQuota,
+        aiQuota: this.userForm.value.aiQuota
+      };
+
+      this.userService.createUser(createData)
+        .subscribe({
+          next: (newUser) => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'User created successfully'
+            });
+            this.userDialogVisible = false;
+            this.loadUsers();
+          },
+          error: (error) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: error.error?.message || 'Failed to create user'
+            });
+          }
+        });
+    }
+  }
+
+  confirmDelete(user: User): void {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete ${user.firstName} ${user.lastName}?`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.deleteUser(user);
+      }
+    });
+  }
+
+  deleteUser(user: User): void {
+    this.userService.deleteUser(user.id)
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'User deleted successfully'
+          });
+          this.loadUsers();
+        },
+        error: (error) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error.error?.message || 'Failed to delete user'
+          });
+        }
+      });
+  }
+
+  getStoragePercentage(user: User): number {
+    if (!user.storageUsed) return 0;
+    return Math.min(100, (user.storageUsed / user.storageQuota) * 100);
+  }
+
+  getAiQuotaPercentage(user: User): number {
+    if (!user.aiQuotaUsed) return 0;
+    return Math.min(100, (user.aiQuotaUsed / user.aiQuota) * 100);
+  }
+
+  getQuotaClass(percentage: number): string {
+    if (percentage >= 90) return 'quota-critical';
+    if (percentage >= 70) return 'quota-warning';
+    return 'quota-normal';
+  }
+
+  formatStorage(sizeInMB: number): string {
+    if (sizeInMB < 1024) {
+      return `${sizeInMB.toFixed(0)} MB`;
+    } else {
+      return `${(sizeInMB / 1024).toFixed(2)} GB`;
+    }
+  }
+}
+
+// Source: app\core\guards\admin.guard.spec.ts
+import { TestBed } from '@angular/core/testing';
+import { CanActivateFn } from '@angular/router';
+
+import { adminGuard } from './admin.guard';
+
+describe('adminGuard', () => {
+  const executeGuard: CanActivateFn = (...guardParameters) => 
+      TestBed.runInInjectionContext(() => adminGuard(...guardParameters));
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+  });
+
+  it('should be created', () => {
+    expect(executeGuard).toBeTruthy();
+  });
+});
+
+
+// Source: app\core\guards\admin.guard.ts
+import { inject } from '@angular/core';
+import { CanMatchFn, Router } from '@angular/router';
+import { map, take } from 'rxjs/operators';
+import { AuthService } from '../services/auth.service';
+import { UserRole } from '../models/user.model';
+
+export const adminGuard: CanMatchFn = (route, segments) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  return authService.currentUser$.pipe(
+    take(1),
+    map(user => {
+      const isAdmin = user?.role === UserRole.SYSTEM_ADMIN;
+
+      if (isAdmin) {
+        return true;
+      }
+
+      return router.createUrlTree(['/login']);
+    })
+  );
+};
+
+// Source: app\core\guards\auth.guard.spec.ts
+import { TestBed } from '@angular/core/testing';
+import { CanActivateFn } from '@angular/router';
+
+import { authGuard } from './auth.guard';
+
+describe('authGuard', () => {
+  const executeGuard: CanActivateFn = (...guardParameters) => 
+      TestBed.runInInjectionContext(() => authGuard(...guardParameters));
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+  });
+
+  it('should be created', () => {
+    expect(executeGuard).toBeTruthy();
+  });
+});
+
+
+// Source: app\core\guards\auth.guard.ts
+import { inject } from '@angular/core';
+import { CanMatchFn, Router } from '@angular/router';
+import { map, take } from 'rxjs/operators';
+import { AuthService } from '../services/auth.service';
+
+export const authGuard: CanMatchFn = (route, segments) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  return authService.currentUser$.pipe(
+    take(1),
+    map(user => {
+      const isAuth = !!user;
+
+      if (isAuth) {
+        return true;
+      }
+
+      return router.createUrlTree(['/login']);
+    })
+  );
+};
+
+// Source: app\core\interceptors\auth.interceptor.ts
+import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpEvent } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { AuthService } from '../services/auth.service';
+import { Observable } from 'rxjs';
+
+export const AuthInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
+  const authService = inject(AuthService);
+  const token = authService.getToken();
+  if (token) {
+    const authReq = req.clone({
+      headers: req.headers.set('Authorization', `Bearer ${token}`)
+    });
+    return next(authReq);
+  }
+  return next(req);
+};
+
+// Source: app\core\models\auth.model.ts
+export interface LoginRequest {
+    email: string;
+    password: string;
+}
+
+export interface AuthResponse {
+    userId: string;
+    token: string;
+    expiresAt: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+}
+
+// Source: app\core\models\statistics-response.model.ts
+import { UserActivityItem } from "./user-activity-item.model";
+
+export interface StatisticsResponse {
+    totalUsers: number;
+    totalTrips: number;
+    totalImages: number;
+    totalAiImages: number;
+    totalStorageUsedMB: number;
+    recentUserActivity?: UserActivityItem[];
+    usersByMonth?: { [month: string]: number };
+    tripsByMonth?: { [month: string]: number };
+    imagesByMonth?: { [month: string]: number };
+}
+
+export interface GrowthDataPoint {
+    date: string;
+    value: number;
+}
+
+// Source: app\core\models\system-settings.model.ts
+export interface SystemSettings {
+    defaultUserStorageQuota: number;
+    defaultUserAiQuota: number;
+    registrationEnabled: boolean;
+    maxUploadFileSizeMB: number;
+    allowedFileTypes: string[];
+    maintenanceMode: boolean;
+}
+
+// Source: app\core\models\user-activity-item.model.ts
+export interface UserActivityItem {
+  userId: string;
+  userEmail: string;
+  activityType: string;
+  description: string;
+  timestamp: Date;
+}
+
+export enum EntityType {
+  USER = 'USER',
+  TRIP = 'TRIP',
+  IMAGE = 'IMAGE',
+  SYSTEM = 'SYSTEM'
+}
+
+// Source: app\core\models\user.model.ts
+export enum UserRole {
+    USER = 'USER',
+    PREMIUM_USER = 'PREMIUM_USER',
+    SYSTEM_ADMIN = 'SYSTEM_ADMIN'
+}
+
+export interface User {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: UserRole;
+    storageQuota: number;
+    aiQuota: number;
+    storageUsed: number;
+    aiQuotaUsed: number;
+    tripCount: number;
+    imageCount: number;
+    createdAt: Date;
+    updatedAt?: Date;
+    lastLoginDate?: Date;
+    isActive?: boolean;
+}
+
+// Source: app\core\services\auth.service.spec.ts
+import { TestBed } from '@angular/core/testing';
+
+import { AuthService } from './auth.service';
+
+describe('AuthService', () => {
+  let service: AuthService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(AuthService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+});
+
+
+// Source: app\core\services\auth.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { tap, catchError, map } from 'rxjs/operators';
+import { jwtDecode } from 'jwt-decode';
+import { environment } from '../../../environments/environment';
+import { Router } from '@angular/router';
+import { LoginRequest, AuthResponse } from '../models/auth.model';
+import { UserRole } from '../models/user.model';
+
+interface DecodedToken {
+  exp: number;
+  userId: string;
+  role: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private readonly API_URL = `${environment.apiUrl}/auth`;
+  private tokenExpirationTimer: any;
+  private currentUserSubject = new BehaviorSubject<{
+    userId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: UserRole;
+  } | null>(null);
+
+  private isLoggedInSubject = new BehaviorSubject<boolean>(false);
+  isLoggedIn$ = this.isLoggedInSubject.asObservable();
+
+  currentUser$ = this.currentUserSubject.asObservable();
+
+  constructor(private http: HttpClient, private router: Router) {
+    this.autoLogin();
+  }
+
+  login(loginData: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.API_URL}/login`, loginData)
+      .pipe(
+        tap(response => {
+          this.handleAuthentication(response);
+        }),
+        catchError(error => {
+          return throwError(() => new Error(error.error?.message || 'Authentication failed'));
+        })
+      );
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userData');
+    this.currentUserSubject.next(null);
+    this.isLoggedInSubject.next(false);
+
+    if (this.tokenExpirationTimer) {
+      clearTimeout(this.tokenExpirationTimer);
+    }
+
+    this.router.navigate(['/login']);
+  }
+
+  checkAuthState(): void {
+    const token = this.getToken();
+    const isAuthenticated = !!token && !this.isTokenExpired(token);
+    this.isLoggedInSubject.next(isAuthenticated);
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const decodedToken = jwtDecode<DecodedToken>(token);
+      const expirationDate = new Date(decodedToken.exp * 1000);
+      return expirationDate <= new Date();
+    } catch {
+      return true;
+    }
+  }
+
+  autoLogin(): void {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('userData');
+
+    if (!token || !userData) {
+      this.isLoggedInSubject.next(false);
+      return;
+    }
+
+    try {
+      const userDataObj = JSON.parse(userData);
+      const decodedToken = jwtDecode<DecodedToken>(token);
+      const expirationDate = new Date(decodedToken.exp * 1000);
+
+      if (expirationDate <= new Date()) {
+        this.logout();
+        return;
+      }
+
+      this.currentUserSubject.next(userDataObj);
+      this.isLoggedInSubject.next(true);
+      this.autoLogout(expirationDate.getTime() - new Date().getTime());
+    } catch (error) {
+      this.logout();
+    }
+  }
+
+  private autoLogout(expirationDuration: number): void {
+    this.tokenExpirationTimer = setTimeout(() => {
+      this.logout();
+    }, expirationDuration);
+  }
+
+  private handleAuthentication(response: AuthResponse): void {
+    localStorage.setItem('token', response.token);
+
+    const userData = {
+      userId: response.userId,
+      firstName: response.firstName,
+      lastName: response.lastName,
+      email: response.email,
+      role: response.role as UserRole
+    };
+
+    localStorage.setItem('userData', JSON.stringify(userData));
+
+    this.currentUserSubject.next(userData);
+    this.isLoggedInSubject.next(true);
+
+    const expirationDate = new Date(response.expiresAt);
+    this.autoLogout(expirationDate.getTime() - new Date().getTime());
+  }
+
+  get currentUserValue() {
+    return this.currentUserSubject.value;
+  }
+
+  get isAdmin(): boolean {
+    return this.currentUserValue?.role === UserRole.SYSTEM_ADMIN;
+  }
+
+  get isAuthenticated(): boolean {
+    return !!this.currentUserValue;
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+}
+
+// Source: app\core\services\settings.service.spec.ts
+import { TestBed } from '@angular/core/testing';
+
+import { SettingsService } from './settings.service';
+
+describe('SettingsService', () => {
+  let service: SettingsService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(SettingsService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+});
+
+
+// Source: app\core\services\settings.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { SystemSettings } from '../models/system-settings.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SettingsService {
+  private readonly API_URL = `${environment.apiUrl}/admin/settings`;
+
+  constructor(private http: HttpClient) { }
+
+  getSystemSettings(): Observable<SystemSettings> {
+    return this.http.get<SystemSettings>(this.API_URL);
+  }
+
+  updateSystemSettings(settings: SystemSettings): Observable<SystemSettings> {
+    return this.http.put<SystemSettings>(this.API_URL, settings);
+  }
+}
+
+// Source: app\core\services\stats.service.spec.ts
+import { TestBed } from '@angular/core/testing';
+
+import { StatsService } from './stats.service';
+
+describe('StatsService', () => {
+  let service: StatsService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(StatsService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+});
+
+
+// Source: app\core\services\stats.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { StatisticsResponse } from '../models/statistics-response.model';
+import { UserActivityItem } from '../models/user-activity-item.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class StatsService {
+  private apiUrl = environment.apiUrl;
+
+  constructor(private http: HttpClient) { }
+
+  getSystemStats(): Observable<StatisticsResponse> {
+    return this.http.get<StatisticsResponse>(`${this.apiUrl}/admin/stats`);
+  }
+
+  getUserActivity(limit: number): Observable<UserActivityItem[]> {
+    return this.http.get<UserActivityItem[]>(`${this.apiUrl}/admin/user-activity?limit=${limit}`);
+  }
+}
+
+// Source: app\core\services\user.service.spec.ts
+import { TestBed } from '@angular/core/testing';
+
+import { UserService } from './user.service';
+
+describe('UserService', () => {
+  let service: UserService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(UserService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+});
+
+
+// Source: app\core\services\user.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { User, UserRole } from '../models/user.model';
+
+export interface UserQueryParams {
+  limit?: number;
+  offset?: number;
+  searchTerm?: string;
+}
+
+export interface CreateUserRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  storageQuota: number;
+  aiQuota: number;
+}
+
+export interface UpdateUserRequest {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  role?: UserRole;
+  storageQuota?: number;
+  aiQuota?: number;
+  password?: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class UserService {
+  private readonly API_URL = `${environment.apiUrl}/admin/users`;
+
+  constructor(private http: HttpClient) { }
+
+  getUsers(queryParams: UserQueryParams = {}): Observable<User[]> {
+    let params = new HttpParams();
+
+    if (queryParams.limit !== undefined) {
+      params = params.set('limit', queryParams.limit.toString());
+    }
+
+    if (queryParams.offset !== undefined) {
+      params = params.set('offset', queryParams.offset.toString());
+    }
+
+    if (queryParams.searchTerm) {
+      params = params.set('searchTerm', queryParams.searchTerm);
+    }
+
+    return this.http.get<User[]>(this.API_URL, { params });
+  }
+
+  getUserById(userId: string): Observable<User> {
+    return this.http.get<User>(`${this.API_URL}/${userId}`);
+  }
+
+  createUser(userData: CreateUserRequest): Observable<User> {
+    if (!userData.password) {
+      throw new Error('Password is required when creating a user');
+    }
+    return this.http.post<User>(this.API_URL, userData);
+  }
+
+  updateUser(userId: string, userData: UpdateUserRequest): Observable<User> {
+    return this.http.put<User>(`${this.API_URL}/${userId}`, userData);
+  }
+
+  deleteUser(userId: string): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/${userId}`);
+  }
+}
+
+// Source: app\components\layout\header\header.component.css
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1.5rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logo {
+    height: 40px;
+}
+
+.app-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333333;
+}
+
+.right-menu {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.user-name {
+    font-weight: 500;
+
+    @media (max-width: 768px) {
+        display: none;
+    }
+}
+
+// Source: app\components\layout\header\header.component.html
+<div class="header">
+    <div class="logo-container" (click)="navigateToHome()" style="cursor: pointer;">
+        <img src="assets/logo.svg" alt="TravelMemories Logo" class="logo" />
+        <span class="app-name">Admin Panel</span>
+    </div>
+
+    <div class="right-menu">
+        @if (user) {
+        <div class="user-info">
+            <p-avatar [label]="getUserInitials()" shape="circle"
+                [style]="{ 'background-color': '#4caf50', color: '#ffffff' }"
+                (click)="userMenu.toggle($event)"></p-avatar>
+            <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+        </div>
+        }
+
+        <p-menu #userMenu [popup]="true" [model]="userMenuItems"></p-menu>
+    </div>
+</div>
+
+// Source: app\components\layout\header\header.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { HeaderComponent } from './header.component';
+
+describe('HeaderComponent', () => {
+  let component: HeaderComponent;
+  let fixture: ComponentFixture<HeaderComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [HeaderComponent]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(HeaderComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+// Source: app\components\layout\header\header.component.ts
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { MenubarModule } from 'primeng/menubar';
+import { ButtonModule } from 'primeng/button';
+import { MenuItem } from 'primeng/api';
+import { AvatarModule } from 'primeng/avatar';
+import { MenuModule } from 'primeng/menu';
+
+@Component({
+  selector: 'app-header',
+  standalone: true,
+  imports: [CommonModule, MenubarModule, ButtonModule, AvatarModule, MenuModule],
+  templateUrl: './header.component.html',
+  styleUrl: './header.component.css',
+})
+export class HeaderComponent {
+  user: any;
+
+  userMenuItems: MenuItem[] = [
+    {
+      label: 'Logout',
+      icon: 'pi pi-sign-out',
+      command: () => {
+        this.authService.logout();
+      }
+    }
+  ];
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {
+    this.user = this.authService.currentUserValue;
+  }
+
+  getUserInitials(): string {
+    if (this.user) {
+      return `${this.user.firstName.charAt(0)}${this.user.lastName.charAt(0)}`;
+    }
+    return '';
+  }
+
+  navigateToHome() {
+    this.router.navigate(['/dashboard']);
+  }
+}
+
+// Source: app\components\layout\sidebar\sidebar.component.css
+.sidebar {
+    width: 250px;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    overflow-y: auto;
+    transition: all 0.3s ease;
+}
+
+:host ::ng-deep .sidebar-menu {
+    border: none;
+    background: transparent;
+}
+
+:host ::ng-deep .p-panelmenu .p-panelmenu-header>a {
+    padding: 1rem;
+    border: none;
+    background: transparent;
+}
+
+:host ::ng-deep .p-panelmenu .p-panelmenu-content {
+    border: none;
+    background: transparent;
+}
+
+:host ::ng-deep .p-panelmenu .p-panelmenu-content .p-menuitem .p-menuitem-link {
+    padding: 0.75rem 1rem 0.75rem 2rem;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+    }
+
+    :host ::ng-deep .p-panelmenu .p-panelmenu-header>a .p-menuitem-text,
+    :host ::ng-deep .p-panelmenu .p-panelmenu-header>a .p-submenu-icon {
+        display: none;
+    }
+
+    :host ::ng-deep .p-panelmenu .p-panelmenu-content .p-menuitem .p-menuitem-link .p-menuitem-text {
+        display: none;
+    }
+
+    :host ::ng-deep .p-panelmenu .p-panelmenu-content .p-menuitem .p-menuitem-link {
+        padding: 0.75rem 1rem;
+        justify-content: center;
+    }
+}
+
+// Source: app\components\layout\sidebar\sidebar.component.html
+<div class="sidebar">
+    <p-panelMenu [model]="menuItems" [multiple]="false" styleClass="sidebar-menu"></p-panelMenu>
+</div>
+
+// Source: app\components\layout\sidebar\sidebar.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { SidebarComponent } from './sidebar.component';
+
+describe('SidebarComponent', () => {
+  let component: SidebarComponent;
+  let fixture: ComponentFixture<SidebarComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [SidebarComponent]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(SidebarComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+// Source: app\components\layout\sidebar\sidebar.component.ts
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { PanelMenuModule } from 'primeng/panelmenu';
+import { MenuItem } from 'primeng/api';
+
+@Component({
+  selector: 'app-sidebar',
+  standalone: true,
+  imports: [CommonModule, RouterModule, PanelMenuModule],
+  templateUrl: './sidebar.component.html',
+  styleUrl: './sidebar.component.css',
+})
+export class SidebarComponent {
+  menuItems: MenuItem[] = [
+    {
+      label: 'Dashboard',
+      icon: 'pi pi-home',
+      routerLink: '/admin/dashboard'
+    },
+    {
+      label: 'Statistics',
+      icon: 'pi pi-chart-bar',
+      routerLink: '/admin/statistics'
+    },
+    {
+      label: 'User Management',
+      icon: 'pi pi-users',
+      routerLink: '/admin/users'
+    },
+    {
+      label: 'System Settings',
+      icon: 'pi pi-cog',
+      routerLink: '/admin/settings'
+    }
+  ];
+
+  constructor(private router: Router) { }
+}
+

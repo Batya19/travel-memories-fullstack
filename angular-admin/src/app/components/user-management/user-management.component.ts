@@ -15,6 +15,8 @@ import { CardModule } from 'primeng/card';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { UserService, UserQueryParams, CreateUserRequest, UpdateUserRequest } from '../../core/services/user.service';
 import { User, UserRole } from '../../core/models/user.model';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-user-management',
@@ -252,5 +254,31 @@ export class UserManagementComponent implements OnInit {
     } else {
       return `${(sizeInMB / 1024).toFixed(2)} GB`;
     }
+  }
+
+  exportToExcel(): void {
+    const dataToExport = this.users.map(user => ({
+      'ID': user.id,
+      'Name': `${user.firstName} ${user.lastName}`,
+      'Email': user.email,
+      'Role': user.role,
+      'Storage (MB)': user.storageUsed || 0,
+      'Storage Quota (MB)': user.storageQuota,
+      'Created': new Date(user.createdAt).toLocaleDateString()
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
+
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(data, `users_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Users exported to Excel!'
+    });
   }
 }

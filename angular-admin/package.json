@@ -22,14 +22,17 @@
     "@canvasjs/angular-charts": "^1.2.0",
     "@canvasjs/charts": "^3.12.12",
     "@primeng/themes": "^19.1.1",
+    "@types/file-saver": "^2.0.7",
     "chart.js": "^4.4.9",
     "dotenv": "^16.5.0",
+    "file-saver": "^2.0.5",
     "jwt-decode": "^4.0.0",
     "primeflex": "^3.3.1",
     "primeicons": "^6.0.1",
     "primeng": "^19.1.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "xlsx": "^0.18.5",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {

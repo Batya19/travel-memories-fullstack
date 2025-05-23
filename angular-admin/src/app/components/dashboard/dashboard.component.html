@@ -2,10 +2,28 @@
   <div class="dashboard-header">
     <div>
       <h1>Admin Dashboard</h1>
-      <p class="subtitle">Welcome to the TravelMemories admin dashboard. Here you can monitor system statistics and user
-        activity.</p>
+      <p class="subtitle">
+        Welcome to the TravelMemories admin dashboard. Here you can monitor
+        system statistics and user activity.
+      </p>
     </div>
-    <button pButton icon="pi pi-refresh" label="Refresh" (click)="refreshDashboard()" [disabled]="loading"></button>
+    <div style="display: flex; gap: 0.5rem;">
+      <button
+        pButton
+        type="button"
+        icon="pi pi-file-excel"
+        label="Export Activity"
+        (click)="exportActivityToExcel()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        icon="pi pi-refresh"
+        label="Refresh"
+        (click)="refreshDashboard()"
+        [disabled]="loading"
+      ></button>
+    </div>
   </div>
 
   @if (loading) {
@@ -42,7 +60,9 @@
       <div class="stats-content">
         <h3>Total Images</h3>
         <div class="stats-value">{{ systemStats?.totalImages || 0 }}</div>
-        <div class="stats-subtext">AI Generated: {{ systemStats?.aiGeneratedImages || 0 }}</div>
+        <div class="stats-subtext">
+          AI Generated: {{ systemStats?.aiGeneratedImages || 0 }}
+        </div>
       </div>
     </div>
 
@@ -52,15 +72,22 @@
       </div>
       <div class="stats-content">
         <h3>Storage Used</h3>
-        <div class="stats-value">{{ formatBytes(systemStats?.storageUsed || 0) }}</div>
+        <div class="stats-value">
+          {{ formatBytes(systemStats?.storageUsed || 0) }}
+        </div>
         <div class="stats-subtext">
           <div class="storage-progress">
             <div class="progress-text">
-              <span>{{ getStoragePercentage() | number:'1.0-0' }}%</span>
-              <span>Total: {{ formatBytes(systemStats?.totalStorageQuota || 0) }}</span>
+              <span>{{ getStoragePercentage() | number : "1.0-0" }}%</span>
+              <span
+                >Total:
+                {{ formatBytes(systemStats?.totalStorageQuota || 0) }}</span
+              >
             </div>
-            <p-progressBar [value]="getStoragePercentage()"
-              [styleClass]="'storage-progress-' + getStorageClass()"></p-progressBar>
+            <p-progressBar
+              [value]="getStoragePercentage()"
+              [styleClass]="'storage-progress-' + getStorageClass()"
+            ></p-progressBar>
           </div>
         </div>
       </div>
@@ -69,11 +96,26 @@
 
   <div class="activity-section">
     <div class="section-header">
-      <h2>Recent User Activity</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Recent User Activity</h2>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-download"
+          label="Export"
+          class="p-button-sm p-button-text"
+          (click)="exportActivityToExcel()"
+          pTooltip="Export activity to Excel"
+        ></button>
+      </div>
     </div>
 
     <div class="activity-table">
-      <p-table [value]="recentActivity" styleClass="p-datatable-sm" [tableStyle]="{'min-width': '50rem'}">
+      <p-table
+        [value]="recentActivity"
+        styleClass="p-datatable-sm"
+        [tableStyle]="{ 'min-width': '50rem' }"
+      >
         <ng-template pTemplate="header">
           <tr>
             <th>User</th>
@@ -86,11 +128,17 @@
           <tr>
             <td>{{ activity.userName }}</td>
             <td>
-              <span class="activity-badge" [ngClass]="'activity-' + getActivityClass(activity.action)">
-                {{ activity.action || 'Unknown' }}
+              <span
+                class="activity-badge"
+                [ngClass]="'activity-' + getActivityClass(activity.action)"
+              >
+                {{ activity.action || "Unknown" }}
               </span>
             </td>
-            <td>{{ activity.entityType || 'N/A' }}: {{ activity.entityName || 'N/A' }}</td>
+            <td>
+              {{ activity.entityType || "N/A" }}:
+              {{ activity.entityName || "N/A" }}
+            </td>
             <td>{{ getTimeSince(activity.timestamp) }}</td>
           </tr>
         </ng-template>
