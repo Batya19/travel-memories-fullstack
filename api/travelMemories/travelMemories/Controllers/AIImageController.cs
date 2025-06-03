@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TravelMemories.Core.DTOs;
 using TravelMemories.Core.DTOs.AIImage;
 using TravelMemories.Core.Interfaces;
+using TravelMemories.Core.Models;
 
 namespace TravelMemories.Controllers
 {
@@ -93,9 +94,40 @@ namespace TravelMemories.Controllers
             }
         }
 
+        [HttpGet("user-images")] // נקודת קצה ייעודית
+        public async Task<ActionResult<IEnumerable<Image>>> GetUserAiImages()
+        {
+            var userId = GetUserId(); // קבל את ה-ID של המשתמש המאומת מהטוקן
+
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized(ErrorDto.Unauthorized("User not authenticated or ID missing."));
+            }
+
+            try
+            {
+                var images = await _aiImageService.GetAiImagesForUserAsync(userId);
+                // ייתכן שתרצה למפות את אובייקט ה-Image למודל DTO קטן יותר
+                // כדי לא לחשוף פרטים פנימיים של המודל.
+                // לדוגמה, יצירת DTO חדש: AIImageResponseForList
+                return Ok(images);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ErrorDto.FromException($"Failed to retrieve AI images: {ex.Message}"));
+            }
+        }
+
         private Guid GetUserId()
         {
-            return Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            if (User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value is string userIdClaim)
+            {
+                if (Guid.TryParse(userIdClaim, out Guid parsedUserId))
+                {
+                    return parsedUserId;
+                }
+            }
+            return Guid.Empty;
         }
     }
 }

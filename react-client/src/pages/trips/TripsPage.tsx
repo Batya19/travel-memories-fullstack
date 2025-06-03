@@ -11,7 +11,7 @@ import {
     Card,
     CardBody,
     CardFooter,
-    Image,
+    Image as ChakraImage,
     HStack,
     Icon,
     Spinner,
@@ -44,6 +44,7 @@ import { useQuery } from '@tanstack/react-query';
 import tripService from '../../services/tripService';
 import imageService from '../../services/imageService';
 import { getImageUrl } from '../../utils/imageUtils';
+import { Trip, Image as TripImage } from '../../types';
 
 const TripsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -59,13 +60,18 @@ const TripsPage: React.FC = () => {
         '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)'
     );
 
-    const [tripImagesMap, setTripImagesMap] = useState<Record<string, any>>({});
+    // Define proper color values for conditional rendering
+    const noImagesBg = useColorModeValue('gray.100', 'gray.700');
+    const noImagesColor = useColorModeValue('gray.500', 'gray.400');
+    const emptyStateBg = useColorModeValue('gray.50', 'gray.900');
+
+    const [tripImagesMap, setTripImagesMap] = useState<Record<string, TripImage>>({});
     const [isImagesLoading, setIsImagesLoading] = useState(false);
 
     const {
         data: trips = [],
         isLoading: tripsLoading
-    } = useQuery({
+    } = useQuery<Trip[]>({
         queryKey: ['trips'],
         queryFn: tripService.getTrips
     });
@@ -75,25 +81,27 @@ const TripsPage: React.FC = () => {
             if (!trips || trips.length === 0) return;
 
             setIsImagesLoading(true);
-            const imageMap: Record<string, any> = {};
+            const imageMap: Record<string, TripImage> = {};
 
             try {
                 const requests = trips.map(trip =>
                     imageService.getImages(trip.id)
-                        .then(images => {
+                        .then((images: TripImage[]) => {
                             if (images && images.length > 0) {
                                 imageMap[trip.id] = images[0];
                             }
                         })
-                        .catch(err => {
-                            console.error(`Error fetching images for trip ${trip.id}:`, err);
+                        .catch(() => {
+                            // Removed unused error parameter
+                            console.error(`Error fetching images for trip ${trip.id}`);
                         })
                 );
 
                 await Promise.all(requests);
                 setTripImagesMap(imageMap);
-            } catch (error) {
-                console.error("Error fetching trip images:", error);
+            } catch {
+                // Removed unused error parameter
+                console.error("Error fetching trip images");
             } finally {
                 setIsImagesLoading(false);
             }
@@ -133,7 +141,7 @@ const TripsPage: React.FC = () => {
             }
 
             return url;
-        } catch (error) {
+        } catch {
             if (coverImage && coverImage.id) {
                 const fallbackUrl = `${API_URL}/api/images/${coverImage.id}/content`;
                 return fallbackUrl;
@@ -154,7 +162,7 @@ const TripsPage: React.FC = () => {
         if (location.includes('mountain') || location.includes('hill') || location.includes('peak')) {
             return FaMountain;
         }
-        if (location.includes('city') || location.includes('town') || location.includes('metropol')) {
+        if (location.includes('city') || location.includes('town') || location.includes('metropolitan')) {
             return FaCity;
         }
         if (location.includes('forest') || location.includes('park') || location.includes('garden')) {
@@ -229,7 +237,7 @@ const TripsPage: React.FC = () => {
                     borderStyle="dashed"
                     p={12}
                     textAlign="center"
-                    bg={useColorModeValue('gray.50', 'gray.900')}
+                    bg={emptyStateBg}
                 >
                     <VStack spacing={6}>
                         <Icon as={FaMapMarkerAlt} boxSize={16} color="brand.400" />
@@ -294,7 +302,7 @@ const TripsPage: React.FC = () => {
                                 <Box position="relative" height="220px">
                                     {coverImageUrl ? (
                                         <>
-                                            <Image
+                                            <ChakraImage
                                                 src={coverImageUrl}
                                                 alt={trip.name}
                                                 objectFit="cover"
@@ -368,9 +376,9 @@ const TripsPage: React.FC = () => {
                                             align="center"
                                             justify="center"
                                             direction="column"
-                                            bg={useColorModeValue('gray.100', 'gray.700')}
+                                            bg={noImagesBg}
                                             p={4}
-                                            color={useColorModeValue('gray.500', 'gray.400')}
+                                            color={noImagesColor}
                                         >
                                             <Icon as={FaImages} boxSize={10} mb={2} />
                                             <Text>Add photos to this trip</Text>

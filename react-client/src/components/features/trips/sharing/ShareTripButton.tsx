@@ -12,6 +12,7 @@ import {
     Text,
     useDisclosure,
     useToast,
+    useColorModeValue,
 } from '@chakra-ui/react';
 import { FaShare, FaCopy } from 'react-icons/fa';
 import tripService from '../../../../services/tripService';
@@ -36,23 +37,22 @@ const ShareTripButton: React.FC<ShareTripButtonProps> = ({
     const { isOpen, onOpen, onClose } = useDisclosure();
     const toast = useToast();
 
+    const shareUrlBg = useColorModeValue('gray.100', 'gray.700');
+    const descriptionTextColor = useColorModeValue('gray.600', 'gray.400');
+
     const handleShare = async () => {
         if (!trip) return;
 
         setIsLoading(true);
         try {
-            // Check if we already have a shareId
             if (trip.shareId) {
-                // Construct URL from existing shareId
                 const baseUrl = window.location.origin;
                 const url = `${baseUrl}/trips/shared/${trip.shareId}`;
                 setShareUrl(url);
             } else {
-                // Generate new share link
                 const response = await tripService.generateShareLink(trip.id);
                 const shareId = response.shareId;
 
-                // Construct the shareable URL
                 const baseUrl = window.location.origin;
                 const url = `${baseUrl}/trips/shared/${shareId}`;
                 setShareUrl(url);
@@ -111,7 +111,6 @@ const ShareTripButton: React.FC<ShareTripButtonProps> = ({
                 Share
             </Button>
 
-            {/* Share trip modal */}
             <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
                 <ModalContent>
@@ -127,13 +126,13 @@ const ShareTripButton: React.FC<ShareTripButtonProps> = ({
                             borderRadius="md"
                             fontFamily="mono"
                             fontSize="sm"
-                            bg="gray.50"
+                            bg={shareUrlBg}
                             wordBreak="break-all"
                             position="relative"
                         >
                             {shareUrl}
                         </Box>
-                        <Text mt={4} fontSize="sm" color="gray.600">
+                        <Text mt={4} fontSize="sm" color={descriptionTextColor}>
                             Anyone with this link can view this trip without signing in.
                         </Text>
                     </ModalBody>

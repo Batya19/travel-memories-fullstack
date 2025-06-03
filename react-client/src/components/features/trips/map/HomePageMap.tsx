@@ -19,7 +19,10 @@ import ImagePlaceholder from '../../../common/media/ImagePlaceholder';
 import { getImageUrl } from '../../../../utils/imageUtils';
 
 // Fix for Leaflet icon issues in React
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+interface IconDefault extends L.Icon.Default {
+  _getIconUrl?: string;
+}
+delete ((L.Icon.Default.prototype as IconDefault)._getIconUrl);
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',

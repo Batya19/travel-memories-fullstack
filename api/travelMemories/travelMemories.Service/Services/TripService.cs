@@ -124,7 +124,7 @@ namespace TravelMemories.Service.Services
                 return null;
             }
 
-            if (trip.UserId != userId && trip.ShareId == null)
+            if (trip.UserId != userId)
             {
                 throw new UnauthorizedAccessException("You do not have permission to view this trip");
             }

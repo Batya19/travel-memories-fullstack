@@ -1,4 +1,5 @@
 import apiClient from './api/client';
+import { Image } from '../types';
 
 export interface AIImageRequest {
     prompt: string;
@@ -23,7 +24,6 @@ export interface AIQuotaResponse {
 }
 
 const aiImageService = {
-    // Generate an AI image
     generateImage: async (request: AIImageRequest): Promise<AIImageResponse> => {
         try {
             console.log('Sending request to API:', request);
@@ -35,13 +35,22 @@ const aiImageService = {
         }
     },
 
-    // Get user quota
     getQuota: async (): Promise<AIQuotaResponse> => {
         try {
             const response = await apiClient.get<AIQuotaResponse>('/ai-images/quota');
             return response.data;
         } catch (error) {
             console.error('Failed to fetch quota information:', error);
+            throw error;
+        }
+    },
+
+    getAiImagesForUser: async (): Promise<Image[]> => {
+        try {
+            const response = await apiClient.get<Image[]>('/ai-images/user-images');
+            return response.data;
+        } catch (error) {
+            console.error('Failed to fetch AI images for user:', error);
             throw error;
         }
     }

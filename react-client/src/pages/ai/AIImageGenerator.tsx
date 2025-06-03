@@ -27,6 +27,7 @@ import {
     useToast,
     VStack,
     Badge,
+    useColorModeValue,
 } from '@chakra-ui/react';
 import { FaArrowLeft, FaDownload, FaImage, FaMagic, FaSearch } from 'react-icons/fa';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,11 +37,63 @@ import { useTrip } from '../../hooks/useQueryHooks';
 import { getImageUrl } from '../../utils/imageUtils';
 import tripService from '../../services/tripService';
 
+interface AIImage {
+    id: string;
+    url?: string;
+    tripId: string;
+    tripName: string;
+    isAiGenerated: boolean;
+    createdAt: string;
+    aiPrompt?: string | null;
+    aiStyle?: string;
+}
+
+interface AIQuota {
+    total: number;
+    used: number;
+    remaining: number;
+    resetDate: string;
+}
+
+interface Trip {
+    id: string;
+    name: string;
+}
+
+interface GenerateImageRequest {
+    prompt: string;
+    style: string;
+    tripId?: string;
+}
+
+interface StyleOption {
+    value: string;
+    label: string;
+}
+
+interface SizeOption {
+    value: string;
+    label: string;
+}
+
 const AIImageGenerator: React.FC = () => {
     const { tripId } = useParams<{ tripId?: string }>();
     const navigate = useNavigate();
     const toast = useToast();
     const queryClient = useQueryClient();
+
+    const borderColor = useColorModeValue('gray.200', 'gray.700');
+    const textColor = useColorModeValue('gray.800', 'white');
+    const mutedTextColor = useColorModeValue('gray.500', 'gray.400');
+    const cardBg = useColorModeValue('white', 'gray.800');
+    const inputBg = useColorModeValue('white', 'gray.700');
+    const hoverBg = useColorModeValue('gray.50', 'gray.700');
+    const quotaBgSuccess = useColorModeValue('blue.50', 'blue.900');
+    const quotaBgError = useColorModeValue('red.50', 'red.900');
+    const noteBg = useColorModeValue('yellow.50', 'yellow.900');
+    const noteTextColor = useColorModeValue('orange.800', 'orange.200');
+    const overlayButtonBg = useColorModeValue('blackAlpha.700', 'whiteAlpha.700');
+    const overlayButtonHoverBg = useColorModeValue('blackAlpha.800', 'whiteAlpha.800');
 
     const [prompt, setPrompt] = useState('');
     const [style, setStyle] = useState('');
@@ -50,7 +103,7 @@ const AIImageGenerator: React.FC = () => {
     const imageRefs = useRef<{[key: string]: HTMLImageElement | null}>({});
     const modalImageRef = useRef<HTMLImageElement | null>(null);
     
-    const [currentImageObject, setCurrentImageObject] = useState<any>(null);
+    const [currentImageObject, setCurrentImageObject] = useState<AIImage | null>(null);
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -60,7 +113,7 @@ const AIImageGenerator: React.FC = () => {
     const {
         data: quota,
         isLoading: quotaLoading
-    } = useQuery({
+    } = useQuery<AIQuota>({
         queryKey: ['aiQuota'],
         queryFn: aiImageService.getQuota,
     });
@@ -68,10 +121,10 @@ const AIImageGenerator: React.FC = () => {
     const {
         data: allAiImages = [],
         isLoading: aiImagesLoading
-    } = useQuery({
+    } = useQuery<AIImage[]>({
         queryKey: ['allAiImages'],
-        queryFn: async () => {
-            const allTrips = await tripService.getTrips();
+        queryFn: async (): Promise<AIImage[]> => {
+            const allTrips: Trip[] = await tripService.getTrips();
 
             const imagePromises = allTrips.map(trip =>
                 imageService.getImages(trip.id).catch(() => [])
@@ -79,8 +132,9 @@ const AIImageGenerator: React.FC = () => {
 
             const allTripImages = (await Promise.all(imagePromises)).flat();
 
-            return allTripImages.filter(img => img.isAiGenerated)
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            return (allTripImages as AIImage[])
+                .filter((img: AIImage) => img.isAiGenerated)
+                .sort((a: AIImage, b: AIImage) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         }
     });
 
@@ -96,7 +150,7 @@ const AIImageGenerator: React.FC = () => {
     }, [quota, allAiImages]);
 
     const generateImage = useMutation({
-        mutationFn: (request: { prompt: string, style: string, tripId?: string }) =>
+        mutationFn: (request: GenerateImageRequest) =>
             aiImageService.generateImage(request),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['allAiImages'] });
@@ -123,7 +177,7 @@ const AIImageGenerator: React.FC = () => {
         }
     });
 
-    const styles = [
+    const styles: StyleOption[] = [
         { value: '', label: 'Default' },
         { value: 'realistic', label: 'Realistic' },
         { value: 'cartoon', label: 'Cartoon' },
@@ -132,12 +186,12 @@ const AIImageGenerator: React.FC = () => {
         { value: 'fantasy', label: 'Fantasy' },
     ];
 
-    const sizes = [
+    const sizes: SizeOption[] = [
         { value: '512x512', label: '512 x 512' },
         { value: '768x768', label: '768 x 768' },
     ];
 
-    const handleGenerateImage = async () => {
+    const handleGenerateImage = async (): Promise<void> => {
         if (!prompt.trim()) {
             toast({
                 title: 'Error',
@@ -156,20 +210,20 @@ const AIImageGenerator: React.FC = () => {
         });
     };
 
-    const getCorrectImageUrl = (image: any) => {
+    const getCorrectImageUrl = (image: AIImage): string => {
         if (image.url) {
             return getAIImageUrl(image.url);
         }
-        return getImageUrl(image);
+        return getImageUrl(image.id);
     };
 
-    const handleViewImage = (image: any) => {
+    const handleViewImage = (image: AIImage): void => {
         setSelectedImage(getCorrectImageUrl(image));
         setCurrentImageObject(image);
         onOpen();
     };
 
-    const handleDownloadImage = (image: any, fileName: string, imageRef?: HTMLImageElement | null) => {
+    const handleDownloadImage = (image: AIImage, fileName: string, imageRef?: HTMLImageElement | null): void => {
         setIsDownloading(image.id);
         
         toast({
@@ -234,7 +288,7 @@ const AIImageGenerator: React.FC = () => {
             fetchAndDownload();
         }
 
-        function fetchAndDownload() {
+        function fetchAndDownload(): void {
             const imageUrl = getCorrectImageUrl(image);
             
             fetch(imageUrl)
@@ -286,7 +340,7 @@ const AIImageGenerator: React.FC = () => {
         }
     };
 
-    const handleBack = () => {
+    const handleBack = (): void => {
         if (tripId) {
             navigate(`/trips/${tripId}`);
         } else {
@@ -294,7 +348,7 @@ const AIImageGenerator: React.FC = () => {
         }
     };
 
-    const getPromptText = (image: any) => {
+    const getPromptText = (image: AIImage): string => {
         return image.aiPrompt || 'AI generated image';
     };
 
@@ -309,7 +363,7 @@ const AIImageGenerator: React.FC = () => {
         return `${API_URL}${url}`;
     }
 
-    const handleModalDownload = () => {
+    const handleModalDownload = (): void => {
         if (!selectedImage || !currentImageObject) return;
         handleDownloadImage(currentImageObject, 'ai-image-download.png', modalImageRef.current);
     };
@@ -317,11 +371,14 @@ const AIImageGenerator: React.FC = () => {
     return (
         <Container maxW="container.xl" py={6}>
             <Flex justifyContent="space-between" alignItems="center" mb={6}>
-                <Heading>AI Image Generator</Heading>
+                <Heading color={textColor}>AI Image Generator</Heading>
                 <Button
                     leftIcon={<FaArrowLeft />}
                     onClick={handleBack}
                     variant="outline"
+                    borderColor={borderColor}
+                    color={textColor}
+                    _hover={{ bg: hoverBg }}
                 >
                     Back to {trip ? trip.name : 'Trips'}
                 </Button>
@@ -329,33 +386,37 @@ const AIImageGenerator: React.FC = () => {
 
             {isLoading ? (
                 <Flex justify="center" my={10}>
-                    <Spinner size="xl" />
+                    <Spinner size="xl" color="brand.500" />
                 </Flex>
             ) : (
                 <Flex direction={{ base: 'column', lg: 'row' }} gap={6}>
                     <Box
                         flex={1}
                         p={6}
-                        bg="white"
+                        bg={cardBg}
                         borderRadius="lg"
                         boxShadow="md"
+                        borderWidth="1px"
+                        borderColor={borderColor}
                     >
                         <VStack spacing={5} align="stretch">
-                            <Heading size="md">Create New AI Image</Heading>
+                            <Heading size="md" color={textColor}>Create New AI Image</Heading>
 
                             {quotaLoading ? (
                                 <Flex justify="center" py={3}>
-                                    <Spinner />
+                                    <Spinner color="brand.500" />
                                 </Flex>
                             ) : quota ? (
                                 <Box
                                     p={4}
                                     borderRadius="md"
-                                    bg={quota.remaining > 0 ? "blue.50" : "red.50"}
+                                    bg={quota.remaining > 0 ? quotaBgSuccess : quotaBgError}
+                                    borderWidth="1px"
+                                    borderColor={borderColor}
                                 >
                                     <Flex justify="space-between" mb={2}>
-                                        <Text fontWeight="semibold">AI Image Quota</Text>
-                                        <Text>
+                                        <Text fontWeight="semibold" color={textColor}>AI Image Quota</Text>
+                                        <Text color={textColor}>
                                             {quota.used} of {quota.total} used
                                         </Text>
                                     </Flex>
@@ -366,7 +427,7 @@ const AIImageGenerator: React.FC = () => {
                                         mb={2}
                                     />
                                     {quota.remaining > 0 ? (
-                                        <Text fontSize="sm">
+                                        <Text fontSize="sm" color={textColor}>
                                             You have {quota.remaining} AI images remaining in your current quota.
                                         </Text>
                                     ) : (
@@ -375,13 +436,13 @@ const AIImageGenerator: React.FC = () => {
                                         </Text>
                                     )}
                                     {quota.resetDate && (
-                                        <Text fontSize="xs" mt={1}>
+                                        <Text fontSize="xs" mt={1} color={mutedTextColor}>
                                             Next quota reset: {new Date(quota.resetDate).toLocaleDateString()}
                                         </Text>
                                     )}
                                     {allAiImages.length > quota.used && (
-                                        <Box mt={2} p={2} bg="yellow.50" borderRadius="md">
-                                            <Text fontSize="xs" color="orange.800">
+                                        <Box mt={2} p={2} bg={noteBg} borderRadius="md" borderWidth="1px" borderColor={borderColor}>
+                                            <Text fontSize="xs" color={noteTextColor}>
                                                 <b>Note:</b> The gallery shows {allAiImages.length} AI images while your quota usage is {quota.used}. 
                                                 The gallery includes all AI images you've ever created, while quota tracking may only count recent images.
                                             </Text>
@@ -391,22 +452,37 @@ const AIImageGenerator: React.FC = () => {
                             ) : null}
 
                             <FormControl isRequired>
-                                <FormLabel>Image Description</FormLabel>
+                                <FormLabel color={textColor}>Image Description</FormLabel>
                                 <Textarea
                                     placeholder="Describe the image you want to create..."
                                     value={prompt}
                                     onChange={(e) => setPrompt(e.target.value)}
                                     isDisabled={generateImage.isPending || (quota ? quota.remaining <= 0 : false)}
                                     rows={4}
+                                    bg={inputBg}
+                                    borderColor={borderColor}
+                                    color={textColor}
+                                    _placeholder={{ color: mutedTextColor }}
+                                    _focus={{ 
+                                        borderColor: 'brand.500',
+                                        boxShadow: `0 0 0 1px var(--chakra-colors-brand-500)`
+                                    }}
                                 />
                             </FormControl>
 
                             <FormControl>
-                                <FormLabel>Style (Optional)</FormLabel>
+                                <FormLabel color={textColor}>Style (Optional)</FormLabel>
                                 <Select
                                     value={style}
                                     onChange={(e) => setStyle(e.target.value)}
                                     isDisabled={generateImage.isPending || (quota ? quota.remaining <= 0 : false)}
+                                    bg={inputBg}
+                                    borderColor={borderColor}
+                                    color={textColor}
+                                    _focus={{ 
+                                        borderColor: 'brand.500',
+                                        boxShadow: `0 0 0 1px var(--chakra-colors-brand-500)`
+                                    }}
                                 >
                                     {styles.map((s) => (
                                         <option key={s.value} value={s.value}>
@@ -417,11 +493,18 @@ const AIImageGenerator: React.FC = () => {
                             </FormControl>
 
                             <FormControl>
-                                <FormLabel>Size</FormLabel>
+                                <FormLabel color={textColor}>Size</FormLabel>
                                 <Select
                                     value={size}
                                     onChange={(e) => setSize(e.target.value)}
                                     isDisabled={generateImage.isPending || (quota ? quota.remaining <= 0 : false)}
+                                    bg={inputBg}
+                                    borderColor={borderColor}
+                                    color={textColor}
+                                    _focus={{ 
+                                        borderColor: 'brand.500',
+                                        boxShadow: `0 0 0 1px var(--chakra-colors-brand-500)`
+                                    }}
                                 >
                                     {sizes.map((s) => (
                                         <option key={s.value} value={s.value}>
@@ -445,7 +528,7 @@ const AIImageGenerator: React.FC = () => {
                             </Button>
 
                             {trip && (
-                                <Text fontSize="sm" color="gray.500" textAlign="center" mt={2}>
+                                <Text fontSize="sm" color={mutedTextColor} textAlign="center" mt={2}>
                                     Images will be added to your trip "{trip.name}".
                                 </Text>
                             )}
@@ -455,11 +538,13 @@ const AIImageGenerator: React.FC = () => {
                     <Box
                         flex={1}
                         p={6}
-                        bg="white"
+                        bg={cardBg}
                         borderRadius="lg"
                         boxShadow="md"
+                        borderWidth="1px"
+                        borderColor={borderColor}
                     >
-                        <Heading size="md" mb={4}>All Your AI Images</Heading>
+                        <Heading size="md" mb={4} color={textColor}>All Your AI Images</Heading>
 
                         {allAiImages.length === 0 ? (
                             <Flex
@@ -469,18 +554,18 @@ const AIImageGenerator: React.FC = () => {
                                 py={12}
                                 borderWidth={2}
                                 borderStyle="dashed"
-                                borderColor="gray.200"
+                                borderColor={borderColor}
                                 borderRadius="md"
                             >
-                                <Icon as={FaImage} boxSize={12} color="gray.300" mb={4} />
-                                <Text fontWeight="medium">No AI images created yet</Text>
-                                <Text color="gray.500" fontSize="sm" mt={2}>
+                                <Icon as={FaImage} boxSize={12} color={mutedTextColor} mb={4} />
+                                <Text fontWeight="medium" color={textColor}>No AI images created yet</Text>
+                                <Text color={mutedTextColor} fontSize="sm" mt={2}>
                                     Your AI generated images will appear here
                                 </Text>
                             </Flex>
                         ) : (
                             <>
-                                <Text fontSize="sm" color="gray.500" mb={4}>
+                                <Text fontSize="sm" color={mutedTextColor} mb={4}>
                                     Showing {allAiImages.length} AI-generated images from all your trips
                                 </Text>
                                 <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
@@ -491,6 +576,13 @@ const AIImageGenerator: React.FC = () => {
                                             borderRadius="md"
                                             overflow="hidden"
                                             position="relative"
+                                            borderColor={borderColor}
+                                            bg={cardBg}
+                                            _hover={{ 
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: 'lg',
+                                                transition: 'all 0.2s'
+                                            }}
                                         >
                                             <Image
                                                 ref={el => { imageRefs.current[image.id] = el; }}
@@ -503,12 +595,12 @@ const AIImageGenerator: React.FC = () => {
                                                     <Box
                                                         width="100%"
                                                         height="180px"
-                                                        bg="gray.100"
+                                                        bg={hoverBg}
                                                         display="flex"
                                                         alignItems="center"
                                                         justifyContent="center"
                                                     >
-                                                        <Text color="gray.500">Image loading error</Text>
+                                                        <Text color={mutedTextColor}>Image loading error</Text>
                                                     </Box>
                                                 }
                                             />
@@ -522,9 +614,9 @@ const AIImageGenerator: React.FC = () => {
                                                 <Button
                                                     size="sm"
                                                     borderRadius="full"
-                                                    bg="blackAlpha.700"
+                                                    bg={overlayButtonBg}
                                                     color="white"
-                                                    _hover={{ bg: "blackAlpha.800" }}
+                                                    _hover={{ bg: overlayButtonHoverBg }}
                                                     p={1}
                                                     onClick={() => handleViewImage(image)}
                                                     isDisabled={isDownloading !== null}
@@ -534,9 +626,9 @@ const AIImageGenerator: React.FC = () => {
                                                 <Button
                                                     size="sm"
                                                     borderRadius="full"
-                                                    bg="blackAlpha.700"
+                                                    bg={overlayButtonBg}
                                                     color="white"
-                                                    _hover={{ bg: "blackAlpha.800" }}
+                                                    _hover={{ bg: overlayButtonHoverBg }}
                                                     p={1}
                                                     onClick={() => handleDownloadImage(image, `ai-image-${index}.png`, imageRefs.current[image.id])}
                                                     isLoading={isDownloading === image.id}
@@ -551,13 +643,14 @@ const AIImageGenerator: React.FC = () => {
                                                     fontSize="sm"
                                                     noOfLines={2}
                                                     title={getPromptText(image)}
+                                                    color={textColor}
                                                 >
                                                     {getPromptText(image)}
                                                 </Text>
                                                 <Flex
                                                     justify="space-between"
                                                     fontSize="xs"
-                                                    color="gray.500"
+                                                    color={mutedTextColor}
                                                     mt={1}
                                                 >
                                                     <Text>{new Date(image.createdAt).toLocaleString()}</Text>
@@ -596,9 +689,9 @@ const AIImageGenerator: React.FC = () => {
 
             <Modal isOpen={isOpen} onClose={onClose} size="xl">
                 <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>Image Preview</ModalHeader>
-                    <ModalCloseButton />
+                <ModalContent bg={cardBg} borderColor={borderColor}>
+                    <ModalHeader color={textColor}>Image Preview</ModalHeader>
+                    <ModalCloseButton color={textColor} />
                     <ModalBody>
                         {selectedImage && (
                             <Image
@@ -611,19 +704,27 @@ const AIImageGenerator: React.FC = () => {
                                     <Box
                                         width="100%"
                                         height="300px"
-                                        bg="gray.100"
+                                        bg={hoverBg}
                                         display="flex"
                                         alignItems="center"
                                         justifyContent="center"
                                     >
-                                        <Text color="gray.500">Failed to load image</Text>
+                                        <Text color={mutedTextColor}>Failed to load image</Text>
                                     </Box>
                                 }
                             />
                         )}
                     </ModalBody>
                     <ModalFooter>
-                        <Button colorScheme="gray" mr={3} onClick={onClose}>
+                        <Button 
+                            colorScheme="gray" 
+                            mr={3} 
+                            onClick={onClose}
+                            variant="outline"
+                            borderColor={borderColor}
+                            color={textColor}
+                            _hover={{ bg: hoverBg }}
+                        >
                             Close
                         </Button>
                         {selectedImage && currentImageObject && (

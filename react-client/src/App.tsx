@@ -18,6 +18,8 @@ import ProfilePage from './pages/ProfilePage';
 import AIImageGenerator from './pages/ai/AIImageGenerator';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import TermsOfServicePage from './pages/legal/TermsOfServicePage';
+import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -59,6 +61,8 @@ function App() {
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/trips/shared/:shareId" element={<SharedTripPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/terms" element={<TermsOfServicePage />} />
+                  <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
                   {/* Protected routes */}
                   <Route path="/trips" element={

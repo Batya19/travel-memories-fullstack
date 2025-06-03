@@ -10,5 +10,6 @@ namespace TravelMemories.Core.Interfaces
         Task<bool> CheckUserQuotaAsync(Guid userId);
         Task<int> GetUserAiGenerationCountAsync(Guid userId);
         Task<Image> GenerateImageAsync(Guid userId, AIImageRequest request);
+        Task<IEnumerable<Image>> GetAiImagesForUserAsync(Guid userId);
     }
 }

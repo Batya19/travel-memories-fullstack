@@ -19,7 +19,7 @@ export interface BaseImageProps extends BoxProps {
 export const BaseImage: React.FC<BaseImageProps> = ({
     src,
     alt,
-    objectFit = 'cover',
+    objectFit = 'contain',
     onLoad,
     onError,
     isLoaded: externalIsLoaded,
@@ -67,8 +67,10 @@ export const BaseImage: React.FC<BaseImageProps> = ({
                 as="img"
                 src={currentSrc}
                 alt={alt}
-                width="100%"
-                height="100%"
+                width={rest.maxW || rest.maxH ? "auto" : "100%"}
+                height={rest.maxW || rest.maxH ? "auto" : "100%"}
+                maxWidth={rest.maxW || "100%"}
+                maxHeight={rest.maxH || "100%"}
                 objectFit={objectFit}
                 opacity={isLoaded ? 1 : 0}
                 transition="opacity 0.3s ease-in-out"
@@ -78,6 +80,7 @@ export const BaseImage: React.FC<BaseImageProps> = ({
                 top={0}
                 left={0}
                 borderRadius={rest.borderRadius}
+                bg={useColorModeValue('gray.50', 'gray.800')}
             />
         </Box>
     );

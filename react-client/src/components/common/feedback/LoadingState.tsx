@@ -1,23 +1,23 @@
-import React, { ReactNode } from 'react';
-import LoadingSpinner from './LoadingSpinner';
+import React, { ReactNode } from "react";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface LoadingStateProps {
-    isLoading: boolean;
-    loadingText?: string;
-    children: ReactNode;
-    minHeight?: string;
+  isLoading: boolean;
+  loadingText?: string;
+  children: ReactNode;
+  minHeight?: string;
 }
 
 export const LoadingState: React.FC<LoadingStateProps> = ({
-    isLoading,
-    loadingText = 'Loading...',
-    children,
+  isLoading,
+  loadingText = "Loading...",
+  children,
 }) => {
-    if (isLoading) {
-        return <LoadingSpinner text={loadingText} />;
-    }
+  if (isLoading) {
+    return <LoadingSpinner text={loadingText} />;
+  }
 
-    return <>{children}</>;
+  return <>{children}</>;
 };
 
 export default LoadingState;

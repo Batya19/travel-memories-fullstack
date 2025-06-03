@@ -12,20 +12,20 @@ namespace TravelMemories.Service.Services
     {
         private readonly IHuggingFaceClient _huggingFaceClient;
         private readonly IS3Service _s3Service;
-        private readonly IImageRepository _imageRepository;
+        private readonly IAIImageRepository _aiImageRepository;
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
 
         public AIImageService(
             IHuggingFaceClient huggingFaceClient,
             IS3Service s3Service,
-            IImageRepository imageRepository,
+            IAIImageRepository aiImageRepository,
             IUserRepository userRepository,
             IConfiguration configuration)
         {
             _huggingFaceClient = huggingFaceClient ?? throw new ArgumentNullException(nameof(huggingFaceClient));
             _s3Service = s3Service ?? throw new ArgumentNullException(nameof(s3Service));
-            _imageRepository = imageRepository ?? throw new ArgumentNullException(nameof(imageRepository));
+            _aiImageRepository = aiImageRepository ?? throw new ArgumentNullException(nameof(aiImageRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
@@ -35,25 +35,19 @@ namespace TravelMemories.Service.Services
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
-                throw new KeyNotFoundException($"User with ID {userId} not found");
+                throw new InvalidOperationException("User not found."); 
             }
 
-            int usedCount = await GetUserAiGenerationCountAsync(userId);
-            return usedCount < user.AiQuota;
+            var usedCount = await GetUserAiGenerationCountAsync(userId);
+            return user.AiQuota > usedCount;
         }
 
         public async Task<int> GetUserAiGenerationCountAsync(Guid userId)
         {
             var now = DateTime.UtcNow;
-            // Create DateTimes with explicit UTC kind
-            var startOfMonth = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1), DateTimeKind.Utc);
-            var endOfMonth = DateTime.SpecifyKind(startOfMonth.AddMonths(1).AddDays(-1), DateTimeKind.Utc);
+            var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc); 
 
-            return await _imageRepository.CountAsync(i =>
-                i.UserId == userId &&
-                i.IsAiGenerated &&
-                i.CreatedAt >= startOfMonth &&
-                i.CreatedAt <= endOfMonth);
+            return await _aiImageRepository.GetMonthlyGenerationCountAsync(userId, monthStart);
         }
 
         public async Task<Image> GenerateImageAsync(Guid userId, AIImageRequest request)
@@ -75,7 +69,6 @@ namespace TravelMemories.Service.Services
 
             Console.WriteLine($"[AIImageService] Starting AI image generation for user {userId}, prompt: '{request.Prompt}', style: '{request.Style}'");
 
-            // Check quota
             if (!await CheckUserQuotaAsync(userId))
             {
                 Console.WriteLine($"[AIImageService] AI quota exceeded for user {userId}");
@@ -84,7 +77,6 @@ namespace TravelMemories.Service.Services
 
             try
             {
-                // Generate image using huggingFaceClient
                 Console.WriteLine($"[AIImageService] Calling HuggingFace API to generate image...");
                 byte[] imageBytes = await _huggingFaceClient.GenerateImageAsync(
                     request.Prompt,
@@ -99,20 +91,16 @@ namespace TravelMemories.Service.Services
 
                 Console.WriteLine($"[AIImageService] Image generated successfully, bytes length: {imageBytes.Length}");
 
-                // Create filename and set content type
                 var fileName = $"{Guid.NewGuid()}.png";
                 var contentType = "image/png";
                 Console.WriteLine($"[AIImageService] Created filename: {fileName}, content type: {contentType}");
 
-                // Upload to S3
                 var folderName = $"users/{userId}/ai-images";
                 Console.WriteLine($"[AIImageService] Target S3 folder: {folderName}");
 
                 string filePath;
-                // Convert byte array to IFormFile for S3 upload
                 using (var memoryStream = new MemoryStream(imageBytes))
                 {
-                    // Ensure the stream position is at the beginning
                     memoryStream.Position = 0;
                     Console.WriteLine($"[AIImageService] Created MemoryStream from image bytes, length: {memoryStream.Length}");
 
@@ -130,13 +118,11 @@ namespace TravelMemories.Service.Services
 
                     Console.WriteLine($"[AIImageService] Created FormFile: {fileName}, ContentType: {contentType}, Length: {formFile.Length}");
 
-                    // Upload to S3
                     Console.WriteLine($"[AIImageService] Uploading to S3...");
                     filePath = await _s3Service.UploadFileAsync(formFile, folderName, fileName);
                     Console.WriteLine($"[AIImageService] Upload to S3 successful, file path: {filePath}");
                 }
 
-                // Create image object
                 var image = new Image
                 {
                     Id = Guid.NewGuid(),
@@ -144,7 +130,7 @@ namespace TravelMemories.Service.Services
                     FilePath = filePath,
                     FileSize = imageBytes.Length,
                     MimeType = contentType,
-                    TripId = request.TripId,
+                    TripId = request.TripId == Guid.Empty ? (Guid?)null : request.TripId, 
                     IsAiGenerated = true,
                     AiPrompt = request.Prompt,
                     AiStyle = request.Style,
@@ -155,12 +141,10 @@ namespace TravelMemories.Service.Services
 
                 Console.WriteLine($"[AIImageService] Created image record: Id={image.Id}, FilePath={image.FilePath}");
 
-                // Save to database
-                await _imageRepository.AddAsync(image);
-                await _imageRepository.SaveChangesAsync();
+                await _aiImageRepository.AddAsync(image); 
+                await _aiImageRepository.SaveChangesAsync(); 
                 Console.WriteLine($"[AIImageService] Saved image record to database successfully");
 
-                // After saving, verify the image exists in S3
                 try
                 {
                     Console.WriteLine($"[AIImageService] Verifying image exists in S3...");
@@ -177,7 +161,6 @@ namespace TravelMemories.Service.Services
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[AIImageService] WARNING: Failed to verify image in S3: {ex.Message}");
-                    // Don't throw here, just log the warning
                 }
 
                 return image;
@@ -198,6 +181,12 @@ namespace TravelMemories.Service.Services
                 }
                 throw new InvalidOperationException($"Failed to process AI image: {ex.Message}", ex);
             }
+        }
+
+        public async Task<IEnumerable<Image>> GetAiImagesForUserAsync(Guid userId)
+        {
+            var images = await _aiImageRepository.GetAIGeneratedImagesAsync(userId);
+            return images;
         }
     }
 }
