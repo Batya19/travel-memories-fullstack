@@ -55,7 +55,7 @@ const imageService = {
     },
 
     // Upload images for a specific trip
-    uploadImages: async (files: File[], tripId: string, tags: string[], onProgress?: (progress: number) => void) => {
+    uploadImages: async (files: File[], tripId: string, onProgress?: (progress: number) => void) => {
         const formData = new FormData();
         files.forEach(file => {
             formData.append('files', file);
