@@ -3,7 +3,6 @@ import tripService from '../services/tripService';
 import imageService from '../services/imageService';
 import { Trip } from '../types';
 
-// === Trips Queries ===
 export function useTrips() {
     return useQuery({
         queryKey: ['trips'],
@@ -19,7 +18,6 @@ export function useTrip(id: string | undefined) {
     });
 }
 
-// === Trip Mutations ===
 export function useCreateTrip() {
     const queryClient = useQueryClient();
 
@@ -63,7 +61,6 @@ export function useGenerateShareLink(tripId: string) {
     });
 }
 
-// === Images Queries ===
 export function useTripImages(tripId: string | undefined) {
     return useQuery({
         queryKey: ['tripImages', tripId],
@@ -78,7 +75,6 @@ export function useDeleteImage() {
     return useMutation({
         mutationFn: (imageId: string) => imageService.deleteImage(imageId),
         onSuccess: () => {
-            // ביטול תוקף של כל שאילתות התמונות בכל הטיולים
             queryClient.invalidateQueries({ queryKey: ['tripImages'] });
         },
     });
@@ -91,7 +87,6 @@ export function useUploadImages() {
         mutationFn: ({
             files,
             tripId,
-            tags,
             onProgress
         }: {
             files: File[],
@@ -99,7 +94,7 @@ export function useUploadImages() {
             tags: string[],
             onProgress?: (progress: number) => void
         }) =>
-            imageService.uploadImages(files, tripId, tags, onProgress),
+            imageService.uploadImages(files, tripId, onProgress),
         onSuccess: (_data, variables) => {
             queryClient.invalidateQueries({
                 queryKey: ['tripImages', variables.tripId]
@@ -108,7 +103,6 @@ export function useUploadImages() {
     });
 }
 
-// === AI Image Queries and Mutations ===
 export function useAIQuota() {
     return useQuery({
         queryKey: ['aiQuota'],
