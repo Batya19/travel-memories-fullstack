@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@chakra-ui/react';
 import authService from '../services/authService';
 import { User } from '../types';
+import { AxiosError } from 'axios';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -12,6 +13,10 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (data: { firstName: string, lastName: string }) => Promise<User | null>;
   changePassword: (currentPassword: string, newPassword: string, confirmPassword: string) => Promise<boolean>;
+}
+
+interface ErrorResponse {
+  message?: string;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,6 +29,8 @@ const AuthContext = createContext<AuthContextType>({
   changePassword: async () => false
 });
 
+// We can ignore the fast refresh warning since this is a small hook
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
 interface AuthProviderProps {
@@ -37,7 +44,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
   const toast = useToast();
 
-  // Check if user is authenticated on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -47,7 +53,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (error) {
         console.error('Authentication check failed:', error);
-        // Clear invalid auth data
         authService.logout();
       } finally {
         setLoading(false);
@@ -58,7 +63,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []);
 
-  // Test backend connection when component mounts
   useEffect(() => {
     const testBackendConnection = async () => {
       if (!initialCheckDone) return;
@@ -97,8 +101,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isClosable: true,
       });
       return user;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Invalid email or password';
+    } catch (error) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      const errorMessage = axiosError.response?.data?.message || 'Invalid email or password';
       toast({
         title: 'Login failed',
         description: errorMessage,
@@ -131,8 +136,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isClosable: true,
       });
       return user;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+    } catch (error) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      const errorMessage = axiosError.response?.data?.message || 'Registration failed. Please try again.';
       toast({
         title: 'Registration failed',
         description: errorMessage,
@@ -162,10 +168,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const updateProfile = async (data: { firstName: string, lastName: string }): Promise<User | null> => {
     setLoading(true);
     try {
-      // שימוש בפונקציה מהקונטקסט לעדכון הפרופיל
       await authService.updateProfile(data);
 
-      // עדכון המשתמש ב-context
       setCurrentUser(prevUser => prevUser ? { ...prevUser, ...data } : null);
 
       toast({

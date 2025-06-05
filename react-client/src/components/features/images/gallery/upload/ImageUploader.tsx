@@ -108,7 +108,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         });
 
         try {
-          // Define progress callback with proper typing
           const progressCallback = (progress: number) => {
             setFiles(current => {
               const newFiles = [...current];
@@ -128,21 +127,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             setUploadProgress(Math.floor(totalProgress / files.length));
           };
 
-          // Check imageService.uploadImages signature - adjust parameters as needed
-          // Option 1: If uploadImages expects (files, tripId, progressCallback)
           await imageService.uploadImages([files[i]], tripId, progressCallback);
           
-          // Option 2: If uploadImages expects (files, tripId, tags, progressCallback)
-          // const tags = ['vacation', 'family', '2025'];
-          // await imageService.uploadImages([files[i]], tripId, { tags, onProgress: progressCallback });
-
-          // Option 3: If uploadImages expects (files, options)
-          // await imageService.uploadImages([files[i]], {
-          //   tripId,
-          //   tags: ['vacation', 'family', '2025'],
-          //   onProgress: progressCallback
-          // });
-
           setFiles(current => {
             const newFiles = [...current];
             newFiles[i].status = 'success';
