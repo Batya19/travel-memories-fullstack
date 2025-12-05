@@ -11,7 +11,7 @@ namespace TravelMemories.Controllers
     [ApiController]
     [Route("api/ai-images")]
     [Authorize]
-    public class AIImageController : ControllerBase
+    public class AIImageController : BaseController
     {
         private readonly IAIImageService _aiImageService;
         private readonly IUserService _userService;
@@ -148,16 +148,5 @@ namespace TravelMemories.Controllers
             }
         }
 
-        private Guid GetUserId()
-        {
-            if (User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value is string userIdClaim)
-            {
-                if (Guid.TryParse(userIdClaim, out Guid parsedUserId))
-                {
-                    return parsedUserId;
-                }
-            }
-            return Guid.Empty;
-        }
     }
 }

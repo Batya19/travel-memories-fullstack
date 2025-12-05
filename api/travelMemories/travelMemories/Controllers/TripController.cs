@@ -11,7 +11,8 @@ namespace TravelMemories.Controllers
 {
     [ApiController]
     [Route("api/trips")]
-    public class TripController : ControllerBase
+    [Authorize]
+    public class TripController : BaseController
     {
         private readonly ITripService _tripService;
 
@@ -172,10 +173,6 @@ namespace TravelMemories.Controllers
 
         #region Helper Methods
 
-        private Guid GetUserId()
-        {
-            return Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-        }
 
         private TripResponse MapToTripResponse(Trip trip)
         {

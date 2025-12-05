@@ -10,7 +10,7 @@ namespace TravelMemories.Controllers
     [ApiController]
     [Route("api/users")]
     [Authorize]
-    public class UsersController : ControllerBase
+    public class UsersController : BaseController
     {
         private readonly IUserService _userService;
 
@@ -98,10 +98,6 @@ namespace TravelMemories.Controllers
 
         #region Helper Methods
 
-        private Guid GetUserId()
-        {
-            return Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-        }
 
         private static UserDto MapToUserDto(User user)
         {

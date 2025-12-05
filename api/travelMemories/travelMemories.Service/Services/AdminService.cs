@@ -356,10 +356,9 @@ namespace TravelMemories.Service.Services
             return await Task.FromResult(settings);
         }
 
-        public async Task<SystemSettingsRequest> GetSystemSettingsAsync()
+        public Task<SystemSettingsRequest> GetSystemSettingsAsync()
         {
-
-            return await Task.FromResult(new SystemSettingsRequest
+            return Task.FromResult(new SystemSettingsRequest
             {
                 DefaultStorageQuota = 10240, // 10GB
                 DefaultAiQuota = 50,

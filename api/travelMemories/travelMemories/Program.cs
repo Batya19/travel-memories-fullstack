@@ -2,6 +2,7 @@ using Amazon;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
 using Amazon.S3;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using TravelMemories;
@@ -160,7 +161,13 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Redirect root to Swagger
+app.MapGet("/", () => Results.Redirect("/swagger"));
+
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Application started successfully. Swagger should be available at /swagger");
 
 app.Run();
+
+// Make Program class accessible for testing
+public partial class Program { }

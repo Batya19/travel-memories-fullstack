@@ -11,7 +11,7 @@ namespace TravelMemories.Controllers
     [ApiController]
     [Route("api/images")]
     [Authorize]
-    public class ImageController : ControllerBase
+    public class ImageController : BaseController
     {
         private readonly IImageService _imageService;
         private readonly ILogger<ImageController> _logger;
@@ -134,10 +134,6 @@ namespace TravelMemories.Controllers
 
         #region Helper Methods
 
-        private Guid GetUserId()
-        {
-            return Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-        }
 
         private ImageResponse MapToImageResponse(Image image)
         {
