@@ -28,21 +28,21 @@ namespace TravelMemories.Controllers
         {
             Guid? userId = null;
 
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated == true)
             {
                 userId = GetUserId();
             }
 
             try
             {
-                var image = await _imageService.GetImageByIdAsync(id, userId ?? Guid.Empty);
+                var image = await _imageService.GetImageByIdAsync(id, userId);
 
                 if (image == null)
                 {
                     return NotFound(ErrorDto.NotFound("Image not found"));
                 }
 
-                var imageBytes = await _imageService.DownloadImageAsync(id, userId ?? Guid.Empty);
+                var imageBytes = await _imageService.DownloadImageAsync(id, userId);
 
                 if (imageBytes == null || imageBytes.Length == 0)
                 {
@@ -72,7 +72,7 @@ namespace TravelMemories.Controllers
         [HttpGet("trip/{tripId}")]
         public async Task<ActionResult<IEnumerable<ImageResponse>>> GetTripImages(Guid tripId)
         {
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             try
             {
@@ -97,7 +97,7 @@ namespace TravelMemories.Controllers
                 return BadRequest(ErrorDto.ValidationError("No files were uploaded"));
             }
 
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             try
             {
@@ -113,7 +113,7 @@ namespace TravelMemories.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteImage(Guid id)
         {
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             try
             {

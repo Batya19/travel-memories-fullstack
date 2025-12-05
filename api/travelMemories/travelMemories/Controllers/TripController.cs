@@ -25,7 +25,7 @@ namespace TravelMemories.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<TripResponse>>> GetUserTrips()
         {
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
             var trips = await _tripService.GetUserTripsAsync(userId);
 
             var tripResponses = trips.Select(MapToTripResponse).ToList();
@@ -36,7 +36,7 @@ namespace TravelMemories.Controllers
         [Authorize]
         public async Task<ActionResult<TripDetailResponse>> GetTrip(Guid id)
         {
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             try
             {
@@ -84,7 +84,7 @@ namespace TravelMemories.Controllers
                 return BadRequest(ErrorDto.ValidationError("Invalid trip data"));
             }
 
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             try
             {
@@ -106,7 +106,7 @@ namespace TravelMemories.Controllers
                 return BadRequest(ErrorDto.ValidationError("Invalid trip data"));
             }
 
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             try
             {
@@ -131,7 +131,7 @@ namespace TravelMemories.Controllers
         [Authorize]
         public async Task<ActionResult> DeleteTrip(Guid id)
         {
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             try
             {
@@ -154,7 +154,7 @@ namespace TravelMemories.Controllers
         [Authorize]
         public async Task<ActionResult<Guid>> RegenerateShareId(Guid id)
         {
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             try
             {

@@ -66,7 +66,6 @@ namespace TravelMemories.Service.Services
                 throw new ArgumentException("Prompt cannot be empty", nameof(request.Prompt));
             }
 
-            // TripId is optional - only validate if it's provided and not empty
             if (request.TripId.HasValue && request.TripId.Value == Guid.Empty)
             {
                 throw new ArgumentException("Trip ID cannot be empty", nameof(request.TripId));

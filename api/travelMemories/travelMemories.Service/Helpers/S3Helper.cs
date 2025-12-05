@@ -44,7 +44,6 @@ namespace TravelMemories.Service.Helpers
                 throw new ArgumentException("AWS credentials are not configured");
             }
 
-            // Create client with explicit credentials
             var s3ClientWithCredentials = new AmazonS3Client(
                 accessKey,
                 secretKey,
@@ -53,21 +52,18 @@ namespace TravelMemories.Service.Helpers
 
             try
             {
-                // Generate a unique file name if not provided
                 if (string.IsNullOrEmpty(fileName))
                 {
                     var fileExtension = Path.GetExtension(file.FileName);
                     fileName = $"{Guid.NewGuid()}{fileExtension}";
                 }
 
-                // Construct the full key (path) in S3
                 var key = string.IsNullOrEmpty(folderName)
                     ? fileName
                     : $"{folderName.TrimEnd('/')}/{fileName}";
 
                 using (var fileStream = file.OpenReadStream())
                 {
-                    // Verify stream position
                     if (fileStream.Position > 0)
                     {
                         fileStream.Position = 0;
@@ -126,7 +122,6 @@ namespace TravelMemories.Service.Helpers
 
             try
             {
-                // Create client with explicit credentials
                 var s3ClientWithCredentials = new AmazonS3Client(
                     accessKey,
                     secretKey,
@@ -191,7 +186,6 @@ namespace TravelMemories.Service.Helpers
 
             try
             {
-                // Create client with explicit credentials
                 var s3ClientWithCredentials = new AmazonS3Client(
                     accessKey,
                     secretKey,
@@ -243,7 +237,6 @@ namespace TravelMemories.Service.Helpers
                 throw new ArgumentException("AWS region is not configured");
             }
 
-            // Generate a URL that follows the pattern: https://{bucket}.s3.{region}.amazonaws.com/{key}
             return $"https://{bucketName}.s3.{region}.amazonaws.com/{fileKey}";
         }
     }

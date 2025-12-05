@@ -6,9 +6,6 @@ namespace TravelMemories.Service.Helpers
 {
     public static class ImageHelper
     {
-        /// <summary>
-        /// Extracts the date a photo was taken from EXIF metadata if available
-        /// </summary>
         public static DateTime? GetImageTakenDate(IFormFile imageFile)
         {
             try
@@ -19,7 +16,6 @@ namespace TravelMemories.Service.Helpers
 
                     if (image.Metadata?.ExifProfile != null)
                     {
-                        // Try to get the date taken from EXIF data
                         if (image.Metadata.ExifProfile.TryGetValue(ExifTag.DateTimeOriginal, out var dateTimeValue))
                         {
                             if (DateTime.TryParse(dateTimeValue.ToString(), out var dateTaken))
@@ -28,7 +24,6 @@ namespace TravelMemories.Service.Helpers
                             }
                         }
 
-                        // Try alternative EXIF tags if the primary one is missing
                         if (image.Metadata.ExifProfile.TryGetValue(ExifTag.DateTime, out dateTimeValue))
                         {
                             if (DateTime.TryParse(dateTimeValue.ToString(), out var dateModified))
@@ -41,16 +36,11 @@ namespace TravelMemories.Service.Helpers
             }
             catch (Exception)
             {
-                // Silently fail and return null if EXIF data cannot be read
             }
 
-            // If no EXIF data is available, use the current date/time
             return null;
         }
 
-        /// <summary>
-        /// Gets the GPS coordinates from image EXIF data if available
-        /// </summary>
         public static (double? Latitude, double? Longitude) GetGpsCoordinates(IFormFile imageFile)
         {
             try
@@ -64,7 +54,6 @@ namespace TravelMemories.Service.Helpers
                         double? latitude = null;
                         double? longitude = null;
 
-                        // Try to extract the GPS coordinates
                         if (TryGetGpsCoordinate(image.Metadata.ExifProfile, ExifTag.GPSLatitude, ExifTag.GPSLatitudeRef, out var lat))
                         {
                             latitude = lat;
@@ -81,7 +70,6 @@ namespace TravelMemories.Service.Helpers
             }
             catch (Exception)
             {
-                // Silently fail and return nulls
             }
 
             return (null, null);
@@ -112,10 +100,8 @@ namespace TravelMemories.Service.Helpers
                 return false;
             }
 
-            // Convert degrees, minutes, seconds to decimal degrees
             coordinate = degrees.Value + minutes.Value / 60 + seconds.Value / 3600;
 
-            // Apply reference direction (N/S or E/W)
             var reference = referenceValue.Value.Trim();
             if (reference == "S" || reference == "W")
             {

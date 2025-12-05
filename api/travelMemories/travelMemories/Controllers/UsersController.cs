@@ -22,7 +22,7 @@ namespace TravelMemories.Controllers
         [HttpGet("me")]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
             var user = await _userService.GetUserByIdAsync(userId);
 
             if (user == null)
@@ -36,7 +36,7 @@ namespace TravelMemories.Controllers
         [HttpPut("me")]
         public async Task<ActionResult<UserDto>> UpdateCurrentUser([FromBody] UpdateUserDto updateUserDto)
         {
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             try
             {
@@ -52,7 +52,7 @@ namespace TravelMemories.Controllers
         [HttpPost("change-password")]
         public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             if (!ModelState.IsValid)
             {
@@ -72,7 +72,7 @@ namespace TravelMemories.Controllers
         [HttpGet("quota")]
         public async Task<ActionResult<UserQuotaDto>> GetUserQuota()
         {
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
             var user = await _userService.GetUserByIdAsync(userId);
 
             if (user == null)

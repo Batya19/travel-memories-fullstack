@@ -126,21 +126,24 @@ if (app.Environment.IsDevelopment())
         c.EnableFilter();
     });
 
-    using (var scope = app.Services.CreateScope())
+    if (app.Environment.EnvironmentName != "Testing")
     {
-        try
+        using (var scope = app.Services.CreateScope())
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var migrationLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            try
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var migrationLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-            migrationLogger.LogInformation("Attempting to apply migrations...");
-            dbContext.Database.Migrate();
-            migrationLogger.LogInformation("Migrations applied successfully.");
-        }
-        catch (Exception ex)
-        {
-            var errorLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-            errorLogger.LogError(ex, "An error occurred while applying migrations.");
+                migrationLogger.LogInformation("Attempting to apply migrations...");
+                dbContext.Database.Migrate();
+                migrationLogger.LogInformation("Migrations applied successfully.");
+            }
+            catch (Exception ex)
+            {
+                var errorLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                errorLogger.LogError(ex, "An error occurred while applying migrations.");
+            }
         }
     }
 }

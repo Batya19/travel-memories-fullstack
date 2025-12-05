@@ -39,12 +39,9 @@ namespace TravelMemories.Service.External
         {
             try
             {
-                // Adjust parameters to match Stable Diffusion XL model structure
                 var requestData = new
                 {
-                    inputs = style != null ? $"{prompt} in {style} style" : prompt,
-                    // Removed parameters that don't match the current model
-                    // Only keeping the input field
+                    inputs = style != null ? $"{prompt} in {style} style" : prompt
                 };
 
                 var content = new StringContent(
@@ -53,7 +50,6 @@ namespace TravelMemories.Service.External
                     "application/json"
                 );
 
-                // Add retry attempts in case of failure
                 int maxRetries = 2;
                 int retryCount = 0;
                 HttpResponseMessage response = null;
@@ -70,20 +66,16 @@ namespace TravelMemories.Service.External
                         }
                         else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
                         {
-                            // Model is warming up, wait and try again
                             retryCount++;
                             if (retryCount <= maxRetries)
                             {
-                                await Task.Delay(2000); // Wait before retry attempt
+                                await Task.Delay(2000);
                                 continue;
                             }
                         }
 
-                        // For any other error, get details and throw exception
                         var errorContent = await response.Content.ReadAsStringAsync();
                         _logger.LogError("HuggingFace API error: Status {StatusCode}, Details: {ErrorContent}", response.StatusCode, errorContent);
-                        
-                        // Check for common authentication errors
                         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                         {
                             throw new HttpRequestException($"Hugging Face API authentication failed. Please check your API key configuration. Status: {response.StatusCode}");

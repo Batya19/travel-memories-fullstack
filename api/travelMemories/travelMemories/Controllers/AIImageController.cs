@@ -41,11 +41,10 @@ namespace TravelMemories.Controllers
                 return BadRequest(ErrorDto.ValidationError("Request body cannot be null"));
             }
 
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             try
             {
-                // Check if user has quota available
                 var hasQuota = await _aiImageService.CheckUserQuotaAsync(userId);
 
                 if (!hasQuota)
@@ -67,7 +66,6 @@ namespace TravelMemories.Controllers
             }
             catch (ArgumentException ex)
             {
-                // This could be a configuration issue (missing API key/URL)
                 _logger.LogError(ex, "Configuration or validation error in AI image generation");
                 return BadRequest(ErrorDto.ValidationError(ex.Message));
             }
@@ -77,13 +75,11 @@ namespace TravelMemories.Controllers
             }
             catch (HttpRequestException ex)
             {
-                // This could be a HuggingFace API credential/connection issue
                 _logger.LogError(ex, "HTTP error calling HuggingFace API");
                 return BadRequest(ErrorDto.FromException($"Failed to generate image. Please check API configuration. {ex.Message}"));
             }
             catch (Exception ex)
             {
-                // Log unexpected errors but don't expose internal details
                 _logger.LogError(ex, "Unexpected error in AI image generation");
                 return StatusCode(500, ErrorDto.FromException("An unexpected error occurred while generating the image"));
             }
@@ -92,7 +88,7 @@ namespace TravelMemories.Controllers
         [HttpGet("quota")]
         public async Task<ActionResult<AIQuotaResponse>> GetQuota()
         {
-            var userId = GetUserId();
+            Guid userId = GetRequiredUserId();
 
             try
             {
@@ -106,7 +102,6 @@ namespace TravelMemories.Controllers
                 var usedCount = await _aiImageService.GetUserAiGenerationCountAsync(userId);
                 var remaining = Math.Max(0, user.AiQuota - usedCount);
 
-                // Calculate reset date (first day of next month)
                 var now = DateTime.UtcNow;
                 var resetDate = new DateTime(now.Year, now.Month, 1).AddMonths(1);
 
@@ -124,22 +119,14 @@ namespace TravelMemories.Controllers
             }
         }
 
-        [HttpGet("user-images")] // Dedicated endpoint
+        [HttpGet("user-images")]
         public async Task<ActionResult<IEnumerable<Image>>> GetUserAiImages()
         {
-            var userId = GetUserId(); // Get the authenticated user ID from the token
-
-            if (userId == Guid.Empty)
-            {
-                return Unauthorized(ErrorDto.Unauthorized("User not authenticated or ID missing."));
-            }
+            Guid userId = GetRequiredUserId();
 
             try
             {
                 var images = await _aiImageService.GetAiImagesForUserAsync(userId);
-                // You may want to map the Image object to a smaller DTO model
-                // to avoid exposing internal model details.
-                // For example, create a new DTO: AIImageResponseForList
                 return Ok(images);
             }
             catch (Exception ex)

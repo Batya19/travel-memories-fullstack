@@ -31,7 +31,6 @@ namespace TravelMemories.Service.Services
 
         public async Task<IEnumerable<Image>> UploadImagesAsync(Guid userId, ImageUploadRequest request)
         {
-            // Check if user has enough storage quota
             var totalSize = request.Files.Sum(f => f.Length);
 
             if (!await _userService.CheckStorageQuotaAsync(userId, (int)totalSize))
@@ -39,7 +38,6 @@ namespace TravelMemories.Service.Services
                 throw new InvalidOperationException("Storage quota exceeded");
             }
 
-            // Check if trip exists and belongs to user if tripId is provided
             if (request.TripId.HasValue)
             {
                 var trip = await _tripRepository.GetByIdAsync(request.TripId.Value);
@@ -64,18 +62,15 @@ namespace TravelMemories.Service.Services
                     continue;
                 }
 
-                // Check file type
                 var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
                 if (!IsValidImageExtension(extension))
                 {
                     throw new InvalidOperationException($"File type not supported: {extension}");
                 }
 
-                // Upload to S3
                 var folderName = $"users/{userId}/images";
                 var s3Path = await _s3Service.UploadFileAsync(file, folderName);
 
-                // Create image entity
                 var image = new Image
                 {
                     FileName = file.FileName,
@@ -95,7 +90,6 @@ namespace TravelMemories.Service.Services
 
             await _imageRepository.SaveChangesAsync();
 
-            // Process tags if provided
             if (request.Tags != null && request.Tags.Length > 0 && uploadedImages.Count > 0)
             {
                 await ProcessTagsAsync(uploadedImages, request.Tags, userId);
@@ -104,21 +98,23 @@ namespace TravelMemories.Service.Services
             return uploadedImages;
         }
 
-        public async Task<Image> GetImageByIdAsync(Guid imageId, Guid userId)
+        public async Task<Image?> GetImageByIdAsync(Guid imageId, Guid? userId = null)
         {
-            var image = await _imageRepository.GetImageWithDetailsAsync(imageId);
+            Image? image = await _imageRepository.GetImageWithDetailsAsync(imageId);
 
             if (image == null)
             {
                 return null;
             }
 
-            // Check if user has access to this image
-            if (image.UserId != userId &&
-                (image.TripId == null ||
-                (image.Trip != null && image.Trip.UserId != userId && image.Trip.ShareId == null)))
+            if (userId.HasValue)
             {
-                throw new UnauthorizedAccessException("You do not have permission to view this image");
+                if (image.UserId != userId.Value &&
+                    (image.TripId == null ||
+                    (image.Trip != null && image.Trip.UserId != userId.Value && image.Trip.ShareId == null)))
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to view this image");
+                }
             }
 
             return image;
@@ -138,10 +134,7 @@ namespace TravelMemories.Service.Services
                 throw new UnauthorizedAccessException("You do not have permission to delete this image");
             }
 
-            // Delete from S3
             await _s3Service.DeleteFileAsync(image.FilePath);
-
-            // Delete from database
             _imageRepository.Remove(image);
             await _imageRepository.SaveChangesAsync();
 
@@ -165,35 +158,32 @@ namespace TravelMemories.Service.Services
             return await _imageRepository.GetImagesByTripAsync(tripId);
         }
 
-        public async Task<byte[]> DownloadImageAsync(Guid imageId, Guid userId)
+        public async Task<byte[]?> DownloadImageAsync(Guid imageId, Guid? userId = null)
         {
-            var image = await _imageRepository.GetByIdAsync(imageId);
+            Image? image = await _imageRepository.GetByIdAsync(imageId);
 
             if (image == null)
             {
-                throw new KeyNotFoundException("Image not found");
+                return null;
             }
 
-            // If userId is empty, it's an anonymous access via share link
-            if (userId != Guid.Empty)
+            if (userId.HasValue)
             {
-                // Check if user has access to this image
-                var trip = image.TripId.HasValue ? await _tripRepository.GetByIdAsync(image.TripId.Value) : null;
+                Trip? trip = image.TripId.HasValue ? await _tripRepository.GetByIdAsync(image.TripId.Value) : null;
 
-                if (image.UserId != userId && (trip == null || (trip.UserId != userId && trip.ShareId == null)))
+                if (image.UserId != userId.Value && (trip == null || (trip.UserId != userId.Value && trip.ShareId == null)))
                 {
                     throw new UnauthorizedAccessException("You do not have permission to download this image");
                 }
             }
             else
             {
-                // Anonymous access - check if image is part of a shared trip
                 if (!image.TripId.HasValue)
                 {
                     throw new UnauthorizedAccessException("This image is not publicly accessible");
                 }
 
-                var trip = await _tripRepository.GetByIdAsync(image.TripId.Value);
+                Trip? trip = await _tripRepository.GetByIdAsync(image.TripId.Value);
                 if (trip == null || trip.ShareId == null)
                 {
                     throw new UnauthorizedAccessException("This image is not publicly accessible");
@@ -213,7 +203,6 @@ namespace TravelMemories.Service.Services
 
         private async Task ProcessTagsAsync(List<Image> images, string[] tagNames, Guid userId)
         {
-            // Get or create tags
             var existingTags = await _tagRepository.GetByNamesAsync(tagNames);
             var existingTagNames = existingTags.Select(t => t.Name.ToLower()).ToList();
 
@@ -238,7 +227,6 @@ namespace TravelMemories.Service.Services
 
             var allTags = existingTags.Concat(newTags).ToList();
 
-            // Associate tags with images
             foreach (var image in images)
             {
                 foreach (var tag in allTags)
