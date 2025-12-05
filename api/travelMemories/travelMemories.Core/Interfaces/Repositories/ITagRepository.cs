@@ -9,6 +9,5 @@ namespace TravelMemories.Core.Interfaces.Repositories
         Task<IEnumerable<Tag>> GetTagsByImageIdAsync(Guid imageId);
         Task<IEnumerable<Tag>> GetPopularTagsAsync(int limit = 20);
         Task AddTagToImageAsync(Guid imageId, Guid tagId, Guid userId);
-        Task RemoveTagFromImageAsync(Guid imageId, Guid tagId);
     }
 }

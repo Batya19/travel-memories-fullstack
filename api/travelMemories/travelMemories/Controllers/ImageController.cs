@@ -20,41 +20,6 @@ namespace TravelMemories.Controllers
             _imageService = imageService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ImageResponse>>> GetUserImages()
-        {
-            var userId = GetUserId();
-            var images = await _imageService.GetUserImagesAsync(userId);
-
-            return Ok(images.Select(MapToImageResponse));
-        }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ImageResponse>> GetImage(Guid id)
-        {
-            var userId = GetUserId();
-
-            try
-            {
-                var image = await _imageService.GetImageByIdAsync(id, userId);
-
-                if (image == null)
-                {
-                    return NotFound(ErrorDto.NotFound("Image not found"));
-                }
-
-                return Ok(MapToImageResponse(image));
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ErrorDto.FromException(ex.Message));
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-        }
-
         [HttpGet("{id}/content")]
         [AllowAnonymous]
         public async Task<ActionResult> GetImageContent(Guid id)
@@ -168,32 +133,6 @@ namespace TravelMemories.Controllers
             }
         }
 
-        [HttpPost("search")]
-        public async Task<ActionResult<ImageSearchResponse>> SearchImages([FromBody] ImageSearchRequest request)
-        {
-            var userId = GetUserId();
-
-            try
-            {
-                var images = await _imageService.SearchImagesAsync(userId, request);
-
-                var response = new ImageSearchResponse
-                {
-                    Images = images.Select(MapToImageResponse),
-                    TotalCount = images.Count(),
-                    Page = request.Page,
-                    PageSize = request.PageSize,
-                    TotalPages = (int)Math.Ceiling(images.Count() / (double)request.PageSize)
-                };
-
-                return Ok(response);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ErrorDto.FromException(ex.Message));
-            }
-        }
-
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteImage(Guid id)
         {
@@ -209,59 +148,6 @@ namespace TravelMemories.Controllers
                 }
 
                 return NoContent();
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-        }
-
-        [HttpPost("{id}/tags")]
-        public async Task<ActionResult> AddTags(Guid id, [FromBody] string[] tags)
-        {
-            if (tags == null || tags.Length == 0)
-            {
-                return BadRequest(ErrorDto.ValidationError("No tags provided"));
-            }
-
-            var userId = GetUserId();
-
-            try
-            {
-                await _imageService.AddTagsToImageAsync(id, userId, tags);
-                return Ok(new { message = "Tags added successfully" });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ErrorDto.FromException(ex.Message));
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(ErrorDto.NotFound("Image not found"));
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-        }
-
-        [HttpDelete("{id}/tags/{tagId}")]
-        public async Task<ActionResult> RemoveTag(Guid id, Guid tagId)
-        {
-            var userId = GetUserId();
-
-            try
-            {
-                await _imageService.RemoveTagFromImageAsync(id, userId, tagId);
-                return Ok(new { message = "Tag removed successfully" });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ErrorDto.FromException(ex.Message));
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(ErrorDto.NotFound("Image or tag not found"));
             }
             catch (UnauthorizedAccessException)
             {

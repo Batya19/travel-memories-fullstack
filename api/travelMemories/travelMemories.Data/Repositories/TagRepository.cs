@@ -61,17 +61,5 @@ namespace TravelMemories.Data.Repositories
                 await _context.SaveChangesAsync();
             }
         }
-
-        public async Task RemoveTagFromImageAsync(Guid imageId, Guid tagId)
-        {
-            var imageTag = await _context.ImageTags
-                .FirstOrDefaultAsync(it => it.ImageId == imageId && it.TagId == tagId);
-
-            if (imageTag != null)
-            {
-                _context.ImageTags.Remove(imageTag);
-                await _context.SaveChangesAsync();
-            }
-        }
     }
 }

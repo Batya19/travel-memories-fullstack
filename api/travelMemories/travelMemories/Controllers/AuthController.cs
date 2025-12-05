@@ -43,17 +43,5 @@ namespace TravelMemories.Controllers
                 return BadRequest(ErrorDto.FromException("Invalid email or password", "AuthenticationError"));
             }
         }
-
-        [HttpGet("check-email")]
-        public async Task<ActionResult<bool>> CheckEmailAvailable([FromQuery] string email)
-        {
-            if (string.IsNullOrEmpty(email))
-            {
-                return BadRequest(ErrorDto.FromException("Email is required", "ValidationError"));
-            }
-
-            var isAvailable = await _authService.IsEmailAvailableAsync(email);
-            return Ok(isAvailable);
-        }
     }
 }

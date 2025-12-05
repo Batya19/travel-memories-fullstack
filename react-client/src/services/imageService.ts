@@ -102,19 +102,9 @@ const imageService = {
         }
     },
 
-    updateImageMetadata: async (id: string, metadata: unknown) => {
-        try {
-            const response = await apiService.patch<Image>(`/images/${id}`, metadata);
-            return response;
-        } catch (error) {
-            console.error(`Failed to update image metadata for ${id}:`, error);
-            throw error;
-        }
-    },
-
     getAiQuota: async () => {
         try {
-            return await apiService.get<{ remaining: number, total: number }>('/images/ai-quota');
+            return await apiService.get<{ remaining: number, total: number }>('/ai-images/quota');
         } catch (error) {
             console.error('Failed to get AI quota:', error);
             throw error;

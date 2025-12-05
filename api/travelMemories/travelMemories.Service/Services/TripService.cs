@@ -88,23 +88,6 @@ namespace TravelMemories.Service.Services
             return true;
         }
 
-        public async Task<Trip> GetTripByIdAsync(Guid tripId, Guid userId)
-        {
-            var trip = await _tripRepository.GetTripWithDetailsAsync(tripId);
-
-            if (trip == null)
-            {
-                return null;
-            }
-
-            if (trip.UserId != userId)
-            {
-                throw new UnauthorizedAccessException("You do not have permission to view this trip");
-            }
-
-            return trip;
-        }
-
         public async Task<Trip> GetTripByShareIdAsync(Guid shareId)
         {
             return await _tripRepository.GetTripByShareIdAsync(shareId);

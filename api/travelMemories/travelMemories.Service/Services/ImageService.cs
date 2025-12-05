@@ -1,5 +1,4 @@
-﻿using TravelMemories.Core.DTOs.Image;
-using TravelMemories.Core.Interfaces.External;
+﻿using TravelMemories.Core.Interfaces.External;
 using TravelMemories.Core.Interfaces.Repositories;
 using TravelMemories.Core.Interfaces;
 using TravelMemories.Core.Models;
@@ -164,94 +163,6 @@ namespace TravelMemories.Service.Services
             }
 
             return await _imageRepository.GetImagesByTripAsync(tripId);
-        }
-
-        public async Task<IEnumerable<Image>> GetUserImagesAsync(Guid userId)
-        {
-            return await _imageRepository.GetImagesByUserAsync(userId);
-        }
-
-        public async Task<IEnumerable<Image>> SearchImagesAsync(Guid userId, ImageSearchRequest searchRequest)
-        {
-            string[] tags = null;
-
-            if (searchRequest.Tags != null && searchRequest.Tags.Length > 0)
-            {
-                tags = searchRequest.Tags;
-            }
-
-            var images = await _imageRepository.SearchImagesAsync(
-                searchRequest.TripId,
-                userId,
-                tags,
-                searchRequest.DateFrom,
-                searchRequest.DateTo,
-                searchRequest.Location
-            );
-
-            // Apply pagination
-            return images
-                .Where(i => searchRequest.IsAiGenerated == null || i.IsAiGenerated == searchRequest.IsAiGenerated)
-                .Skip((searchRequest.Page - 1) * searchRequest.PageSize)
-                .Take(searchRequest.PageSize);
-        }
-
-        public async Task UpdateImageDetailsAsync(Guid imageId, Guid userId, Image updatedImage)
-        {
-            var image = await _imageRepository.GetByIdAsync(imageId);
-
-            if (image == null)
-            {
-                throw new KeyNotFoundException("Image not found");
-            }
-
-            if (image.UserId != userId)
-            {
-                throw new UnauthorizedAccessException("You do not have permission to update this image");
-            }
-
-            // Update only allowed properties
-            image.TakenAt = updatedImage.TakenAt;
-            image.TripId = updatedImage.TripId;
-            image.UpdatedAt = DateTime.UtcNow;
-            image.UpdatedBy = userId;
-
-            _imageRepository.Update(image);
-            await _imageRepository.SaveChangesAsync();
-        }
-
-        public async Task AddTagsToImageAsync(Guid imageId, Guid userId, string[] tags)
-        {
-            var image = await _imageRepository.GetByIdAsync(imageId);
-
-            if (image == null)
-            {
-                throw new KeyNotFoundException("Image not found");
-            }
-
-            if (image.UserId != userId)
-            {
-                throw new UnauthorizedAccessException("You do not have permission to update this image");
-            }
-
-            await ProcessTagsAsync(new List<Image> { image }, tags, userId);
-        }
-
-        public async Task RemoveTagFromImageAsync(Guid imageId, Guid userId, Guid tagId)
-        {
-            var image = await _imageRepository.GetByIdAsync(imageId);
-
-            if (image == null)
-            {
-                throw new KeyNotFoundException("Image not found");
-            }
-
-            if (image.UserId != userId)
-            {
-                throw new UnauthorizedAccessException("You do not have permission to update this image");
-            }
-
-            await _tagRepository.RemoveTagFromImageAsync(imageId, tagId);
         }
 
         public async Task<byte[]> DownloadImageAsync(Guid imageId, Guid userId)

@@ -7,8 +7,6 @@ namespace TravelMemories.Core.Interfaces
     {
         Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
         Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
-        Task<User> GetCurrentUserAsync(Guid userId);
-        Task<bool> IsEmailAvailableAsync(string email);
         Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword);
     }
 }
