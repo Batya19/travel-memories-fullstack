@@ -44,8 +44,6 @@ namespace TravelMemories.Service.Helpers
                 throw new ArgumentException("AWS credentials are not configured");
             }
 
-            Console.WriteLine($"[S3Helper] Starting upload to S3. Bucket: {bucketName}, Folder: {folderName}, FileName: {fileName}, FileSize: {file.Length} bytes, ContentType: {file.ContentType}");
-
             // Create client with explicit credentials
             var s3ClientWithCredentials = new AmazonS3Client(
                 accessKey,
@@ -60,7 +58,6 @@ namespace TravelMemories.Service.Helpers
                 {
                     var fileExtension = Path.GetExtension(file.FileName);
                     fileName = $"{Guid.NewGuid()}{fileExtension}";
-                    Console.WriteLine($"[S3Helper] Generated unique filename: {fileName}");
                 }
 
                 // Construct the full key (path) in S3
@@ -68,16 +65,11 @@ namespace TravelMemories.Service.Helpers
                     ? fileName
                     : $"{folderName.TrimEnd('/')}/{fileName}";
 
-                Console.WriteLine($"[S3Helper] Constructed S3 key: {key}");
-
                 using (var fileStream = file.OpenReadStream())
                 {
-                    Console.WriteLine($"[S3Helper] Opened file stream, length: {fileStream.Length} bytes");
-
                     // Verify stream position
                     if (fileStream.Position > 0)
                     {
-                        Console.WriteLine($"[S3Helper] Warning: Stream position is not at 0, current position: {fileStream.Position}");
                         fileStream.Position = 0;
                     }
 
@@ -86,32 +78,18 @@ namespace TravelMemories.Service.Helpers
                         InputStream = fileStream,
                         BucketName = bucketName,
                         Key = key,
-                        ContentType = file.ContentType ?? "application/octet-stream", // Default content type if null
+                        ContentType = file.ContentType ?? "application/octet-stream",
                         CannedACL = S3CannedACL.Private
                     };
 
-                    Console.WriteLine($"[S3Helper] Upload request created with ContentType: {uploadRequest.ContentType}");
-
                     var transferUtility = new TransferUtility(s3ClientWithCredentials);
-                    Console.WriteLine($"[S3Helper] Starting actual upload to S3...");
                     await transferUtility.UploadAsync(uploadRequest);
-                    Console.WriteLine($"[S3Helper] Upload completed successfully!");
                 }
-
-                // Generate URL to verify existence
-                var fileUrl = GetFileUrl(configuration, key);
-                Console.WriteLine($"[S3Helper] File URL: {fileUrl}");
 
                 return key;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[S3Helper] ERROR uploading file to S3: {ex.Message}");
-                Console.WriteLine($"[S3Helper] Stack trace: {ex.StackTrace}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"[S3Helper] Inner exception: {ex.InnerException.Message}");
-                }
                 throw new ApplicationException($"Error uploading file to S3: {ex.Message}", ex);
             }
         }
@@ -146,8 +124,6 @@ namespace TravelMemories.Service.Helpers
                 throw new ArgumentException("AWS credentials are not configured");
             }
 
-            Console.WriteLine($"[S3Helper] Downloading file from S3. Bucket: {bucketName}, FileKey: {fileKey}");
-
             try
             {
                 // Create client with explicit credentials
@@ -163,36 +139,22 @@ namespace TravelMemories.Service.Helpers
                     Key = fileKey
                 };
 
-                Console.WriteLine($"[S3Helper] Sending GetObject request to S3...");
-
                 using (var response = await s3ClientWithCredentials.GetObjectAsync(request))
                 {
-                    Console.WriteLine($"[S3Helper] GetObject response received. ContentLength: {response.ContentLength}, ContentType: {response.Headers.ContentType}");
-
                     using (var responseStream = response.ResponseStream)
                     using (var memoryStream = new MemoryStream())
                     {
                         await responseStream.CopyToAsync(memoryStream);
-                        var bytes = memoryStream.ToArray();
-                        Console.WriteLine($"[S3Helper] Successfully read {bytes.Length} bytes from S3");
-                        return bytes;
+                        return memoryStream.ToArray();
                     }
                 }
             }
             catch (AmazonS3Exception ex)
             {
-                Console.WriteLine($"[S3Helper] S3 ERROR downloading file '{fileKey}': {ex.Message}, ErrorCode: {ex.ErrorCode}, StatusCode: {ex.StatusCode}");
-                Console.WriteLine($"[S3Helper] Stack trace: {ex.StackTrace}");
                 throw new ApplicationException($"S3 error downloading file '{fileKey}': {ex.Message}", ex);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[S3Helper] ERROR downloading file '{fileKey}' from S3: {ex.Message}");
-                Console.WriteLine($"[S3Helper] Stack trace: {ex.StackTrace}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"[S3Helper] Inner exception: {ex.InnerException.Message}");
-                }
                 throw new ApplicationException($"Error downloading file '{fileKey}' from S3: {ex.Message}", ex);
             }
         }

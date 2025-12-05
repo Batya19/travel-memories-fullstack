@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
 using TravelMemories.Core.Interfaces.External;
@@ -10,12 +11,14 @@ namespace TravelMemories.Service.External
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly string _apiUrl;
+        private readonly ILogger<HuggingFaceClient> _logger;
 
-        public HuggingFaceClient(HttpClient httpClient, IConfiguration configuration)
+        public HuggingFaceClient(HttpClient httpClient, IConfiguration configuration, ILogger<HuggingFaceClient> logger)
         {
             _httpClient = httpClient;
             _apiKey = configuration["HuggingFace:ApiKey"];
             _apiUrl = configuration["HuggingFace:ApiUrl"];
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             if (string.IsNullOrEmpty(_apiKey) || string.IsNullOrEmpty(_apiUrl))
             {
@@ -94,7 +97,7 @@ namespace TravelMemories.Service.External
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in HuggingFaceClient.GenerateImageAsync: {ex.Message}");
+                _logger.LogError(ex, "Error in HuggingFaceClient.GenerateImageAsync");
                 throw;
             }
         }

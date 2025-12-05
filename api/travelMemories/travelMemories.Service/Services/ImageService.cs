@@ -32,7 +32,6 @@ namespace TravelMemories.Service.Services
         {
             // Check if user has enough storage quota
             var totalSize = request.Files.Sum(f => f.Length);
-            var sizeInMB = totalSize / (1024 * 1024);
 
             if (!await _userService.CheckStorageQuotaAsync(userId, (int)totalSize))
             {

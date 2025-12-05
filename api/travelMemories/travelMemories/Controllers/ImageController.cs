@@ -14,80 +14,57 @@ namespace TravelMemories.Controllers
     public class ImageController : ControllerBase
     {
         private readonly IImageService _imageService;
+        private readonly ILogger<ImageController> _logger;
 
-        public ImageController(IImageService imageService)
+        public ImageController(IImageService imageService, ILogger<ImageController> logger)
         {
             _imageService = imageService;
+            _logger = logger;
         }
 
         [HttpGet("{id}/content")]
         [AllowAnonymous]
         public async Task<ActionResult> GetImageContent(Guid id)
         {
-            Console.WriteLine($"[ImageController] GetImageContent called for image ID: {id}");
-
             Guid? userId = null;
 
             if (User.Identity.IsAuthenticated)
             {
                 userId = GetUserId();
-                Console.WriteLine($"[ImageController] Authenticated user ID: {userId}");
-            }
-            else
-            {
-                Console.WriteLine("[ImageController] Request from unauthenticated user");
             }
 
             try
             {
-                // Get image details first to log the expected file path
                 var image = await _imageService.GetImageByIdAsync(id, userId ?? Guid.Empty);
 
                 if (image == null)
                 {
-                    Console.WriteLine($"[ImageController] Image with ID {id} not found");
                     return NotFound(ErrorDto.NotFound("Image not found"));
                 }
 
-                Console.WriteLine($"[ImageController] Found image: ID={id}, FilePath={image.FilePath}, MimeType={image.MimeType}, IsAiGenerated={image.IsAiGenerated}");
-
-                // Download the image bytes
                 var imageBytes = await _imageService.DownloadImageAsync(id, userId ?? Guid.Empty);
 
                 if (imageBytes == null || imageBytes.Length == 0)
                 {
-                    Console.WriteLine($"[ImageController] No image data returned for image ID {id}");
                     return NotFound(ErrorDto.NotFound("Image data not found"));
                 }
-
-                Console.WriteLine($"[ImageController] Successfully downloaded image data: {imageBytes.Length} bytes");
 
                 return File(imageBytes, image.MimeType);
             }
             catch (InvalidOperationException ex)
             {
-                Console.WriteLine($"[ImageController] InvalidOperationException: {ex.Message}");
-                Console.WriteLine($"[ImageController] Stack trace: {ex.StackTrace}");
                 return BadRequest(ErrorDto.FromException(ex.Message));
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                Console.WriteLine($"[ImageController] KeyNotFoundException: {ex.Message}");
                 return NotFound(ErrorDto.NotFound("Image not found"));
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException)
             {
-                Console.WriteLine($"[ImageController] UnauthorizedAccessException: {ex.Message}");
                 return Forbid();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"[ImageController] Unhandled exception: {ex.Message}");
-                Console.WriteLine($"[ImageController] Stack trace: {ex.StackTrace}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"[ImageController] Inner exception: {ex.InnerException.Message}");
-                }
                 return StatusCode(500, ErrorDto.FromException("An error occurred while retrieving the image"));
             }
         }

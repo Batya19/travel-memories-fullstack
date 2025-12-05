@@ -23,21 +23,12 @@ namespace TravelMemories.Data.Repositories
 
         public async Task<IEnumerable<Image>> GetImagesByTripAsync(Guid tripId)
         {
-            Console.WriteLine($"DEBUG: Fetching images for trip ID: {tripId}");
-            var images = await _context.Images
+            return await _context.Images
                 .Include(i => i.ImageTags)
                 .ThenInclude(it => it.Tag)
                 .Where(i => i.TripId == tripId)
                 .OrderBy(i => i.TakenAt)
                 .ToListAsync();
-
-            Console.WriteLine($"DEBUG: Found {images.Count()} images for trip ID: {tripId}");
-            foreach (var img in images)
-            {
-                Console.WriteLine($"DEBUG: Image {img.Id} - TripId: {img.TripId}");
-            }
-
-            return images;
         }
 
         public async Task<IEnumerable<Image>> GetAiGeneratedImagesAsync(Guid userId)
