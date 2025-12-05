@@ -66,7 +66,8 @@ namespace TravelMemories.Service.Services
                 throw new ArgumentException("Prompt cannot be empty", nameof(request.Prompt));
             }
 
-            if (request.TripId == Guid.Empty)
+            // TripId is optional - only validate if it's provided and not empty
+            if (request.TripId.HasValue && request.TripId.Value == Guid.Empty)
             {
                 throw new ArgumentException("Trip ID cannot be empty", nameof(request.TripId));
             }
@@ -128,7 +129,7 @@ namespace TravelMemories.Service.Services
                     FilePath = filePath,
                     FileSize = imageBytes.Length,
                     MimeType = contentType,
-                    TripId = request.TripId == Guid.Empty ? (Guid?)null : request.TripId, 
+                    TripId = request.TripId, 
                     IsAiGenerated = true,
                     AiPrompt = request.Prompt,
                     AiStyle = request.Style,

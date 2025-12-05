@@ -2,6 +2,7 @@
 using TravelMemories.Core.Interfaces.Repositories;
 using TravelMemories.Core.Interfaces;
 using TravelMemories.Core.Models;
+using TravelMemories.Core.DTOs.Image;
 using TravelMemories.Service.Helpers;
 
 namespace TravelMemories.Service.Services

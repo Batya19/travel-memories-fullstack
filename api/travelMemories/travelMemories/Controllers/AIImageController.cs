@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
 using TravelMemories.Core.DTOs;
 using TravelMemories.Core.DTOs.AIImage;
 using TravelMemories.Core.Interfaces;
@@ -14,11 +15,13 @@ namespace TravelMemories.Controllers
     {
         private readonly IAIImageService _aiImageService;
         private readonly IUserService _userService;
+        private readonly ILogger<AIImageController> _logger;
 
-        public AIImageController(IAIImageService aiImageService, IUserService userService)
+        public AIImageController(IAIImageService aiImageService, IUserService userService, ILogger<AIImageController> logger)
         {
             _aiImageService = aiImageService;
             _userService = userService;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -26,7 +29,16 @@ namespace TravelMemories.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ErrorDto.ValidationError("Invalid request data"));
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .SelectMany(x => x.Value.Errors.Select(e => $"{x.Key}: {e.ErrorMessage}"))
+                    .ToList();
+                return BadRequest(ErrorDto.ValidationError("Invalid request data", errors));
+            }
+
+            if (request == null)
+            {
+                return BadRequest(ErrorDto.ValidationError("Request body cannot be null"));
             }
 
             var userId = GetUserId();
@@ -53,9 +65,27 @@ namespace TravelMemories.Controllers
                     TripId = image.TripId
                 });
             }
+            catch (ArgumentException ex)
+            {
+                // This could be a configuration issue (missing API key/URL)
+                _logger.LogError(ex, "Configuration or validation error in AI image generation");
+                return BadRequest(ErrorDto.ValidationError(ex.Message));
+            }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(ErrorDto.FromException(ex.Message));
+            }
+            catch (HttpRequestException ex)
+            {
+                // This could be a HuggingFace API credential/connection issue
+                _logger.LogError(ex, "HTTP error calling HuggingFace API");
+                return BadRequest(ErrorDto.FromException($"Failed to generate image. Please check API configuration. {ex.Message}"));
+            }
+            catch (Exception ex)
+            {
+                // Log unexpected errors but don't expose internal details
+                _logger.LogError(ex, "Unexpected error in AI image generation");
+                return StatusCode(500, ErrorDto.FromException("An unexpected error occurred while generating the image"));
             }
         }
 
@@ -94,10 +124,10 @@ namespace TravelMemories.Controllers
             }
         }
 
-        [HttpGet("user-images")] // נקודת קצה ייעודית
+        [HttpGet("user-images")] // Dedicated endpoint
         public async Task<ActionResult<IEnumerable<Image>>> GetUserAiImages()
         {
-            var userId = GetUserId(); // קבל את ה-ID של המשתמש המאומת מהטוקן
+            var userId = GetUserId(); // Get the authenticated user ID from the token
 
             if (userId == Guid.Empty)
             {
@@ -107,9 +137,9 @@ namespace TravelMemories.Controllers
             try
             {
                 var images = await _aiImageService.GetAiImagesForUserAsync(userId);
-                // ייתכן שתרצה למפות את אובייקט ה-Image למודל DTO קטן יותר
-                // כדי לא לחשוף פרטים פנימיים של המודל.
-                // לדוגמה, יצירת DTO חדש: AIImageResponseForList
+                // You may want to map the Image object to a smaller DTO model
+                // to avoid exposing internal model details.
+                // For example, create a new DTO: AIImageResponseForList
                 return Ok(images);
             }
             catch (Exception ex)

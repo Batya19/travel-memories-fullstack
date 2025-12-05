@@ -20,9 +20,16 @@ namespace TravelMemories.Service.External
             _apiUrl = configuration["HuggingFace:ApiUrl"];
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            if (string.IsNullOrEmpty(_apiKey) || string.IsNullOrEmpty(_apiUrl))
+            if (string.IsNullOrEmpty(_apiKey))
             {
-                throw new ArgumentException("Hugging Face API configuration is missing");
+                _logger.LogError("HuggingFace API key is missing in configuration");
+                throw new ArgumentException("Hugging Face API key is not configured. Please set HuggingFace:ApiKey in configuration.");
+            }
+
+            if (string.IsNullOrEmpty(_apiUrl))
+            {
+                _logger.LogError("HuggingFace API URL is missing in configuration");
+                throw new ArgumentException("Hugging Face API URL is not configured. Please set HuggingFace:ApiUrl in configuration.");
             }
 
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
@@ -32,12 +39,12 @@ namespace TravelMemories.Service.External
         {
             try
             {
-                // שינוי הפרמטרים למבנה שמתאים למודלים של Stable Diffusion XL
+                // Adjust parameters to match Stable Diffusion XL model structure
                 var requestData = new
                 {
                     inputs = style != null ? $"{prompt} in {style} style" : prompt,
-                    // מחיקת parameters שלא תואמים את המודל הנוכחי
-                    // השאר רק את ה-input
+                    // Removed parameters that don't match the current model
+                    // Only keeping the input field
                 };
 
                 var content = new StringContent(
@@ -46,7 +53,7 @@ namespace TravelMemories.Service.External
                     "application/json"
                 );
 
-                // הוספת ניסיונות חוזרים במקרה של כישלון
+                // Add retry attempts in case of failure
                 int maxRetries = 2;
                 int retryCount = 0;
                 HttpResponseMessage response = null;
@@ -63,17 +70,25 @@ namespace TravelMemories.Service.External
                         }
                         else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
                         {
-                            // המודל מתחמם, חכה ונסה שוב
+                            // Model is warming up, wait and try again
                             retryCount++;
                             if (retryCount <= maxRetries)
                             {
-                                await Task.Delay(2000); // המתנה לפני ניסיון חוזר
+                                await Task.Delay(2000); // Wait before retry attempt
                                 continue;
                             }
                         }
 
-                        // כל שגיאה אחרת, נקבל פרטים ונזרוק שגיאה
+                        // For any other error, get details and throw exception
                         var errorContent = await response.Content.ReadAsStringAsync();
+                        _logger.LogError("HuggingFace API error: Status {StatusCode}, Details: {ErrorContent}", response.StatusCode, errorContent);
+                        
+                        // Check for common authentication errors
+                        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        {
+                            throw new HttpRequestException($"Hugging Face API authentication failed. Please check your API key configuration. Status: {response.StatusCode}");
+                        }
+                        
                         throw new HttpRequestException($"Hugging Face API request failed: {response.StatusCode}. Details: {errorContent}");
                     }
                     catch (HttpRequestException)
