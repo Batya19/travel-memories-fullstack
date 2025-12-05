@@ -16,7 +16,7 @@ namespace TravelMemories
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtSettings = configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings.GetValue<string>("SecretKey");
+            var secretKey = jwtSettings.GetValue<string>("SecretKey") ?? "DefaultSecretKeyForTestingPurposesOnlyAtLeast32Chars!";
 
             services.AddAuthentication(options =>
             {
@@ -31,8 +31,8 @@ namespace TravelMemories
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSettings.GetValue<string>("Issuer"),
-                    ValidAudience = jwtSettings.GetValue<string>("Audience"),
+                    ValidIssuer = jwtSettings.GetValue<string>("Issuer") ?? "TravelMemories",
+                    ValidAudience = jwtSettings.GetValue<string>("Audience") ?? "TravelMemoriesUsers",
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
                     ClockSkew = TimeSpan.Zero
                 };
