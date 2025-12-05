@@ -17,10 +17,11 @@ using Xunit;
 
 namespace TravelMemories.Tests.Controllers
 {
-    public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
+    public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
     {
         private readonly WebApplicationFactory<Program> _factory;
         private readonly HttpClient _client;
+        private static readonly string _testDbName = "TestDb_AuthController_" + Guid.NewGuid().ToString();
 
         public AuthControllerTests(WebApplicationFactory<Program> factory)
         {
@@ -70,7 +71,7 @@ namespace TravelMemories.Tests.Controllers
 
                     services.AddDbContext<ApplicationDbContext>(options =>
                     {
-                        options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid().ToString());
+                        options.UseInMemoryDatabase(_testDbName);
                     });
 
                     var s3ServiceDescriptors = services.Where(
@@ -200,6 +201,11 @@ namespace TravelMemories.Tests.Controllers
                 throw new Exception($"Expected Unauthorized or BadRequest but got {response.StatusCode}. Response: {errorContent}");
             }
             response.StatusCode.Should().BeOneOf(HttpStatusCode.Unauthorized, HttpStatusCode.BadRequest);
+        }
+
+        public void Dispose()
+        {
+            _client?.Dispose();
         }
     }
 }
