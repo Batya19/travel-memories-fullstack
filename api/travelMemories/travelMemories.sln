@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TravelMemories.Data", "Trav
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TravelMemories.Service", "TravelMemories.Service\TravelMemories.Service.csproj", "{3AAA0EC7-9B2E-49AF-9A3B-1E258F33E2E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "travelMemories.Tests", "travelMemories.Tests\travelMemories.Tests.csproj", "{B2293828-C5D5-4288-BE91-2E9646C04C28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{3AAA0EC7-9B2E-49AF-9A3B-1E258F33E2E9}.Release|x64.Build.0 = Release|Any CPU
 		{3AAA0EC7-9B2E-49AF-9A3B-1E258F33E2E9}.Release|x86.ActiveCfg = Release|Any CPU
 		{3AAA0EC7-9B2E-49AF-9A3B-1E258F33E2E9}.Release|x86.Build.0 = Release|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Debug|x64.Build.0 = Debug|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Debug|x86.Build.0 = Debug|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Release|x64.ActiveCfg = Release|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Release|x64.Build.0 = Release|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Release|x86.ActiveCfg = Release|Any CPU
+		{B2293828-C5D5-4288-BE91-2E9646C04C28}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
