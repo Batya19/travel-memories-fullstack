@@ -57,64 +57,54 @@ return error.message || 'Unknown error occurred';
 const authService = {
 register: async (email: string, password: string, firstName: string, lastName: string) => {
     try {
-        console.log('Attempting registration with:', { email, firstName, lastName });
         const response = await apiService.post<AuthResponse>('/auth/register', {
             email,
             password,
             firstName,
             lastName
         });
-        console.log('Registration successful, token received');
 
-        // Map the response to a User object
         const user: User = {
             id: response.userId,
             email: response.email,
             firstName: response.firstName,
             lastName: response.lastName,
             role: response.role as 'USER' | 'SYSTEM_ADMIN',
-            storageQuota: 10240, // Default values
+            storageQuota: 10240,
             aiQuota: 50
         };
 
-        console.log('Saving user to localStorage:', user);
         localStorage.setItem('token', response.token);
         localStorage.setItem('user', JSON.stringify(user));
 
         return user;
     } catch (error) {
-        console.error('Registration failed:', error);
         throw error;
     }
 },
 
 login: async (email: string, password: string) => {
     try {
-        console.log('Attempting login with:', { email });
         const response = await apiService.post<AuthResponse>('/auth/login', {
             email,
             password
         });
-        console.log('Login successful, token received');
 
-        // Map the response to a User object
         const user: User = {
             id: response.userId,
             email: response.email,
             firstName: response.firstName,
             lastName: response.lastName,
             role: response.role as 'USER' | 'SYSTEM_ADMIN',
-            storageQuota: 10240, // Default values
+            storageQuota: 10240,
             aiQuota: 50
         };
 
-        console.log('Saving user to localStorage:', user);
         localStorage.setItem('token', response.token);
         localStorage.setItem('user', JSON.stringify(user));
 
         return user;
     } catch (error) {
-        console.error('Login failed:', error);
         throw error;
     }
 },
@@ -126,17 +116,14 @@ logout: () => {
 
 getCurrentUser: (): User | null => {
     const userStr = localStorage.getItem('user');
-    console.log('getCurrentUser - userStr from localStorage:', userStr);
 
     if (!userStr) return null;
 
     try {
         const user = JSON.parse(userStr);
-        console.log('getCurrentUser - parsed user:', user);
         return user;
     } catch (error) {
-        console.error('Error parsing user from localStorage:', error);
-        localStorage.removeItem('user'); // Remove invalid data
+        localStorage.removeItem('user');
         return null;
     }
 },
@@ -156,17 +143,15 @@ isAuthenticated: (): boolean => {
 
 testConnection: async () => {
     try {
-        await apiService.get('/health'); // Assumes you have a /health endpoint
+        await apiService.get('/trips');
         return true;
     } catch (error) {
-        console.error('Backend connection test failed:', error);
         return false;
     }
 },
 
 updateProfile: async (data: { firstName: string, lastName: string }) => {
     try {
-        // Get current user's email to include in the update
         const user = authService.getCurrentUser();
         if (!user) {
             throw new Error('No authenticated user found');
@@ -180,15 +165,12 @@ updateProfile: async (data: { firstName: string, lastName: string }) => {
 
         const response = await apiService.put<User>('/users/me', updateData);
 
-        // Update user in local storage
         const updatedUser = { ...user, ...data };
         localStorage.setItem('user', JSON.stringify(updatedUser));
 
         return response;
     } catch (error) {
         console.error('Failed to update profile:', error);
-        
-        // Extract and throw a more informative error
         const errorMessage = extractErrorMessage(error);
         throw new Error(errorMessage);
     }
@@ -213,11 +195,8 @@ getUserQuota: async () => {
         return await apiService.get('/users/quota');
     } catch (error) {
         console.error('Failed to get user quota:', error);
-
-        // Extract and throw a more informative error
         const errorMessage = extractErrorMessage(error);
 
-        // Fallback to default quota from current user
         const user = authService.getCurrentUser();
         if (user) {
             return {

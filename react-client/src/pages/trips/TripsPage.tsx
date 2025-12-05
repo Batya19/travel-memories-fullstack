@@ -91,17 +91,15 @@ const TripsPage: React.FC = () => {
                                 imageMap[trip.id] = images[0];
                             }
                         })
-                        .catch(() => {
-                            // Removed unused error parameter
-                            console.error(`Error fetching images for trip ${trip.id}`);
+                        .catch((error) => {
+                            console.error(`Error fetching images for trip ${trip.id}:`, error);
                         })
                 );
 
                 await Promise.all(requests);
                 setTripImagesMap(imageMap);
-            } catch {
-                // Removed unused error parameter
-                console.error("Error fetching trip images");
+            } catch (error) {
+                console.error("Error fetching trip images:", error);
             } finally {
                 setIsImagesLoading(false);
             }

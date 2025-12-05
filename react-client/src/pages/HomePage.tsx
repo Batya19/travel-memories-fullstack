@@ -40,9 +40,9 @@ const HomePage: React.FC = () => {
       
       // Create an array of promises for fetching images
       const imagePromises = recentTripsForImages.map(trip => 
-        imageService.getImages(trip.id).catch(err => {
+        imageService.getImages(trip.id).catch((err) => {
           console.error(`Error fetching images for trip ${trip.id}:`, err);
-          return []; // Return empty array if error occurs
+          return [];
         })
       );
       

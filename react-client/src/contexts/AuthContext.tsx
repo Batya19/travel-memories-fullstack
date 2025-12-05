@@ -183,7 +183,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return currentUser;
     } catch (error) {
       console.error('Error in profile update:', error);
-
       toast({
         title: 'Update failed',
         description: 'Failed to update profile.',
@@ -224,7 +223,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return success;
     } catch (error) {
       console.error('Error in password change:', error);
-
       toast({
         title: 'Password change failed',
         description: 'Failed to change password.',

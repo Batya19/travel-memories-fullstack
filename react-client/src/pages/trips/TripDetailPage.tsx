@@ -29,6 +29,7 @@ import {
     AlertDialogContent,
     AlertDialogOverlay,
     Divider,
+    useColorModeValue,
 } from '@chakra-ui/react';
 import { FaEdit, FaTrash, FaCalendarAlt, FaMapMarkerAlt, FaImages, FaPlus, FaMagic } from 'react-icons/fa';
 import { format } from 'date-fns';
@@ -146,8 +147,7 @@ const TripDetailPage: React.FC = () => {
                 );
                 navigate('/trips');
             },
-            onError: (error) => {
-                console.error('Error deleting trip:', error);
+            onError: () => {
                 showError(
                     'Error',
                     'Failed to delete trip. Please try again.'
@@ -174,8 +174,7 @@ const TripDetailPage: React.FC = () => {
                     'The image has been deleted successfully.'
                 );
             },
-            onError: (error) => {
-                console.error('Error deleting image:', error);
+            onError: () => {
                 showError(
                     'Error',
                     'Failed to delete the image. Please try again.'

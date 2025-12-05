@@ -139,14 +139,7 @@ const AIImageGenerator: React.FC = () => {
     });
 
     useEffect(() => {
-        if (quota && allAiImages) {
-            console.log("Quota info:", quota);
-            console.log("Total AI images:", allAiImages.length);
-            console.log("AI images dates:", allAiImages.map(img => ({ 
-                date: new Date(img.createdAt).toLocaleDateString(), 
-                prompt: img.aiPrompt?.substring(0, 20) 
-            })));
-        }
+        // Quota and AI images are available
     }, [quota, allAiImages]);
 
     const generateImage = useMutation({
@@ -273,7 +266,6 @@ const AIImageGenerator: React.FC = () => {
                             }, 100);
                             return;
                         } else {
-                            console.log('Canvas blob creation failed, falling back to fetch method');
                             fetchAndDownload();
                         }
                     }, 'image/png', 0.95);
@@ -321,9 +313,8 @@ const AIImageGenerator: React.FC = () => {
                         });
                     }, 100);
                 })
-                .catch(error => {
+                .catch((error) => {
                     console.error('Download error:', error);
-                    
                     toast({
                         title: 'Download Failed',
                         description: 'Could not download the image. The server might be slow or unavailable.',

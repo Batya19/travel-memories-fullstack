@@ -16,6 +16,7 @@ import { FaMapMarkerAlt, FaPlus, FaImage } from "react-icons/fa";
 import { Trip } from "../../../types";
 import LoadingSpinner from "../../common/feedback/LoadingSpinner";
 import ImagePlaceholder from "../../common/media/ImagePlaceholder";
+import Card from "../../common/ui/Card";
 
 interface RecentTripsSectionProps {
   trips: Trip[];
@@ -28,8 +29,6 @@ const RecentTripsSection: React.FC<RecentTripsSectionProps> = ({
   loading,
   error,
 }) => {
-  const cardBg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
   const noTripsBg = useColorModeValue("gray.50", "gray.700");
   const noTripsIconColor = useColorModeValue("gray.500", "gray.400");
 
@@ -90,16 +89,10 @@ const RecentTripsSection: React.FC<RecentTripsSectionProps> = ({
       ) : (
         <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={6}>
           {trips.map((trip) => (
-            <Box
+            <Card
               key={trip.id}
-              bg={cardBg}
-              borderRadius="lg"
               overflow="hidden"
-              boxShadow="md"
-              borderWidth="1px"
-              borderColor={borderColor}
-              transition="transform 0.2s"
-              _hover={{ transform: "translateY(-5px)" }}
+              hoverable
             >
               <Box position="relative" height="180px">
                 <ImagePlaceholder text="Travel Memories" height="180px" />
@@ -132,7 +125,7 @@ const RecentTripsSection: React.FC<RecentTripsSectionProps> = ({
                   View Details
                 </Button>
               </Stack>
-            </Box>
+            </Card>
           ))}
         </SimpleGrid>
       )}

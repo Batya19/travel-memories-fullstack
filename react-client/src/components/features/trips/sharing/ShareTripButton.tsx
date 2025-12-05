@@ -86,7 +86,7 @@ const ShareTripButton: React.FC<ShareTripButtonProps> = ({
                     isClosable: true,
                 });
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error('Failed to copy:', err);
                 toast({
                     title: 'Error',

@@ -2,7 +2,6 @@ import { apiService } from './api/client';
 import { Trip } from '../types';
 
 const tripService = {
-    // Get all trips for the current user
     getTrips: async () => {
         try {
             return await apiService.get<Trip[]>('/trips');
@@ -12,7 +11,6 @@ const tripService = {
         }
     },
 
-    // Get a specific trip by ID
     getTrip: async (id: string) => {
         try {
             return await apiService.get<Trip>(`/trips/${id}`);
@@ -22,7 +20,6 @@ const tripService = {
         }
     },
 
-    // Create a new trip
     createTrip: async (tripData: Omit<Trip, 'id' | 'createdAt'>) => {
         try {
             return await apiService.post<Trip>('/trips', tripData);
@@ -32,7 +29,6 @@ const tripService = {
         }
     },
 
-    // Update an existing trip
     updateTrip: async (id: string, tripData: Partial<Omit<Trip, 'id' | 'createdAt'>>) => {
         try {
             return await apiService.put<Trip>(`/trips/${id}`, tripData);
@@ -42,7 +38,6 @@ const tripService = {
         }
     },
 
-    // Delete a trip
     deleteTrip: async (id: string) => {
         try {
             return await apiService.delete<void>(`/trips/${id}`);
@@ -52,7 +47,6 @@ const tripService = {
         }
     },
 
-    // Generate a sharing link for a trip
     generateShareLink: async (id: string) => {
         try {
             const response = await apiService.post<{ shareId: string }>(`/trips/${id}/regenerate-share`);
@@ -63,7 +57,6 @@ const tripService = {
         }
     },
 
-    // Get a trip by share ID (for public access)
     getSharedTrip: async (shareId: string) => {
         try {
             return await apiService.get<Trip>(`/trips/shared/${shareId}`);

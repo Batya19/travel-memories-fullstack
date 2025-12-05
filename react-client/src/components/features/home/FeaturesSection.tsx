@@ -10,6 +10,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { FaMapMarkerAlt, FaImage, FaShareAlt } from 'react-icons/fa';
+import Card from '../../common/ui/Card';
 
 interface FeatureCardProps {
   title: string;
@@ -18,19 +19,17 @@ interface FeatureCardProps {
 }
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon }) => {
-  const cardBg = useColorModeValue('white', 'gray.800');
-
   return (
-    <VStack
+    <Card
       p={6}
-      bg={cardBg}
-      borderRadius="lg"
-      boxShadow="md"
-      spacing={4}
-      align="center"
-      textAlign="center"
-      h="100%"
+      hoverable
     >
+      <VStack
+        spacing={4}
+        align="center"
+        textAlign="center"
+        h="100%"
+      >
       <Flex
         w="60px"
         h="60px"
@@ -47,7 +46,8 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon }) =
         {title}
       </Heading>
       <Text color="gray.500">{description}</Text>
-    </VStack>
+      </VStack>
+    </Card>
   );
 };
 

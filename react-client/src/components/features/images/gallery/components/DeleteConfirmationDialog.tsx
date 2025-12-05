@@ -15,13 +15,21 @@ interface DeleteConfirmationDialogProps {
     onClose: () => void;
     onConfirm: () => void;
     cancelRef: RefObject<HTMLButtonElement>;
+    title?: string;
+    message?: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
 }
 
 export const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
     isOpen,
     onClose,
     onConfirm,
-    cancelRef
+    cancelRef,
+    title = 'Delete Image',
+    message = 'Are you sure you want to delete this image? This action cannot be undone.',
+    confirmLabel = 'Delete',
+    cancelLabel = 'Cancel'
 }) => {
     const cardBg = useColorModeValue('white', 'gray.800');
 
@@ -34,17 +42,17 @@ export const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> =
             <AlertDialogOverlay>
                 <AlertDialogContent bg={cardBg}>
                     <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                        Delete Image
+                        {title}
                     </AlertDialogHeader>
                     <AlertDialogBody>
-                        Are you sure you want to delete this image? This action cannot be undone.
+                        {message}
                     </AlertDialogBody>
                     <AlertDialogFooter>
                         <Button ref={cancelRef} onClick={onClose}>
-                            Cancel
+                            {cancelLabel}
                         </Button>
                         <Button colorScheme="red" onClick={onConfirm} ml={3}>
-                            Delete
+                            {confirmLabel}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -54,3 +62,4 @@ export const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> =
 };
 
 export default DeleteConfirmationDialog;
+

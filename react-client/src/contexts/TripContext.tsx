@@ -115,9 +115,7 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
   const fetchTripImages = async (tripId: string) => {
     setIsImagesLoading(true);
     try {
-      console.log(`Fetching images for trip: ${tripId}`);
       const images = await imageService.getImages(tripId);
-      console.log(`Received ${images.length} images for trip ${tripId}`);
       setTripImagesMap(prev => ({
         ...prev,
         [tripId]: images
@@ -236,7 +234,6 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       });
       return true;
     } catch (err) {
-      console.error(`Error deleting trip ${tripId}:`, err);
       toast({
         title: 'Error',
         description: 'Failed to delete trip. Please try again.',
@@ -252,7 +249,6 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
     try {
       // Fixed: Removed the empty array parameter
       const uploadedImages = await imageService.uploadImages(files, tripId, onProgress);
-      console.log(`Uploaded ${uploadedImages.length} images to trip ${tripId}`);
       setTripImagesMap(prev => {
         const currentImages = prev[tripId] || [];
         return {
@@ -294,7 +290,6 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
             newMap[tripId] = newMap[tripId].filter(img => img.id !== imageId);
           }
         });
-        console.log(`Deleted image ${imageId} from trip ${foundInTrip}`);
         return newMap;
       });
       toast({
@@ -306,7 +301,6 @@ export const TripProvider: React.FC<TripProviderProps> = ({ children }) => {
       });
       return true;
     } catch (err) {
-      console.error(`Error deleting image ${imageId}:`, err);
       toast({
         title: 'Error',
         description: 'Failed to delete the image. Please try again.',

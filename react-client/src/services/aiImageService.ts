@@ -26,7 +26,6 @@ export interface AIQuotaResponse {
 const aiImageService = {
     generateImage: async (request: AIImageRequest): Promise<AIImageResponse> => {
         try {
-            console.log('Sending request to API:', request);
             const response = await apiClient.post<AIImageResponse>('/ai-images', request);
             return response.data;
         } catch (error) {
@@ -41,16 +40,6 @@ const aiImageService = {
             return response.data;
         } catch (error) {
             console.error('Failed to fetch quota information:', error);
-            throw error;
-        }
-    },
-
-    getAiImagesForUser: async (): Promise<Image[]> => {
-        try {
-            const response = await apiClient.get<Image[]>('/ai-images/user-images');
-            return response.data;
-        } catch (error) {
-            console.error('Failed to fetch AI images for user:', error);
             throw error;
         }
     }

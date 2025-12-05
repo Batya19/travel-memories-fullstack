@@ -16,6 +16,7 @@ import {
 import { FaMapMarkerAlt, FaGlobeAmericas, FaCalendarAlt, FaImage } from 'react-icons/fa';
 import { Trip, Image } from '../../../types';
 import HomePageMap from '../trips/map/HomePageMap';
+import Card from '../../common/ui/Card';
 
 interface MapDashboardSectionProps {
   trips: Trip[];
@@ -35,8 +36,6 @@ const MapDashboardSection: React.FC<MapDashboardSectionProps> = ({
   error, 
   user 
 }) => {
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
   const statsBg = useColorModeValue('brand.50', 'gray.700');
 
   // Calculate stats
@@ -94,79 +93,44 @@ const MapDashboardSection: React.FC<MapDashboardSectionProps> = ({
 
         {/* Stats cards */}
         <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} mb={6}>
-          <Stat
-            px={4}
-            py={3}
-            bg={cardBg}
-            borderRadius="lg"
-            boxShadow="sm"
-            borderWidth="1px"
-            borderColor={borderColor}
-          >
+          <Card as={Stat} px={4} py={3} boxShadow="sm">
             <StatLabel fontSize="sm" color="gray.500">Total Trips</StatLabel>
             <Flex align="center">
               <Icon as={FaGlobeAmericas} color="brand.500" mr={2} />
               <StatNumber fontSize="2xl">{stats.totalTrips}</StatNumber>
             </Flex>
-          </Stat>
+          </Card>
           
-          <Stat
-            px={4}
-            py={3}
-            bg={cardBg}
-            borderRadius="lg"
-            boxShadow="sm"
-            borderWidth="1px"
-            borderColor={borderColor}
-          >
+          <Card as={Stat} px={4} py={3} boxShadow="sm">
             <StatLabel fontSize="sm" color="gray.500">Days Traveled</StatLabel>
             <Flex align="center">
               <Icon as={FaCalendarAlt} color="brand.500" mr={2} />
               <StatNumber fontSize="2xl">{stats.totalDays}</StatNumber>
             </Flex>
-          </Stat>
+          </Card>
           
-          <Stat
-            px={4}
-            py={3}
-            bg={cardBg}
-            borderRadius="lg"
-            boxShadow="sm"
-            borderWidth="1px"
-            borderColor={borderColor}
-          >
+          <Card as={Stat} px={4} py={3} boxShadow="sm">
             <StatLabel fontSize="sm" color="gray.500">Photos</StatLabel>
             <Flex align="center">
               <Icon as={FaImage} color="brand.500" mr={2} />
               <StatNumber fontSize="2xl">{stats.totalImages}</StatNumber>
             </Flex>
-          </Stat>
+          </Card>
           
-          <Stat
-            px={4}
-            py={3}
-            bg={cardBg}
-            borderRadius="lg"
-            boxShadow="sm"
-            borderWidth="1px"
-            borderColor={borderColor}
-          >
+          <Card as={Stat} px={4} py={3} boxShadow="sm">
             <StatLabel fontSize="sm" color="gray.500">Places Visited</StatLabel>
             <Flex align="center">
               <Icon as={FaMapMarkerAlt} color="brand.500" mr={2} />
               <StatNumber fontSize="2xl">{stats.uniqueLocations}</StatNumber>
             </Flex>
-          </Stat>
+          </Card>
         </SimpleGrid>
 
         {/* Map container with nice styling */}
-        <Box 
-          bg={cardBg}
+        <Card 
           borderRadius="xl"
           overflow="hidden"
           boxShadow="lg"
-          borderWidth="1px"
-          borderColor={borderColor}
           height="450px"
           position="relative"
           mb={4}

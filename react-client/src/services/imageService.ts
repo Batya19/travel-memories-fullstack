@@ -13,25 +13,17 @@ const imageCache = new Map<string, Image[]>();
 const imageService = {
     getImages: async (tripId: string) => {
         if (imageCache.has(tripId)) {
-            console.log(`Using cached images for tripId: ${tripId}`);
             return imageCache.get(tripId)!;
         }
 
         try {
-            console.log(`API Call: Requesting images for tripId ${tripId}`);
-
-            const url = `/images/trip/${tripId}?_debug=${Date.now()}`;
-
+            const url = `/images/trip/${tripId}`;
             const response = await apiService.get<Image[]>(url);
-
-            console.log(`API Response: Received ${response.length} images for tripId ${tripId}`);
 
             const foreignImages = response.filter(img => img.tripId !== tripId);
             let correctImages = response;
             if (foreignImages.length > 0) {
-                console.error(`ERROR: Received ${foreignImages.length} images that don't belong to tripId ${tripId}:`, foreignImages);
                 correctImages = response.filter(img => img.tripId === tripId);
-                console.log(`FIXED: Filtered to ${correctImages.length} correct images for this trip`);
             }
 
             imageCache.set(tripId, correctImages);
@@ -51,7 +43,6 @@ const imageService = {
             formData.append('files', file);
         });
         formData.append('tags', JSON.stringify([]));
-
         formData.append('tripId', tripId);
 
         try {
@@ -71,11 +62,6 @@ const imageService = {
             return response;
         } catch (error) {
             console.error(`Failed to upload images for trip ${tripId}:`, error);
-            if (axios.isAxiosError(error) && error.response) {
-                console.error('Error response data:', error.response.data);
-                console.error('Error status:', error.response.status);
-                console.error('Error headers:', error.response.headers);
-            }
             throw error;
         }
     },
@@ -113,7 +99,6 @@ const imageService = {
 
     clearCache: () => {
         imageCache.clear();
-        console.log('Image cache cleared.');
     }
 };
 

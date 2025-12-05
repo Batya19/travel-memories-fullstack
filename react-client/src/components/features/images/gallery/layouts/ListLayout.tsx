@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box, Flex, Text, IconButton, VStack, Icon, useColorModeValue } from '@chakra-ui/react';
+import { Box, Flex, Text, IconButton, VStack, Icon } from '@chakra-ui/react';
 import { FaTrash, FaCalendarAlt } from 'react-icons/fa';
 import { Image as ImageType } from '../../../../../types';
 import { format } from 'date-fns';
 import ImageComponent from '../../../../common/media/ImageComponent';
 import ImageBadge from '../../../../common/media/ImageBadge';
+import Card from '../../../../common/ui/Card';
 
 interface ListLayoutProps {
     images: ImageType[];
@@ -19,21 +20,15 @@ export const ListLayout: React.FC<ListLayoutProps> = ({
     onImageClick,
     onDeleteClick
 }) => {
-    const cardBg = useColorModeValue('white', 'gray.800');
-    const cardBorderColor = useColorModeValue('gray.200', 'gray.700');
     const metaTextColor = useColorModeValue('gray.500', 'gray.400');
 
     return (
         <VStack spacing={spacing} align="stretch">
             {images.map((image, index) => (
-                <Flex
+                <Card
                     key={image.id}
-                    borderWidth="1px"
-                    borderRadius="md"
-                    borderColor={cardBorderColor}
-                    overflow="hidden"
+                    as={Flex}
                     boxShadow="sm"
-                    bg={cardBg}
                     transition="transform 0.2s"
                     _hover={{ transform: 'translateX(5px)' }}
                     cursor={onImageClick ? 'pointer' : 'default'}
@@ -86,7 +81,7 @@ export const ListLayout: React.FC<ListLayoutProps> = ({
                             />
                         )}
                     </Flex>
-                </Flex>
+                </Card>
             ))}
         </VStack>
     );
