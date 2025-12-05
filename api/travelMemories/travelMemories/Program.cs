@@ -11,6 +11,9 @@ using TravelMemories.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var isTesting = builder.Environment.EnvironmentName == "Testing" || 
+                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing";
+
 builder.Configuration.AddUserSecrets<Program>();
 
 builder.Logging.ClearProviders();
@@ -20,21 +23,27 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 3,
-            maxRetryDelay: TimeSpan.FromSeconds(3),
-            errorCodesToAdd: null)));
-
-builder.Services.AddAWSService<IAmazonS3>(new AWSOptions
+if (!isTesting)
 {
-    Credentials = new BasicAWSCredentials(
-        builder.Configuration["AWS:S3:AccessKey"],
-        builder.Configuration["AWS:S3:SecretKey"]),
-    Region = RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"])
-});
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(3),
+                errorCodesToAdd: null)));
+}
+
+if (!isTesting)
+{
+    builder.Services.AddAWSService<IAmazonS3>(new AWSOptions
+    {
+        Credentials = new BasicAWSCredentials(
+            builder.Configuration["AWS:S3:AccessKey"],
+            builder.Configuration["AWS:S3:SecretKey"]),
+        Region = RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"])
+    });
+}
 
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
