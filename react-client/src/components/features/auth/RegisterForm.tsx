@@ -41,8 +41,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
 
     if (!values.password) {
       errors.password = 'Password is required';
-    } else if (values.password.length < 6) {
+    } else if (values.password.length < 8) {
       errors.password = 'Password must be at least 8 characters';
+    } else if (values.password.length > 30) {
+      errors.password = 'Password must be 30 characters or less';
     }
 
     if (values.password !== values.confirmPassword) {
@@ -131,7 +133,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           type="password"
           value={values.password}
           onChange={handleChange}
-          placeholder="Create a password (at least 8 characters)"
+          placeholder="Create a password (8-30 characters)"
           size="lg"
           error={errors.password}
           isRequired

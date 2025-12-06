@@ -164,7 +164,7 @@ const MapDashboardSection: React.FC<MapDashboardSectionProps> = ({
               {stats.mappedTrips} of {stats.totalTrips} trips displayed
             </Text>
           </Flex>
-        </Box>
+        </Card>
         
         {/* Instructions */}
         <Text fontSize="sm" color="gray.500" textAlign="center">
