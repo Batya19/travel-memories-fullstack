@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Preconnect to API for faster requests -->
+    <link rel="preconnect" href="http://localhost:5272" crossorigin />
+    <link rel="dns-prefetch" href="http://localhost:5272" />
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/main.tsx" as="script" crossorigin />
+    
     <title>TravelMemories</title>
   </head>
   <body>

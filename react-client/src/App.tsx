@@ -1,26 +1,34 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
+import { ChakraProvider, ColorModeScript, Spinner, Flex } from '@chakra-ui/react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import TripProvider from './contexts/TripContext';
 import { ImageCacheProvider } from './contexts/ImageCacheContext';
 import theme from './theme';
 import HomePage from './pages/HomePage';
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
-import NotFoundPage from './pages/error/NotFoundPage';
-import TripDetailPage from './pages/trips/TripDetailPage';
-import TripsPage from './pages/trips/TripsPage';
-import TripFormPage from './pages/trips/TripFormPage';
-import SharedTripPage from './pages/trips/SharedTripPage';
 import Header from './components/common/layout/Header';
 import Footer from './components/common/layout/Footer';
-import ProfilePage from './pages/ProfilePage';
-import AIImageGenerator from './pages/ai/AIImageGenerator';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import TermsOfServicePage from './pages/legal/TermsOfServicePage';
-import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
+
+// Lazy load heavy components
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
+const NotFoundPage = lazy(() => import('./pages/error/NotFoundPage'));
+const TripDetailPage = lazy(() => import('./pages/trips/TripDetailPage'));
+const TripsPage = lazy(() => import('./pages/trips/TripsPage'));
+const TripFormPage = lazy(() => import('./pages/trips/TripFormPage'));
+const SharedTripPage = lazy(() => import('./pages/trips/SharedTripPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const AIImageGenerator = lazy(() => import('./pages/ai/AIImageGenerator'));
+const TermsOfServicePage = lazy(() => import('./pages/legal/TermsOfServicePage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/legal/PrivacyPolicyPage'));
+
+// Loading component
+const PageLoader = () => (
+  <Flex justify="center" align="center" minH="60vh">
+    <Spinner size="xl" color="brand.500" thickness="4px" />
+  </Flex>
+);
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -36,9 +44,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,
+      staleTime: 1000 * 60 * 10, // 10 minutes cache
+      gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
       refetchOnWindowFocus: false,
+      refetchOnMount: false, // Don't refetch on component mount if data exists
+      refetchOnReconnect: false,
       retry: 1,
+      networkMode: 'online', // Only run queries when online
     },
   },
 });
@@ -56,15 +68,16 @@ function App() {
               <ImageCacheProvider>
                 <TripProvider>
                   <Header />
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/trips/shared/:shareId" element={<SharedTripPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/terms" element={<TermsOfServicePage />} />
-                  <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      {/* Public routes */}
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/register" element={<RegisterPage />} />
+                      <Route path="/trips/shared/:shareId" element={<SharedTripPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route path="/terms" element={<TermsOfServicePage />} />
+                      <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
                   {/* Protected routes */}
                   <Route path="/trips" element={
@@ -90,17 +103,17 @@ function App() {
                       <TripFormPage isEditing />
                     </ProtectedRoute>
                   } />
-                  <Route path="/ai-images" element={<AIImageGenerator />} />
-                  <Route path="/trips/:tripId/ai-images" element={<AIImageGenerator />} />
-                  {/* Catch-all route for 404 */}
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
+                      <Route path="/ai-images" element={<AIImageGenerator />} />
+                      <Route path="/trips/:tripId/ai-images" element={<AIImageGenerator />} />
+                      {/* Catch-all route for 404 */}
+                      <Route path="*" element={<NotFoundPage />} />
+                    </Routes>
+                  </Suspense>
                   <Footer />
                 </TripProvider>
               </ImageCacheProvider>
             </AuthProvider>
           </Router>
-          <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </ChakraProvider>
     </>
