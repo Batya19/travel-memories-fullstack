@@ -15,7 +15,6 @@ import {
     Text,
     HStack,
     IconButton,
-    useToast,
 } from '@chakra-ui/react';
 import { Trip } from '../../../../types';
 import DatePicker from 'react-datepicker';
@@ -23,6 +22,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import MapLocationPicker from '../map/MapLocationPicker';
 import { useCreateTrip, useUpdateTrip } from '../../../../hooks/useQueryHooks';
+import { useToastNotification } from '../../../../hooks/useToastNotification';
 
 interface TripFormProps {
     initialData?: Partial<Trip>;
@@ -48,7 +48,7 @@ const TripForm: React.FC<TripFormProps> = ({ initialData, isEditing = false }) =
     const [showMap, setShowMap] = useState(false);
 
     const navigate = useNavigate();
-    const toast = useToast();
+    const { showSuccess, showError } = useToastNotification();
     
     // React Query mutations
     const createTrip = useCreateTrip();
@@ -142,23 +142,11 @@ const TripForm: React.FC<TripFormProps> = ({ initialData, isEditing = false }) =
                 { id: initialData.id, data: tripData },
                 {
                     onSuccess: (updatedTrip) => {
-                        toast({
-                            title: 'Trip updated',
-                            description: `${formData.name} has been updated successfully.`,
-                            status: 'success',
-                            duration: 5000,
-                            isClosable: true,
-                        });
+                        showSuccess('Trip updated', `${formData.name} has been updated successfully.`);
                         navigate(`/trips/${updatedTrip.id}`);
                     },
                     onError: (error) => {
-                        toast({
-                            title: 'Error',
-                            description: 'Failed to update trip. Please try again.',
-                            status: 'error',
-                            duration: 5000,
-                            isClosable: true,
-                        });
+                        showError('Error', 'Failed to update trip. Please try again.');
                         console.error('Error updating trip:', error);
                     }
                 }
@@ -166,23 +154,11 @@ const TripForm: React.FC<TripFormProps> = ({ initialData, isEditing = false }) =
         } else {
             createTrip.mutate(tripData, {
                 onSuccess: (newTrip) => {
-                    toast({
-                        title: 'Trip created',
-                        description: `${formData.name} has been created successfully.`,
-                        status: 'success',
-                        duration: 5000,
-                        isClosable: true,
-                    });
+                    showSuccess('Trip created', `${formData.name} has been created successfully.`);
                     navigate(`/trips/${newTrip.id}`);
                 },
                 onError: (error) => {
-                    toast({
-                        title: 'Error',
-                        description: 'Failed to create trip. Please try again.',
-                        status: 'error',
-                        duration: 5000,
-                        isClosable: true,
-                    });
+                    showError('Error', 'Failed to create trip. Please try again.');
                     console.error('Error creating trip:', error);
                 }
             });

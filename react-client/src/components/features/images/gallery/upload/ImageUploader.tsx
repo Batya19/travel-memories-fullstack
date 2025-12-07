@@ -4,7 +4,6 @@ import {
   Button,
   Flex,
   Text,
-  useToast,
   Progress,
   VStack,
   HStack,
@@ -16,6 +15,7 @@ import {
 import { FaUpload, FaTrash, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 import imageService from '../../../../../services/imageService';
 import { useDropzone } from 'react-dropzone';
+import { useToastNotification } from '../../../../../hooks/useToastNotification';
 
 interface ImageUploaderProps {
   tripId: string;
@@ -38,7 +38,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [files, setFiles] = useState<PreviewFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const toast = useToast();
+  const { showSuccess, showWarning, showError } = useToastNotification();
   const currentFileRef = useRef<number>(0);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -56,15 +56,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     setFiles(current => [...current, ...filesWithPreview]);
 
     if (acceptedFiles.length > availableSlots) {
-      toast({
-        title: 'Some files skipped',
-        description: `Only ${availableSlots} more files can be added (maximum ${maxFiles} files).`,
-        status: 'warning',
-        duration: 5000,
-        isClosable: true,
-      });
+      showWarning(
+        'Some files skipped',
+        `Only ${availableSlots} more files can be added (maximum ${maxFiles} files).`
+      );
     }
-  }, [files.length, maxFiles, toast]);
+  }, [files.length, maxFiles, showWarning]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -147,13 +144,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       }
 
       if (successCount > 0) {
-        toast({
-          title: 'Upload complete',
-          description: `Successfully uploaded ${successCount} ${successCount === 1 ? 'image' : 'images'}.`,
-          status: 'success',
-          duration: 5000,
-          isClosable: true,
-        });
+        showSuccess(
+          'Upload complete',
+          `Successfully uploaded ${successCount} ${successCount === 1 ? 'image' : 'images'}.`
+        );
 
         if (onUploadComplete) {
           onUploadComplete();
@@ -161,23 +155,17 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       }
 
       if (successCount < files.length) {
-        toast({
-          title: 'Some uploads failed',
-          description: `${files.length - successCount} ${files.length - successCount === 1 ? 'image' : 'images'} failed to upload. You can try again.`,
-          status: 'warning',
-          duration: 5000,
-          isClosable: true,
-        });
+        showWarning(
+          'Some uploads failed',
+          `${files.length - successCount} ${files.length - successCount === 1 ? 'image' : 'images'} failed to upload. You can try again.`
+        );
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast({
-        title: 'Upload error',
-        description: error instanceof Error ? error.message : 'An unexpected error occurred during upload.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      showError(
+        'Upload error',
+        error instanceof Error ? error.message : 'An unexpected error occurred during upload.'
+      );
     } finally {
       setIsUploading(false);
       setUploadProgress(0);

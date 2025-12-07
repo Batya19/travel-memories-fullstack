@@ -1,6 +1,7 @@
 // src/hooks/useFormValidation.ts
 
 import { useState } from 'react';
+import { EMAIL_REGEX } from '../utils/validationUtils';
 
 type ValidationRule<T> = (value: any, formValues: T) => string | null;
 
@@ -44,7 +45,7 @@ export function useFormValidation<T extends Record<string, any>>(validationSchem
         }
 
         // Email validation
-        if (fieldValidation.email && !/\S+@\S+\.\S+/.test(value)) {
+        if (fieldValidation.email && !EMAIL_REGEX.test(value)) {
             return 'Email is invalid';
         }
 

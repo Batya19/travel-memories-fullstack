@@ -7,6 +7,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { LoginFormData } from '../../../types';
 import { useForm } from '../../../hooks/useForm';
 import FormInput from '../../common/forms/FormInput';
+import { validateEmail, validateRequired } from '../../../utils/validationUtils';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -19,14 +20,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const validateForm = (values: LoginFormData) => {
     const errors: Record<string, string> = {};
 
-    if (!values.email) {
-      errors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
-      errors.email = 'Email is invalid';
+    const emailError = validateEmail(values.email);
+    if (emailError) {
+      errors.email = emailError;
     }
 
-    if (!values.password) {
-      errors.password = 'Password is required';
+    const passwordError = validateRequired(values.password, 'Password');
+    if (passwordError) {
+      errors.password = passwordError;
     }
 
     return errors;

@@ -12,6 +12,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { RegisterFormData } from '../../../types';
 import { useForm } from '../../../hooks/useForm';
 import FormInput from '../../common/forms/FormInput';
+import { validateEmail, validatePassword, validatePasswordMatch, validateRequired } from '../../../utils/validationUtils';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -25,30 +26,29 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const validateForm = (values: RegisterFormData) => {
     const errors: Record<string, string> = {};
 
-    if (!values.firstName) {
-      errors.firstName = 'First name is required';
+    const firstNameError = validateRequired(values.firstName, 'First name');
+    if (firstNameError) {
+      errors.firstName = firstNameError;
     }
 
-    if (!values.lastName) {
-      errors.lastName = 'Last name is required';
+    const lastNameError = validateRequired(values.lastName, 'Last name');
+    if (lastNameError) {
+      errors.lastName = lastNameError;
     }
 
-    if (!values.email) {
-      errors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
-      errors.email = 'Email is invalid';
+    const emailError = validateEmail(values.email);
+    if (emailError) {
+      errors.email = emailError;
     }
 
-    if (!values.password) {
-      errors.password = 'Password is required';
-    } else if (values.password.length < 8) {
-      errors.password = 'Password must be at least 8 characters';
-    } else if (values.password.length > 30) {
-      errors.password = 'Password must be 30 characters or less';
+    const passwordError = validatePassword(values.password, 8, 30);
+    if (passwordError) {
+      errors.password = passwordError;
     }
 
-    if (values.password !== values.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+    const passwordMatchError = validatePasswordMatch(values.password, values.confirmPassword);
+    if (passwordMatchError) {
+      errors.confirmPassword = passwordMatchError;
     }
 
     if (!termsAccepted) {

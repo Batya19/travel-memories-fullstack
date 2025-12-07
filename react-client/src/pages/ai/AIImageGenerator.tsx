@@ -36,6 +36,7 @@ import imageService from '../../services/imageService';
 import { useTrip } from '../../hooks/useQueryHooks';
 import { getImageUrl } from '../../utils/imageUtils';
 import tripService from '../../services/tripService';
+import { formatDateLong } from '../../utils/dateUtils';
 
 interface AIImage {
     id: string;
@@ -423,12 +424,12 @@ const AIImageGenerator: React.FC = () => {
                                         </Text>
                                     ) : (
                                         <Text fontSize="sm" color="red.500">
-                                            You've reached your monthly quota. Quota resets on {new Date(quota.resetDate).toLocaleDateString()}.
+                                            You've reached your monthly quota. Quota resets on {formatDateLong(quota.resetDate)}.
                                         </Text>
                                     )}
                                     {quota.resetDate && (
                                         <Text fontSize="xs" mt={1} color={mutedTextColor}>
-                                            Next quota reset: {new Date(quota.resetDate).toLocaleDateString()}
+                                            Next quota reset: {formatDateLong(quota.resetDate)}
                                         </Text>
                                     )}
                                     {allAiImages.length > quota.used && (

@@ -17,6 +17,7 @@ import { Trip } from "../../../types";
 import LoadingSpinner from "../../common/feedback/LoadingSpinner";
 import ImagePlaceholder from "../../common/media/ImagePlaceholder";
 import Card from "../../common/ui/Card";
+import { formatDateRangeLong } from "../../../utils/dateUtils";
 
 interface RecentTripsSectionProps {
   trips: Trip[];
@@ -31,15 +32,6 @@ const RecentTripsSection: React.FC<RecentTripsSectionProps> = ({
 }) => {
   const noTripsBg = useColorModeValue("gray.50", "gray.700");
   const noTripsIconColor = useColorModeValue("gray.500", "gray.400");
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
 
   return (
     <Container maxW="6xl" py={12}>
@@ -102,7 +94,7 @@ const RecentTripsSection: React.FC<RecentTripsSectionProps> = ({
                   {trip.name}
                 </Heading>
                 <Text fontSize="sm" color="gray.500">
-                  {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
+                  {formatDateRangeLong(trip.startDate, trip.endDate)}
                 </Text>
 
                 {trip.locationName && (

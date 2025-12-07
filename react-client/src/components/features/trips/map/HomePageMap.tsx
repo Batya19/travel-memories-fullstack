@@ -17,30 +17,11 @@ import imageService from '../../../../services/imageService';
 import LoadingSpinner from '../../../common/feedback/LoadingSpinner';
 import ImagePlaceholder from '../../../common/media/ImagePlaceholder';
 import { getImageUrl } from '../../../../utils/imageUtils';
+import { initializeLeafletIcons, createCustomIcon } from '../../../../utils/leafletUtils';
+import { formatDateRange } from '../../../../utils/dateUtils';
 
-// Fix for Leaflet icon issues in React
-interface IconDefault extends L.Icon.Default {
-  _getIconUrl?: string;
-}
-delete ((L.Icon.Default.prototype as IconDefault)._getIconUrl);
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-});
-
-// Custom marker icon
-const createCustomIcon = () => {
-  return new L.Icon({
-    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-  });
-};
+// Initialize Leaflet icons
+initializeLeafletIcons();
 
 interface TripMarkerProps {
   trip: Trip;
@@ -83,15 +64,6 @@ const TripMarker: React.FC<TripMarkerProps> = ({ trip }) => {
 
     fetchFirstImage();
   }, [trip.id]);
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric'
-    });
-  };
 
   const handleClick = () => {
     navigate(`/trips/${trip.id}`);
@@ -158,7 +130,7 @@ const TripMarker: React.FC<TripMarkerProps> = ({ trip }) => {
             
             <Flex align="center" justify="space-between" fontSize="xs" mb={1}>
               <Text color="gray.500">
-                {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
+                {formatDateRange(trip.startDate, trip.endDate)}
               </Text>
             </Flex>
             

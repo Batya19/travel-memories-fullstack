@@ -8,6 +8,48 @@ interface TripMapProps {
     locationName?: string;
 }
 
+// Helper function to create custom popup HTML
+const createPopupContent = (locationName: string): string => {
+    return `
+        <div style="
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            min-width: 200px;
+            text-align: center;
+        ">
+            <div style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            ">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#e53e3e">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                <span style="
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #2d3748;
+                    margin: 0;
+                ">${locationName}</span>
+            </div>
+        </div>
+    `;
+};
+
+// Helper function to bind popup to marker
+const bindPopupToMarker = (marker: L.Marker, locationName: string): void => {
+    marker.bindPopup(createPopupContent(locationName), {
+        closeButton: true,
+        autoClose: true,
+        className: 'custom-popup'
+    }).openPopup();
+};
+
 const TripMap: React.FC<TripMapProps> = ({ latitude, longitude, locationName }) => {
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
@@ -19,14 +61,10 @@ const TripMap: React.FC<TripMapProps> = ({ latitude, longitude, locationName }) 
         const initMap = async () => {
             try {
                 const L = (await import('leaflet')).default;
+                const { initializeLeafletIcons } = await import('../../../../utils/leafletUtils');
                 
-                // Fix leaflet's icon paths
-                delete ((L.Icon.Default.prototype as unknown) as Record<string, unknown>)._getIconUrl;
-                L.Icon.Default.mergeOptions({
-                    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-                    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-                    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-                });
+                // Initialize Leaflet icons
+                initializeLeafletIcons();
 
                 if (!mapInstanceRef.current) {
                     const map = L.map(mapRef.current!).setView([latitude, longitude], 13);
@@ -37,43 +75,9 @@ const TripMap: React.FC<TripMapProps> = ({ latitude, longitude, locationName }) 
 
                     markerRef.current = L.marker([latitude, longitude]).addTo(map);
                     
-                    // Create custom styled popup
-                    if (locationName) {
-                        const customPopupContent = `
-                            <div style="
-                                background: white;
-                                padding: 12px 16px;
-                                border-radius: 8px;
-                                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                                border: 1px solid #e2e8f0;
-                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-                                min-width: 200px;
-                                text-align: center;
-                            ">
-                                <div style="
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    gap: 8px;
-                                ">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#e53e3e">
-                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                                    </svg>
-                                    <span style="
-                                        font-size: 14px;
-                                        font-weight: 600;
-                                        color: #2d3748;
-                                        margin: 0;
-                                    ">${locationName}</span>
-                                </div>
-                            </div>
-                        `;
-                        
-                        markerRef.current.bindPopup(customPopupContent, {
-                            closeButton: true,
-                            autoClose: true,
-                            className: 'custom-popup'
-                        }).openPopup();
+                    // Bind popup if location name is provided
+                    if (locationName && markerRef.current) {
+                        bindPopupToMarker(markerRef.current, locationName);
                     }
 
                     mapInstanceRef.current = map;
@@ -82,41 +86,7 @@ const TripMap: React.FC<TripMapProps> = ({ latitude, longitude, locationName }) 
                     if (markerRef.current) {
                         markerRef.current.setLatLng([latitude, longitude]);
                         if (locationName) {
-                            const customPopupContent = `
-                                <div style="
-                                    background: white;
-                                    padding: 12px 16px;
-                                    border-radius: 8px;
-                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                                    border: 1px solid #e2e8f0;
-                                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-                                    min-width: 200px;
-                                    text-align: center;
-                                ">
-                                    <div style="
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                        gap: 8px;
-                                    ">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#e53e3e">
-                                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                                        </svg>
-                                        <span style="
-                                            font-size: 14px;
-                                            font-weight: 600;
-                                            color: #2d3748;
-                                            margin: 0;
-                                        ">${locationName}</span>
-                                    </div>
-                                </div>
-                            `;
-                            
-                            markerRef.current.bindPopup(customPopupContent, {
-                                closeButton: true,
-                                autoClose: true,
-                                className: 'custom-popup'
-                            }).openPopup();
+                            bindPopupToMarker(markerRef.current, locationName);
                         }
                     }
                 }
