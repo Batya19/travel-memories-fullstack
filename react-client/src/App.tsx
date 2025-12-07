@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import TripProvider from './contexts/TripContext';
+import { ImageCacheProvider } from './contexts/ImageCacheContext';
 import theme from './theme';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/auth/LoginPage';
@@ -52,8 +53,9 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <Router>
             <AuthProvider>
-              <TripProvider>
-                <Header />
+              <ImageCacheProvider>
+                <TripProvider>
+                  <Header />
                 <Routes>
                   {/* Public routes */}
                   <Route path="/" element={<HomePage />} />
@@ -93,8 +95,9 @@ function App() {
                   {/* Catch-all route for 404 */}
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
-                <Footer />
-              </TripProvider>
+                  <Footer />
+                </TripProvider>
+              </ImageCacheProvider>
             </AuthProvider>
           </Router>
           <ReactQueryDevtools initialIsOpen={false} />

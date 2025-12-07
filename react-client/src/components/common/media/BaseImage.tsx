@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import {
     Box,
     Skeleton,
@@ -16,7 +16,7 @@ export interface BaseImageProps extends BoxProps {
     fallbackSrc?: string;
 }
 
-export const BaseImage: React.FC<BaseImageProps> = ({
+export const BaseImage: React.FC<BaseImageProps> = memo(({
     src,
     alt,
     objectFit = 'contain',
@@ -67,6 +67,7 @@ export const BaseImage: React.FC<BaseImageProps> = ({
                 as="img"
                 src={currentSrc}
                 alt={alt}
+                loading="lazy"
                 width={rest.maxW || rest.maxH ? "auto" : "100%"}
                 height={rest.maxW || rest.maxH ? "auto" : "100%"}
                 maxWidth={rest.maxW || "100%"}
@@ -84,6 +85,8 @@ export const BaseImage: React.FC<BaseImageProps> = ({
             />
         </Box>
     );
-};
+});
+
+BaseImage.displayName = 'BaseImage';
 
 export default BaseImage;

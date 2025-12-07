@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, memo } from "react";
 import { Box, BoxProps, useColorModeValue } from "@chakra-ui/react";
 
 interface CardProps extends BoxProps {
@@ -6,7 +6,7 @@ interface CardProps extends BoxProps {
   hoverable?: boolean;
 }
 
-export const Card: React.FC<CardProps> = ({
+export const Card: React.FC<CardProps> = memo(({
   children,
   hoverable = false,
   ...rest
@@ -37,6 +37,8 @@ export const Card: React.FC<CardProps> = ({
       {children}
     </Box>
   );
-};
+});
+
+Card.displayName = 'Card';
 
 export default Card;

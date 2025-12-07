@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { AspectRatio, Box, BoxProps } from '@chakra-ui/react';
 import { Image as ImageType } from '../../../types';
 import ImageBadge, { BadgePosition } from './ImageBadge';
@@ -20,7 +20,7 @@ interface ImageComponentProps extends BoxProps {
     cursor?: string;
 }
 
-export const ImageComponent: React.FC<ImageComponentProps> = ({
+export const ImageComponent: React.FC<ImageComponentProps> = memo(({
     image,
     alt,
     aspectRatio,
@@ -85,6 +85,8 @@ export const ImageComponent: React.FC<ImageComponentProps> = ({
             {imageContent}
         </Box>
     );
-};
+});
+
+ImageComponent.displayName = 'ImageComponent';
 
 export default ImageComponent;

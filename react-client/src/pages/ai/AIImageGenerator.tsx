@@ -136,7 +136,9 @@ const AIImageGenerator: React.FC = () => {
             return (allTripImages as AIImage[])
                 .filter((img: AIImage) => img.isAiGenerated)
                 .sort((a: AIImage, b: AIImage) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        }
+        },
+        staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+        gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
     });
 
     useEffect(() => {

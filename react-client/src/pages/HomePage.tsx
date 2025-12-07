@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box } from '@chakra-ui/react';
 import { useAuth } from '../contexts/AuthContext';
+import { useImageCache } from '../contexts/ImageCacheContext';
 import HeroSection from '../components/features/home/HeroSection';
 import RecentTripsSection from '../components/features/home/RecentTripsSection';
 import FeaturesSection from '../components/features/home/FeaturesSection';
@@ -8,10 +9,10 @@ import CTASection from '../components/features/home/CTASection';
 import MapDashboardSection from '../components/features/home/MapDashboardSection';
 import { useQuery } from '@tanstack/react-query';
 import tripService from '../services/tripService';
-import imageService from '../services/imageService';
 
 const HomePage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { preloadImagesForTrips, getCachedImages } = useImageCache();
 
   // Fetch trips if user is logged in
   const { 
@@ -27,38 +28,19 @@ const HomePage: React.FC = () => {
     )
   });
 
-  // Fetch images for the recent trips
-  const { 
-    data: images = [], 
-    isLoading: imagesLoading,
-    error: imagesError 
-  } = useQuery({
-    queryKey: ['homeImages', trips],
-    queryFn: async () => {
-      // Limit to 5 trips to avoid too many API calls
-      const recentTripsForImages = trips.slice(0, 5);
-      
-      // Create an array of promises for fetching images
-      const imagePromises = recentTripsForImages.map(trip => 
-        imageService.getImages(trip.id).catch((err) => {
-          console.error(`Error fetching images for trip ${trip.id}:`, err);
-          return [];
-        })
-      );
-      
-      // Wait for all image fetch operations to complete
-      const imageResults = await Promise.all(imagePromises);
-      
-      // Flatten the array of image arrays into a single array
-      return imageResults.flat();
-    },
-    enabled: !!currentUser && trips.length > 0,
-  });
+  // Preload images when trips are loaded
+  useEffect(() => {
+    if (trips.length > 0) {
+      const tripIds = trips.slice(0, 5).map(t => t.id);
+      preloadImagesForTrips(tripIds);
+    }
+  }, [trips, preloadImagesForTrips]);
 
-  const isLoading = tripsLoading || imagesLoading;
-  const error = tripsError || imagesError ? 
-    (tripsError as Error)?.message || (imagesError as Error)?.message : 
-    null;
+  // Get images from cache
+  const images = trips.slice(0, 5).flatMap(trip => getCachedImages(trip.id) || []);
+  
+  const isLoading = tripsLoading;
+  const error = tripsError ? (tripsError as Error)?.message : null;
 
   return (
     <Box>

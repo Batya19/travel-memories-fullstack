@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -11,9 +11,9 @@ import {
 } from '@chakra-ui/react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Trip, Image as TripImage } from '../../../../types';
+import { Trip } from '../../../../types';
 import L from 'leaflet';
-import imageService from '../../../../services/imageService';
+import { useImageCache } from '../../../../contexts/ImageCacheContext';
 import LoadingSpinner from '../../../common/feedback/LoadingSpinner';
 import ImagePlaceholder from '../../../common/media/ImagePlaceholder';
 import { getImageUrl } from '../../../../utils/imageUtils';
@@ -36,34 +36,18 @@ interface HomePageMapProps {
   } | null;
 }
 
-const TripMarker: React.FC<TripMarkerProps> = ({ trip }) => {
-  const [firstImage, setFirstImage] = useState<TripImage | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+const TripMarker: React.FC<TripMarkerProps> = React.memo(({ trip }) => {
   const navigate = useNavigate();
+  const { getCachedImages } = useImageCache();
   const popupBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
-  // הוספת refs למרקר ולפופאפ
   const markerRef = useRef<L.Marker>(null);
   const popupRef = useRef<L.Popup>(null);
 
-  useEffect(() => {
-    const fetchFirstImage = async () => {
-      try {
-        if (trip.id) {
-          const images = await imageService.getImages(trip.id);
-          if (images && images.length > 0) {
-            setFirstImage(images[0]);
-          }
-        }
-      } catch (error) {
-        console.error(`Error fetching images for trip ${trip.id}:`, error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFirstImage();
-  }, [trip.id]);
+  // Get images from cache
+  const images = getCachedImages(trip.id);
+  const firstImage = images && images.length > 0 ? images[0] : null;
+  const loading = false; // No loading since we're using cached data
 
   const handleClick = () => {
     navigate(`/trips/${trip.id}`);
@@ -144,7 +128,9 @@ const TripMarker: React.FC<TripMarkerProps> = ({ trip }) => {
       </Popup>
     </Marker>
   );
-};
+});
+
+TripMarker.displayName = 'TripMarker';
 
 const HomePageMap: React.FC<HomePageMapProps> = ({ trips, loading }) => {
   // Find center of map based on trip locations or default to a center point
